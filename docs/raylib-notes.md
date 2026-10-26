@@ -1,0 +1,202 @@
+# raylib / raygui notes
+
+Exact signatures copied from the headers we link against. Do not add a call to
+`ext/ui_shim.c` without first copying its signature here.
+
+## Versions and sources
+
+| Library | Version | Where it comes from |
+|---|---|---|
+| raylib | **6.2** (`RAYLIB_VERSION "6.2"`, `raylib.h:92`) | nixpkgs `pkgs/by-name/ra/raylib`, `platform = "Desktop"`, `USE_EXTERNAL_GLFW=ON` |
+| raygui | **5.0** (`RAYGUI_VERSION "5.0"`, `raygui.h:358`) | nixpkgs `pkgs/by-name/ra/raygui` (installs `include/raygui.h`) |
+| GLFW | 3.4 | nixpkgs `glfw3`, built with Wayland **and** X11 support |
+
+raygui is in nixpkgs, so **nothing is vendored** and `ext/VENDORED.md` is not
+needed. The headers were read from the upstream tags these nixpkgs packages
+pin (`raysan5/raylib@6.2`, `raysan5/raygui@5.0`). Re-check them against
+`$(nix eval nixpkgs#raylib.outPath)/include/raylib.h` once the flake exists.
+
+raygui is header-only: exactly one translation unit defines
+`RAYGUI_IMPLEMENTATION` before including it. That is `ext/ui_shim.c`. The
+raygui implementation does not compile cleanly under
+`-Wconversion -Werror`, so it must be included as a **system header**
+(`-isystem`; Nix's `NIX_CFLAGS_COMPILE` already passes store include dirs that
+way). Warnings inside it are then suppressed, and our own code stays under the
+strict flags.
+
+## Structs (passed by value by raylib, so built inside the shim)
+
+```c
+// raylib.h:216
+typedef struct Vector2 {
+    float x;                // Vector x component
+    float y;                // Vector y component
+} Vector2;
+
+// raylib.h:248
+typedef struct Color {
+    unsigned char r;        // Color red value
+    unsigned char g;        // Color green value
+    unsigned char b;        // Color blue value
+    unsigned char a;        // Color alpha value
+} Color;
+
+// raylib.h:256
+typedef struct Rectangle {
+    float x;                // Rectangle top-left corner position x
+    float y;                // Rectangle top-left corner position y
+    float width;            // Rectangle width
+    float height;           // Rectangle height
+} Rectangle;
+
+// raylib.h:273
+typedef struct Texture {
+    unsigned int id;        // OpenGL texture id
+    int width;              // Texture base width
+    int height;             // Texture base height
+    int mipmaps;            // Mipmap levels, 1 by default
+    int format;             // Data format (PixelFormat type)
+} Texture;                  // Texture2D is the same type
+
+// raylib.h:317
+typedef struct Font {
+    int baseSize;           // Base size (default chars height)
+    int glyphCount;         // Number of glyph characters
+    int glyphPadding;       // Padding around the glyph characters
+    Texture2D texture;      // Texture atlas containing the glyphs
+    Rectangle *recs;        // Rectangles in texture for the glyphs
+    GlyphInfo *glyphs;      // Glyphs info data
+} Font;
+```
+
+The shim takes colors as one `uint32_t` `0xRRGGBBAA`, so the Ruby theme holds
+plain Integers and C unpacks them.
+
+## Window and frame
+
+```c
+RLAPI void InitWindow(int width, int height, const char *title);  // raylib.h:988
+RLAPI void CloseWindow(void);                                     // raylib.h:989
+RLAPI bool WindowShouldClose(void);                               // raylib.h:990
+RLAPI bool IsWindowReady(void);                                   // raylib.h:991
+RLAPI void SetWindowMinSize(int width, int height);               // raylib.h:1011
+RLAPI int GetScreenWidth(void);                                   // raylib.h:1017
+RLAPI int GetScreenHeight(void);                                  // raylib.h:1018
+RLAPI void ClearBackground(Color color);                          // raylib.h:1047
+RLAPI void BeginDrawing(void);                                    // raylib.h:1048
+RLAPI void EndDrawing(void);                                      // raylib.h:1049
+RLAPI void BeginScissorMode(int x, int y, int width, int height); // raylib.h:1060
+RLAPI void EndScissorMode(void);                                  // raylib.h:1061
+RLAPI void SetTargetFPS(int fps);                                 // raylib.h:1093
+RLAPI void SetConfigFlags(unsigned int flags);                    // raylib.h:1114
+RLAPI void SetTraceLogLevel(int logLevel);                        // raylib.h:1118
+RLAPI void SetExitKey(int key);                                   // raylib.h:1210
+```
+
+- `SetConfigFlags` must be called **before** `InitWindow`.
+- `WindowShouldClose` is also true on Escape. We call `SetExitKey(KEY_NULL)`
+  so only the window close button quits.
+- No `EnableEventWaiting()` (it would block file polling); `SetTargetFPS(10)`.
+
+## Input
+
+```c
+RLAPI bool IsMouseButtonPressed(int button);                  // raylib.h:1226
+RLAPI int GetMouseX(void);                                    // raylib.h:1230
+RLAPI int GetMouseY(void);                                    // raylib.h:1231
+RLAPI float GetMouseWheelMove(void);                          // raylib.h:1237
+RLAPI void SetMouseCursor(int cursor);                        // raylib.h:1239
+```
+
+`GetMouseX` / `GetMouseY` return `int`, so the shim does not need
+`GetMousePosition` (which returns a `Vector2` by value).
+
+## Drawing
+
+```c
+RLAPI void DrawLine(int startPosX, int startPosY, int endPosX, int endPosY, Color color);  // raylib.h:1279
+RLAPI void DrawRectangle(int posX, int posY, int width, int height, Color color);          // raylib.h:1291
+RLAPI void DrawRectangleLines(int posX, int posY, int width, int height, Color color);     // raylib.h:1298
+```
+
+## Fonts and text
+
+```c
+RLAPI void SetTextureFilter(Texture2D texture, int filter);                                  // raylib.h:1475
+RLAPI Font GetFontDefault(void);                                                             // raylib.h:1510
+RLAPI Font LoadFontEx(const char *fileName, int fontSize, const int *codepoints, int codepointCount); // raylib.h:1512
+RLAPI bool IsFontValid(Font font);                                                           // raylib.h:1515
+RLAPI void UnloadFont(Font font);                                                            // raylib.h:1519
+RLAPI void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint); // raylib.h:1525
+RLAPI Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing);     // raylib.h:1533
+```
+
+- `LoadFontEx` with `codepoints = NULL` loads only the default set (ASCII 32..126),
+  which has no accented letters. The shim builds an `int[]` of
+  **U+0020..U+007E, U+00A0..U+00FF (Latin-1 Supplement), U+0100..U+017F
+  (Latin Extended-A)** plus `…` U+2026 and `–` U+2013, and passes it in. That
+  covers "Reunião", "ação" and "é".
+- `IsFontValid` (6.x name; 5.0 called it `IsFontReady`) is checked after
+  loading. On failure the shim falls back to `GetFontDefault()` and reports it,
+  so the app can show a warning instead of crashing.
+- `DrawTextEx` / `MeasureTextEx` take UTF-8 `const char *`, which is what
+  Spinel's `:str` passes.
+- `MeasureTextEx` returns a `Vector2`; the shim exposes only its `x`
+  (`ui_measure_text_width`) as a `float`. Line height is the font size.
+- `TEXTURE_FILTER_BILINEAR` keeps scaled glyphs smooth.
+
+## raygui
+
+```c
+RAYGUIAPI void GuiSetFont(Font font);                                    // raygui.h:795
+RAYGUIAPI void GuiSetStyle(int control, int property, int value);        // raygui.h:799
+RAYGUIAPI int GuiGetStyle(int control, int property);                    // raygui.h:800
+RAYGUIAPI void GuiLoadStyleDefault(void);                                // raygui.h:805
+RAYGUIAPI int GuiCheckBox(Rectangle bounds, const char *text, bool *checked); // raygui.h:841
+```
+
+- `GuiCheckBox` flips `*checked` itself and returns `RESULT_CHANGED` (2) on the
+  frame it was clicked, `RESULT_NONE` (0) otherwise (`raygui.h:560-562`, body at
+  `int GuiCheckBox`). The shim passes a local `bool` set from the task's state,
+  ignores the flipped value, and returns `1` when it changed. Ruby then toggles
+  the **source line** that the checkbox's draw command carries. The file stays
+  the single source of truth.
+- `GuiSetStyle` color properties take the color as an `int` in `0xRRGGBBAA`
+  form, the same encoding as our theme Integers.
+
+## Constants
+
+| Name | Value | Source |
+|---|---|---|
+| `FLAG_WINDOW_RESIZABLE` | `0x00000004` | raylib.h:558 |
+| `FLAG_MSAA_4X_HINT` | `0x00000020` | raylib.h:570 |
+| `FLAG_WINDOW_HIGHDPI` | `0x00002000` | raylib.h:567 |
+| `KEY_NULL` | `0` | raylib.h:590 |
+| `MOUSE_BUTTON_LEFT` | `0` | raylib.h:713 |
+| `MOUSE_CURSOR_POINTING_HAND` | `4` | raylib.h:728 |
+| `LOG_WARNING` | `4` (enum: ALL 0, TRACE 1, DEBUG 2, INFO 3, WARNING 4) | raylib.h:577-584 |
+| `TEXTURE_FILTER_BILINEAR` | `1` (POINT is 0) | raylib.h:884-885 |
+| raygui `DEFAULT` control | `0` | raygui.h:602 |
+| raygui `CHECKBOX` control | `6` | raygui.h:610 |
+| `BORDER_COLOR_NORMAL` / `BASE_COLOR_NORMAL` / `TEXT_COLOR_NORMAL` | `0` / `1` / `2` | raygui.h:627-629 |
+| `BORDER_COLOR_FOCUSED` / `BASE_COLOR_FOCUSED` / `TEXT_COLOR_FOCUSED` | `3` / `4` / `5` | raygui.h:630-632 |
+| `BORDER_COLOR_PRESSED` / `BASE_COLOR_PRESSED` / `TEXT_COLOR_PRESSED` | `6` / `7` / `8` | raygui.h:633-635 |
+| `BORDER_WIDTH` | `12` | raygui.h:639 |
+| `TEXT_SIZE` / `TEXT_SPACING` | `16` / `17` | raygui.h:663-664 |
+| `BACKGROUND_COLOR` | `19` | raygui.h:666 |
+| `CHECK_PADDING` (CHECKBOX property) | `16` | raygui.h:714 |
+
+These constants are used **inside the C shim**, which includes the real
+headers, so they come from the headers rather than being copied into Ruby. Ruby
+sees none of them.
+
+## Wayland
+
+nixpkgs builds raylib against the external GLFW 3.4, and GLFW 3.4 contains
+both the Wayland and X11 backends. It should pick Wayland when
+`WAYLAND_DISPLAY` is set (**to verify in phase 4** on the host; the nixpkgs
+`glfw3` source repo is named `glfw-wayland`, so check what it patches). To
+check a build: `ldd result/bin/shipinel | grep -E 'glfw|wayland'`, and
+`WAYLAND_DEBUG=1 shipinel plan.md 2>&1 | head` should show `wl_display`
+traffic. To force XWayland, run with `WAYLAND_DISPLAY=` unset
+(`env -u WAYLAND_DISPLAY shipinel plan.md`). The README will spell this out.

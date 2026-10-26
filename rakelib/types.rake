@@ -1,0 +1,29 @@
+# frozen_string_literal: true
+
+# Types: every method carries inline RBS, and Steep checks it under CRuby.
+
+RBS_INLINE_DIR = "build/rbs-inline"
+# A signature line rbs-inline had to fill in: an un-annotated method or ivar.
+UNTYPED_SIGNATURE = /^\s*[^#\s].*\buntyped\b/
+
+desc "Steep type check, with every method annotated"
+task type_checks: %i[rbs_annotated steep]
+
+desc "Extract inline RBS into #{RBS_INLINE_DIR}"
+task :rbs_inline do
+  rm_rf RBS_INLINE_DIR
+  sh "rbs-inline", "--opt-out", "--output=#{RBS_INLINE_DIR}", "lib"
+end
+
+desc "Fail if any method or ivar has no inline RBS annotation"
+task rbs_annotated: :rbs_inline do
+  missing = FileList["#{RBS_INLINE_DIR}/**/*.rbs"].flat_map do |path|
+    File.readlines(path).grep(UNTYPED_SIGNATURE).map { |line| "#{path}: #{line.strip}" }
+  end
+  abort "missing inline RBS:\n#{missing.join("\n")}" if missing.any?
+end
+
+desc "Steep type check of lib/"
+task steep: :rbs_inline do
+  sh "steep", "check"
+end

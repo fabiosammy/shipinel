@@ -1,0 +1,5 @@
+# Reek runs with its default smells on lib/ and bin/. Any suppression added
+# here must say why, and is also listed in docs/exceptions.md.
+---
+exclude_paths:
+  - build

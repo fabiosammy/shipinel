@@ -1,0 +1,10 @@
+# Checks for ext/ (the C shim): bugprone, readability and performance, every
+# finding an error (`rake clang_tidy`). Any check turned off here must be
+# listed with its reason in docs/exceptions.md.
+Checks: >-
+  -*,
+  bugprone-*,
+  performance-*,
+  readability-*
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'ext/.*'

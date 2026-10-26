@@ -1,0 +1,43 @@
+plugins:
+  - rubocop-minitest
+  - rubocop-performance
+  - rubocop-rake
+  - rubocop_spinel
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.4
+  Exclude:
+    - "build/**/*"
+    - "tmp/**/*"
+    - "vendor/**/*"
+
+# Thresholds from CLAUDE.md section 4. Never raise them; refactor instead.
+Metrics/MethodLength:
+  Max: 10
+Metrics/AbcSize:
+  Max: 15
+Metrics/CyclomaticComplexity:
+  Max: 6
+Metrics/PerceivedComplexity:
+  Max: 7
+Metrics/ClassLength:
+  Max: 100
+Metrics/ModuleLength:
+  Max: 100
+Metrics/ParameterLists:
+  Max: 4
+Metrics/BlockNesting:
+  Max: 2
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+# Spinel reads `#: T` inline RBS comments, which have no space after `#`.
+Layout/LeadingCommentSpace:
+  AllowRBSInlineAnnotation: true
+
+# `a.between?(lo, hi)` pulls Spinel's Comparable builtins into the program,
+# which widen (docs/exceptions.md); `a >= lo && a <= hi` compiles cleanly.
+Style/ComparableBetween:
+  Enabled: false
