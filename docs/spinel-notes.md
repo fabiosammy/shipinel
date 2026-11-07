@@ -211,7 +211,7 @@ Spinel implements these (test counts are files in `test/` using them):
 | backtick `` `cmd` `` | (docs) | `fc-match -f '%{file}' sans` |
 | `ARGV`, `exit`, `warn`, `abort` | (docs, tests) | CLI |
 
-**`File.rename` vs libc `rename(2)` through FFI.** CLAUDE.md says "call libc
+**`File.rename` vs libc `rename(2)` through FFI (decided 2026-11-07: `File.rename`).** CLAUDE.md says "call libc
 `rename(2)` through FFI". Spinel's `File.rename` **is** `rename(2)`, and it
 works under CRuby, where the unit tests run. An FFI declaration cannot be
 loaded under CRuby (`ffi_func` is not a CRuby method), so `DocumentFile` would
@@ -303,6 +303,21 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
      branches yield different types, gets an untyped return ("born here: no
      untyped input"), even when annotated `-> void`. **Rule:** end such a
      method with an explicit `nil`.
+   - `String#index` (with or without an offset) pulls the same Enumerator
+     builtins in. **Rule:** scan with `text[position, marker.size] == marker`
+     in a loop and return `-1` for "not found" (which also avoids an
+     `Integer?` return).
+   - **Any identifier named `index`, `find`, `count` or `detect`** (method,
+     parameter or local variable) does the same, even in code unrelated to
+     Enumerable; `select`, `map`, `first`, `size`, `position` and the like do
+     not. Found with `spinel-reduce --oracle-cmd`. Reproducer:
+     `i = 0` works, `index = 0; while index < 2; index += 1; end` → 35 widen
+     warnings, all inside `builtins/`. **Rule:** never use those four names;
+     say `position` (in a list) or `line_index` (in the file).
+   - An `# @rbs @ivar: T` line directly above a method's `#:` comment is
+     read as part of that method's comment and ignored ("belongs to the
+     method's leading comment block"). **Rule:** a blank line after the ivar
+     declarations.
    - `Comparable#between?` (and `clamp`) pulls `builtins/comparable.rb` in,
      which reports six widen warnings. **Rule:** `x >= lo && x <= hi`
      (`Style/ComparableBetween` is off for this reason, docs/exceptions.md).
