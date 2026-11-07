@@ -72,3 +72,4 @@ cp test/fixtures/semana.md /tmp/semana.md
 | Date | Desktop | Session | Result | Notes |
 |---|---|---|---|---|
 | 2026-11-07 | Xvfb in the dev sandbox (no compositor) | X11, software GL | Items 1, 3, 4, 5 (CRLF file byte-identical after two toggles), 7 (save by rename), 8, 10 (wheel and a click after scrolling) pass | Driven with XTest inside Xvfb; not a real desktop |
+| 2026-11-07 | NixOS host, `nix build` result | Wayland | Item 2 passes (`wl_display#1.get_registry`: native Wayland client) | Remaining items not yet run |

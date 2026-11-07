@@ -89,8 +89,11 @@
         src = self;
         nativeBuildInputs = devTools;
         buildInputs = nativeLibs;
+        # The build sandbox sets no locale, so Ruby would read sources as
+        # US-ASCII and choke on "ação"; glibc has C.UTF-8 built in.
         buildPhase = ''
           export HOME=$TMPDIR
+          export LANG=C.UTF-8 LC_ALL=C.UTF-8
           rake check
         '';
         installPhase = "touch $out";
