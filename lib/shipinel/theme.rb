@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-# The one dark theme, in one place. Colors are 0xRRGGBBAA, the form the C
-# shim takes; nothing else in the app writes a color number.
+# The one dark theme, in one place: colors (0xRRGGBBAA, the form the C shim
+# takes), spacing and type scale. Nothing else in the app writes a color
+# number or a spacing ratio.
 
 module Shipinel
   module Theme
@@ -16,27 +17,49 @@ module Shipinel
     module Ink
       BODY = 0xDCDFE4FF
       HEADING = 0xF2F4F8FF
-      MUTED = 0x8B919CFF
+      # Done tasks fade back.
+      MUTED = 0x7E8490FF
       CODE = 0xE5C07BFF
       PROBLEM = 0xE06C75FF
+    end
+
+    # Task checkboxes.
+    module Checkbox
+      BORDER = 0x6B7280FF
+      HOVER = 0x9FB4FFFF
+      CHECK = 0x7AA2F7FF
     end
 
     # Font slots in the C shim: which loaded font a TextStyle uses.
     module FontSlot
       BODY = 0
       MONO = 1
+      BOLD = 2
     end
-  end
 
-  # A position in the window, in pixels from its top-left corner.
-  class Point
-    attr_reader :left #: Float
-    attr_reader :top #: Float
+    # Spacing, in multiples of the body font size unless said otherwise.
+    module Spacing
+      # Pixels between the window edge and the page.
+      MARGIN = 16.0
+      # Line height as a multiple of the text size.
+      LINE = 1.35
+      # Indentation added per list nesting depth.
+      INDENT = 1.4
+      # Room for the bullet or checkbox before a list item's text.
+      MARKER = 1.5
+      # After paragraphs and around headings and rules.
+      BLOCK_GAP = 0.6
+    end
 
-    #: (Float left, Float top) -> void
-    def initialize(left, top)
-      @left = left
-      @top = top
+    # Text sizes relative to the body font size.
+    module Scale
+      # A level 1 heading is this much bigger than body text...
+      HEADING_BOOST = 0.6
+      # ...and each level below keeps this share of the boost above it:
+      # 1.6, 1.36, 1.22, 1.13, 1.08, 1.05.
+      HEADING_FALLOFF = 0.6
+      CODE = 0.9
+      CHECKBOX = 0.85
     end
   end
 
@@ -51,6 +74,11 @@ module Shipinel
       @font_slot = font_slot
       @size = size
       @color = color
+    end
+
+    #: () -> Float
+    def line_height
+      @size * Theme::Spacing::LINE
     end
   end
 end

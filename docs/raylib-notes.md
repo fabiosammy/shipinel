@@ -207,8 +207,19 @@ What Ruby can call, all scalars and strings (Spinel FFI types in
 | `int ui_font_loaded(int slot)` | whether the slot holds a file font |
 | `float ui_text_width(int, const char *, float)` | `MeasureTextEx(...).x`, spacing 0 |
 | `void ui_draw_text(int, const char *, float, float, float, uint32_t)` | `DrawTextEx`, spacing 0 |
+| `void ui_draw_rect(float, float, float, float, uint32_t)` | `DrawRectangleRec` |
+| `float ui_wheel_move(void)` | `GetMouseWheelMove` |
+| `void ui_style_checkbox(uint32_t, uint32_t, uint32_t)` | `GuiSetStyle(CHECKBOX, ...)`: border normal; border focused and pressed; check mark (TEXT_COLOR_*) in all states; `BORDER_WIDTH` 2, `CHECK_PADDING` 3 |
+| `int ui_checkbox(float, float, float, int)` | `GuiCheckBox(bounds, NULL, &state) == RESULT_CHANGED` |
 
-Yes/no results are `int`, because Spinel's `:bool` is a C `int`.
+Yes/no values are `int`, bound in Ruby as FFI `:bool` (a C `int`). Font
+slots: 0 body, 1 mono, 2 bold.
+
+`GuiCheckBox` (raygui.h:2317) toggles on `GUI_BUTTON_RELEASED` inside the
+bounds and returns `RESULT_CHANGED` (2, raygui.h:562) on that frame; it
+draws the border in `BORDER + state*3` and the check in `TEXT + state*3`.
+The shim passes a local copy of the state, so raygui's flip is discarded:
+the file is the source of truth, and the next layout shows the result.
 
 Checked in the sandbox (X11 via the host's display, software OpenGL): the
 window opens titled `shipinel`, "reuniões", "ação", "Terça" render with

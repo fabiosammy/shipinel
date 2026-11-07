@@ -12,8 +12,16 @@ SPINEL_CHECK_DIR = "build/spinel-check"
 desc "Run every Spinel gate"
 task spinel_checks: %i[spinel_widen spin_build spin_test spinel_diff]
 
+# spin feeds every .rbs below the project root to Spinel, so a stray one
+# (generated, copied, left over) would silently change what is compiled.
+desc "Fail if any .rbs file exists outside sig/"
+task :rbs_only_in_sig do
+  stray = FileList["**/*.rbs"].exclude("sig/**/*.rbs").to_a
+  abort "rbs files outside sig/ would be read by spin: #{stray.join(', ')}" if stray.any?
+end
+
 desc "Compile every program with --rbs sig --warn-widen; any warning fails"
-task :spinel_widen do
+task spinel_widen: :rbs_only_in_sig do
   mkdir_p SPINEL_CHECK_DIR
   spin_flags = Shellwords.split(CheckedCommand.run("spin", "flags"))
   Sources::SPINEL_PROGRAMS.each do |program|

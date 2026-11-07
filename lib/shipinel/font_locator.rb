@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-# Decides which font files to load: the --font file if given, otherwise
-# fontconfig's answer for "sans"; and fontconfig's "monospace" for code.
+# Decides which font files to load: the --font file if given (for body and
+# bold text alike), otherwise fontconfig's "sans" and "sans:bold"; and
+# fontconfig's "monospace" for code.
 # An empty path means "none found", and the window falls back to raylib's
 # built-in font.
 
@@ -16,14 +17,16 @@ module Shipinel
     end
   end
 
-  # The font files chosen for body text and for code.
+  # The font files chosen for body text, bold text and code.
   class FontPaths
     attr_reader :body #: String
+    attr_reader :bold #: String
     attr_reader :mono #: String
 
-    #: (String body, String mono) -> void
-    def initialize(body, mono)
+    #: (String body, String bold, String mono) -> void
+    def initialize(body, bold, mono)
       @body = body
+      @bold = bold
       @mono = mono
     end
   end
@@ -39,17 +42,11 @@ module Shipinel
 
     #: (String? requested) -> FontPaths
     def locate(requested)
-      FontPaths.new(body(requested), @fontconfig.file_for("monospace"))
-    end
-
-    private
-
-    #: (String? requested) -> String
-    def body(requested)
-      return @fontconfig.file_for("sans") unless requested
+      mono = @fontconfig.file_for("monospace")
+      return FontPaths.new(@fontconfig.file_for("sans"), @fontconfig.file_for("sans:bold"), mono) unless requested
       raise UsageError, "--font #{requested}: no such file" unless File.file?(requested)
 
-      requested
+      FontPaths.new(requested, requested, mono)
     end
   end
 end

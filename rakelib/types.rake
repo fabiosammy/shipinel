@@ -2,12 +2,14 @@
 
 # Types: every method carries inline RBS, and Steep checks it under CRuby.
 
-RBS_INLINE_DIR = "build/rbs-inline"
+require_relative "support/paths"
+
+RBS_INLINE_DIR = Paths::RBS_INLINE_DIR
 # A signature line rbs-inline had to fill in: an un-annotated method or ivar.
 UNTYPED_SIGNATURE = /^\s*[^#\s].*\buntyped\b/
 
 desc "Steep type check, with every method annotated"
-task type_checks: %i[rbs_annotated steep]
+task type_checks: :steep
 
 desc "Extract inline RBS into #{RBS_INLINE_DIR}"
 task :rbs_inline do
@@ -23,7 +25,9 @@ task rbs_annotated: :rbs_inline do
   abort "missing inline RBS:\n#{missing.join("\n")}" if missing.any?
 end
 
-desc "Steep type check of lib/"
-task steep: :rbs_inline do
+desc "Steep type check of lib/; the extracted RBS is removed afterwards"
+task steep: :rbs_annotated do
   sh "steep", "check"
+ensure
+  rm_rf RBS_INLINE_DIR
 end

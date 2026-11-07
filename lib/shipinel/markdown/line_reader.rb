@@ -52,7 +52,7 @@ module Shipinel
 
       #: (SourceLine line) -> Block?
       def self.rule(line)
-        RULE.match?(line.text) ? Rule.new(line.line_index) : nil
+        RULE.match?(line.text) ? Rule.new(line.line_index, "") : nil
       end
 
       # Checked before bullet: every task line is also a bullet line.

@@ -16,11 +16,14 @@ class FontLocatorTest < Minitest::Test
   def test_fontconfig_picks_both_fonts_by_default
     fonts = locate(nil)
 
-    assert_equal ["/fonts/sans.ttf", "/fonts/monospace.ttf"], [fonts.body, fonts.mono]
+    assert_equal ["/fonts/sans.ttf", "/fonts/sans:bold.ttf", "/fonts/monospace.ttf"],
+                 [fonts.body, fonts.bold, fonts.mono]
   end
 
-  def test_requested_font_is_used_for_body_text
-    assert_equal __FILE__, locate(__FILE__).body
+  def test_requested_font_is_used_for_body_and_bold_text
+    fonts = locate(__FILE__)
+
+    assert_equal [__FILE__, __FILE__], [fonts.body, fonts.bold]
   end
 
   def test_missing_requested_font_is_a_usage_error

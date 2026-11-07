@@ -7,6 +7,7 @@ exclude_paths:
 detectors:
   UtilityFunction:
     exclude:
-      # The FFI adapter: each method is one call into the C shim, which owns
+      # The FFI adapters: each method is one call into the C shim, which owns
       # the window and font state. Holding state here would duplicate it.
       - "Shipinel::Screen"
+      - "Shipinel::TextMeasure"

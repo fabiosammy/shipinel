@@ -11,10 +11,20 @@ module Shipinel
     # (docs/spinel-notes.md), so callers tell kinds apart with `is_a?`.
     class Block
       attr_reader :line_index #: Integer
+      # What the block shows; "" for a rule.
+      attr_reader :text #: String
 
-      #: (Integer line_index) -> void
-      def initialize(line_index)
+      #: (Integer line_index, String text) -> void
+      def initialize(line_index, text)
         @line_index = line_index
+        @text = text
+      end
+
+      # Joins the next source line on, as Markdown does for a paragraph that
+      # spans several lines.
+      #: (String more) -> void
+      def append(more)
+        @text = "#{@text} #{more}"
       end
 
       #: (Integer other_line_index) -> bool
@@ -26,13 +36,11 @@ module Shipinel
     # "## Segunda-feira": level 1 to 6.
     class Heading < Block
       attr_reader :level #: Integer
-      attr_reader :text #: String
 
       #: (Integer line_index, Integer level, String text) -> void
       def initialize(line_index, level, text)
-        super(line_index)
+        super(line_index, text)
         @level = level
-        @text = text
       end
     end
 
@@ -40,13 +48,11 @@ module Shipinel
     # under an earlier item adds one.
     class ListItem < Block
       attr_reader :depth #: Integer
-      attr_reader :text #: String
 
       #: (Integer line_index, Integer depth, String text) -> void
       def initialize(line_index, depth, text)
-        super(line_index)
+        super(line_index, text)
         @depth = depth
-        @text = text
       end
     end
 
@@ -73,18 +79,6 @@ module Shipinel
     # Consecutive text lines, joined with spaces as Markdown does. The line
     # index is the paragraph's first line.
     class Paragraph < Block
-      attr_reader :text #: String
-
-      #: (Integer line_index, String text) -> void
-      def initialize(line_index, text)
-        super(line_index)
-        @text = text
-      end
-
-      #: (String more) -> void
-      def append(more)
-        @text = "#{@text} #{more}"
-      end
     end
 
     # A horizontal rule: "---", "* * *" or "___".
@@ -93,13 +87,6 @@ module Shipinel
 
     # One line inside a fenced code block, shown as it is.
     class CodeLine < Block
-      attr_reader :text #: String
-
-      #: (Integer line_index, String text) -> void
-      def initialize(line_index, text)
-        super(line_index)
-        @text = text
-      end
     end
 
     # The blocks of one document, in source order. A plain Array of objects

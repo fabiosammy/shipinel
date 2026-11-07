@@ -9,7 +9,8 @@ Checks: >-
 WarningsAsErrors: '*'
 HeaderFilterRegex: 'ext/.*'
 CheckOptions:
-  # Defaults, plus the window coordinates: ui_draw_text takes (left, top)
-  # in raylib's order, and its only caller passes them from a Ruby Point.
+  # Defaults, plus the geometry names: structs cannot cross Spinel's FFI,
+  # so (left, top, width, height, size) arrive as separate floats in
+  # raylib's order, always unpacked from a Ruby Point or Rect by Screen.
   - key: bugprone-easily-swappable-parameters.IgnoredParameterNames
-    value: '"";iterator;Iterator;begin;Begin;end;End;first;First;last;Last;lhs;LHS;rhs;RHS;left;top'
+    value: '"";iterator;Iterator;begin;Begin;end;End;first;First;last;Last;lhs;LHS;rhs;RHS;left;top;width;height;size'

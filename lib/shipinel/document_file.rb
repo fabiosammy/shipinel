@@ -22,12 +22,6 @@ module Shipinel
       @problem.empty?
     end
 
-    # What the window shows for this read: the file's lines, or the problem.
-    #: () -> Array[String]
-    def lines_to_show
-      readable? ? @content.lines.map(&:chomp) : [@problem]
-    end
-
     #: (Snapshot other) -> bool
     def same_as?(other)
       @content == other.content && @problem == other.problem

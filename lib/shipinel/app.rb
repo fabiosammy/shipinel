@@ -1,13 +1,17 @@
 # frozen_string_literal: true
 
-# Runs the window: opens it, loads the fonts, and draws frames until the
-# user closes it. For now it shows the file's lines as plain text, read once
-# at start; layout, clicks and reloading build on this.
+# Runs the window: opens it, loads the fonts, then each frame lays out the
+# document, applies the mouse wheel, draws, and toggles a clicked task in
+# the file.
 
-require_relative "cli_options"
 require_relative "document_file"
+require_relative "document_view"
 require_relative "font_locator"
+require_relative "layout"
+require_relative "painter"
 require_relative "screen"
+require_relative "scroll"
+require_relative "styles"
 require_relative "theme"
 
 module Shipinel
@@ -17,58 +21,63 @@ module Shipinel
     TITLE = "shipinel"
     WIDTH = 440
     HEIGHT = 640
-    MARGIN = 16.0
-    # Line height as a multiple of the font size.
-    LINE_SPACING = 1.4
 
     # @rbs @screen: Screen
-    # @rbs @fonts: FontPaths
-    # @rbs @style: TextStyle
-    # @rbs @lines: Array[String]
+    # @rbs @styles: Styles
+    # @rbs @document: DocumentView
+    # @rbs @scroll: Scroll
 
-    #: (Screen screen, Options options, FontPaths fonts) -> void
-    def initialize(screen, options, fonts)
+    #: (Screen screen, String path, Styles styles) -> void
+    def initialize(screen, path, styles)
       @screen = screen
-      @fonts = fonts
-      @style = TextStyle.new(Theme::FontSlot::BODY, options.font_size.to_f, Theme::Ink::BODY)
-      @lines = DocumentFile.new(options.path).read.lines_to_show
+      @styles = styles
+      @document = DocumentView.new(DocumentFile.new(path))
+      @scroll = Scroll.new
     end
 
-    #: () -> void
-    def run
+    #: (FontPaths fonts) -> void
+    def run(fonts)
       @screen.open(WIDTH, HEIGHT, TITLE)
       return unless @screen.ready?
 
-      load_fonts
-      draw_frame until @screen.closing?
+      prepare(fonts)
+      tick until @screen.closing?
       @screen.close
     end
 
     private
 
+    #: (FontPaths fonts) -> void
+    def prepare(fonts)
+      pixels = @styles.font_pixels
+      @screen.load_font(Theme::FontSlot::BODY, fonts.body, pixels)
+      @screen.load_font(Theme::FontSlot::BOLD, fonts.bold, pixels)
+      @screen.load_font(Theme::FontSlot::MONO, fonts.mono, pixels)
+      @screen.style_checkboxes(Theme::Checkbox::BORDER, Theme::Checkbox::HOVER, Theme::Checkbox::CHECK)
+    end
+
+    # One frame. Laid out every frame: the window may have been resized, and
+    # at 10 frames a second a page of text costs next to nothing.
     #: () -> void
-    def load_fonts
-      size = @style.size.to_i
-      @screen.load_font(Theme::FontSlot::BODY, @fonts.body, size)
-      @screen.load_font(Theme::FontSlot::MONO, @fonts.mono, size)
+    def tick
+      page = arrange
+      @scroll.apply(@screen.wheel_move, page.height, @screen.area.height)
+      click = draw(page)
+      @document.toggle(click) if click
       nil
     end
 
-    #: () -> void
-    def draw_frame
+    #: () -> DrawList
+    def arrange
+      Layout.new(@screen.text_measure, @styles, @screen.area.width).arrange(@document.blocks)
+    end
+
+    #: (DrawList page) -> TaskClick?
+    def draw(page)
       @screen.begin_frame(Theme::Surface::BACKGROUND)
-      draw_lines
+      click = Painter.paint(@screen, page, @scroll.offset)
       @screen.end_frame
-    end
-
-    #: () -> void
-    def draw_lines
-      top = MARGIN
-      @lines.each do |line|
-        @screen.draw_text(line, Point.new(MARGIN, top), @style)
-        top += @style.size * LINE_SPACING
-      end
-      nil
+      click
     end
   end
 end

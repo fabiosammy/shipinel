@@ -5,8 +5,8 @@
  * 0xRRGGBBAA. Loaded fonts stay in this file as static state, named by a
  * small slot number. No application logic lives here.
  *
- * Yes/no results are int (1 or 0), not bool: Spinel's FFI `:bool` is a C
- * int, and a bool return would only set the low byte of the register.
+ * Yes/no values are int (1 or 0), not bool: Spinel's FFI `:bool` is a C
+ * int, and a C bool would only use the low byte of the register.
  */
 #ifndef SHIPINEL_UI_SHIM_H
 #define SHIPINEL_UI_SHIM_H
@@ -33,6 +33,14 @@ void ui_load_font(int slot, const char *path, int pixel_size);
 /* 1 when the slot holds a font loaded from a file. */
 int ui_font_loaded(int slot);
 float ui_text_width(int slot, const char *text, float size);
+void ui_draw_rect(float left, float top, float width, float height, uint32_t rgba);
+/* How far the mouse wheel moved this frame; positive is away from the user. */
+float ui_wheel_move(void);
+/* Colors of every checkbox: its border, its border under the mouse, and
+ * the check mark. */
+void ui_style_checkbox(uint32_t border_rgba, uint32_t hover_rgba, uint32_t check_rgba);
+/* Draws a checkbox; 1 on the frame it was clicked. */
+int ui_checkbox(float left, float top, float size, int checked);
 void ui_draw_text(int slot, const char *text, float left, float top, float size, uint32_t rgba);
 
 #endif

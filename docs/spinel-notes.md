@@ -323,6 +323,12 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
      method annotated `-> Task?` is refused ("annotation contradicted ... this
      returns Block"). **Rule:** return the base type (`Block?`) and let the
      caller check `is_a?` again.
+   - The same holds for **arguments**: inside `when Heading`, passing
+     `block` to a method typed `(Heading)` is refused ("a method argument
+     given a Shipinel::Markdown::Block, which no conversion keeps in its
+     sp_Heading * slot"). Calls on the narrowed value are fine. **Rule:**
+     pass the fields (`block.text, block.level`), or a small value object
+     built in the branch (`TaskClick.new(block.line_index, block.checked?)`).
    - `Comparable#between?` (and `clamp`) pulls `builtins/comparable.rb` in,
      which reports six widen warnings. **Rule:** `x >= lo && x <= hi`
      (`Style/ComparableBetween` is off for this reason, docs/exceptions.md).
@@ -335,7 +341,12 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
    `--rbs <package root>`). Gems installed under `vendor/bundle` brought their
    own `.rbs` files and broke the build ("declares BigDecimal#% twice"), so the
    bundle lives outside the repo (`bundle config set --local path
-   ~/.cache/shipinel-bundle`). `build/` is skipped.
+   ~/.cache/shipinel-bundle`). Nothing is skipped, `build/` included:
+   `spin_flags` passes `--rbs <project root>` and the extractor recurses.
+   rbs-inline's output for Steep therefore lives in `tmp/rbs-inline` only
+   while Steep runs (Steep cannot read signatures from outside the project;
+   `rakelib/support/paths.rb`), and `rake rbs_only_in_sig` fails if any
+   `.rbs` appears outside `sig/`.
 
 ## Found while building the C shim (phase 4)
 
@@ -358,6 +369,25 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
   where raylib cannot be linked.
 - `bin/shipinel.rb` now requires `ui.rb`, so `spinel diff` (which also runs
   CRuby) only covers the `test/*.rb` programs.
+
+## Found while building layout and rendering (phase 5)
+
+- **Block-typed signatures are not seeded.** `#: () { (Item) -> void } -> void`
+  on a `yield`ing method compiles and runs, but warns "this signature is not
+  applied: block types are not seeded". Under the no-warnings rule, list
+  iteration stays `while` / `Integer#times` (which compiles cleanly).
+- **A type on a constant is not seeded** either (`HEADINGS = [...] #:
+  Array[Float]` warns). The heading sizes became a formula instead of a
+  table, which needs no annotation.
+- **A class is compiled whole.** Every method of a class that is used must
+  resolve, even methods nothing calls: a snapshot test that stubbed only
+  `UI.ui_text_width` failed on `Screen#area` ("no class in the program
+  defines a class method 'ui_screen_width'"). Hence `TextMeasure`, a
+  one-method adapter that Layout depends on instead of Screen.
+- **FFI `:bool` both ways:** the shim's yes/no values are C `int`s bound as
+  `:bool`, so Ruby passes and receives `true`/`false` with no `== 1`.
+- **raygui defines `TEXT_SPACING`** (a style enum), which collided with the
+  shim's own constant of that name; the shim's is `GLYPH_SPACING`.
 
 ## Reproducers
 

@@ -6,8 +6,15 @@
 
 #include <raylib.h>
 
+/* raygui is header-only: this is the one translation unit that holds its
+ * implementation. Included as a system header (docs/raylib-notes.md). */
+#define RAYGUI_IMPLEMENTATION
+#include <raygui.h>
+
 enum {
-    FONT_SLOTS = 2,
+    FONT_SLOTS = 3,
+    CHECKBOX_BORDER_WIDTH = 2,
+    CHECKBOX_CHECK_PADDING = 3,
     MIN_WINDOW_WIDTH = 200,
     MIN_WINDOW_HEIGHT = 120,
     /* Low on purpose: idle CPU stays light, and file polling still runs. */
@@ -20,7 +27,7 @@ enum {
 };
 
 /* No extra space between glyphs: the font's own advance widths apply. */
-static const float TEXT_SPACING = 0.0F;
+static const float GLYPH_SPACING = 0.0F;
 
 /* First and last codepoint of each block loaded into every font. */
 static const int CODEPOINT_RANGES[][2] = {
@@ -135,11 +142,40 @@ int ui_font_loaded(int slot) {
     return font_owned[checked_slot(slot)] ? 1 : 0;
 }
 
+void ui_draw_rect(float left, float top, float width, float height, uint32_t rgba) {
+    const Rectangle rect = {left, top, width, height};
+    DrawRectangleRec(rect, color_from(rgba));
+}
+
+float ui_wheel_move(void) {
+    return GetMouseWheelMove();
+}
+
+/* raygui reads colors as ints in the same 0xRRGGBBAA layout. */
+void ui_style_checkbox(uint32_t border_rgba, uint32_t hover_rgba, uint32_t check_rgba) {
+    GuiSetStyle(CHECKBOX, BORDER_COLOR_NORMAL, (int)border_rgba);
+    GuiSetStyle(CHECKBOX, BORDER_COLOR_FOCUSED, (int)hover_rgba);
+    GuiSetStyle(CHECKBOX, BORDER_COLOR_PRESSED, (int)hover_rgba);
+    GuiSetStyle(CHECKBOX, TEXT_COLOR_NORMAL, (int)check_rgba);
+    GuiSetStyle(CHECKBOX, TEXT_COLOR_FOCUSED, (int)check_rgba);
+    GuiSetStyle(CHECKBOX, TEXT_COLOR_PRESSED, (int)check_rgba);
+    GuiSetStyle(CHECKBOX, BORDER_WIDTH, CHECKBOX_BORDER_WIDTH);
+    GuiSetStyle(CHECKBOX, CHECK_PADDING, CHECKBOX_CHECK_PADDING);
+}
+
+/* raygui flips its own copy of the state; the caller only needs to know a
+ * click happened, because the file (not this box) is the source of truth. */
+int ui_checkbox(float left, float top, float size, int checked) {
+    const Rectangle bounds = {left, top, size, size};
+    bool state = checked != 0;
+    return GuiCheckBox(bounds, NULL, &state) == RESULT_CHANGED ? 1 : 0;
+}
+
 float ui_text_width(int slot, const char *text, float size) {
-    return MeasureTextEx(fonts[checked_slot(slot)], text, size, TEXT_SPACING).x;
+    return MeasureTextEx(fonts[checked_slot(slot)], text, size, GLYPH_SPACING).x;
 }
 
 void ui_draw_text(int slot, const char *text, float left, float top, float size, uint32_t rgba) {
     const Vector2 position = {left, top};
-    DrawTextEx(fonts[checked_slot(slot)], text, position, size, TEXT_SPACING, color_from(rgba));
+    DrawTextEx(fonts[checked_slot(slot)], text, position, size, GLYPH_SPACING, color_from(rgba));
 }

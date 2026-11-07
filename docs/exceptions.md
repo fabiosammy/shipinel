@@ -16,7 +16,7 @@ coverage) are never relaxed.
 
 | Smell | Where | Why |
 |---|---|---|
-| `UtilityFunction` | `Shipinel::Screen` only (`.reek.yml`) | `Screen` is the FFI adapter: each method is a single call into `ext/ui_shim.c`, which holds the window and font state. The class exists so `App` can take a fake screen in CRuby tests; giving it state of its own would duplicate the C side. Every other class keeps the smell on. |
+| `UtilityFunction` | `Shipinel::Screen` and `Shipinel::TextMeasure` only (`.reek.yml`) | These are the FFI adapters: each method is a single call into `ext/ui_shim.c`, which holds the window and font state. They exist so `App` and `Layout` can take fakes in CRuby tests; giving them state of their own would duplicate the C side. Every other class keeps the smell on. |
 
 ## Spinel widen warnings
 
@@ -26,6 +26,6 @@ None. `rake spinel_widen` fails on any warning.
 
 | Check | Where | Why |
 |---|---|---|
-| `bugprone-easily-swappable-parameters` | `IgnoredParameterNames` adds `left` and `top` (`.clang-tidy`) | `ui_draw_text(slot, text, left, top, size, rgba)` keeps raylib's x-then-y order; structs cannot cross Spinel's FFI, so the two floats must be separate. The only caller is `Screen#draw_text`, which takes a Ruby `Point`, so a swap cannot happen at a call site that people write. The check stays on for every other parameter name. |
+| `bugprone-easily-swappable-parameters` | `IgnoredParameterNames` adds the geometry names `left`, `top`, `width`, `height`, `size` (`.clang-tidy`) | Structs cannot cross Spinel's FFI, so `ui_draw_text`, `ui_draw_rect` and `ui_checkbox` take positions and sizes as separate floats in raylib's order. Their only callers are `Screen` methods that unpack a Ruby `Point` or `Rect`, so a swap cannot happen at a call site that people write. The check stays on for every other parameter name. |
 
 cppcheck: none.

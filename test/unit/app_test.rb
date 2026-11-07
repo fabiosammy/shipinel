@@ -6,44 +6,48 @@ require "tmpdir"
 require_relative "../../lib/shipinel/app"
 
 class AppTest < Minitest::Test
-  # Records what App asks of the window; reports "closing" after two frames.
+  # A window of a given height that closes after `frames` frames. It clicks
+  # the first checkbox drawn on frame `click_on`, and turns the wheel by
+  # `wheel` every frame.
   class FakeScreen
-    attr_reader :calls, :texts
+    attr_reader :calls, :text_tops
 
-    def initialize(opens: true)
+    def initialize(frames: 2, click_on: nil, wheel: 0.0, opens: true)
+      @frames = frames
+      @click_on = click_on
+      @wheel = wheel
       @opens = opens
+      @frame = 0
       @calls = []
-      @texts = []
-      @frames = 0
+      @text_tops = []
     end
 
-    def open(width, height, title)
-      @calls << [:open, width, height, title]
-    end
-
+    def open(width, height, title) = @calls << [:open, width, height, title]
     def ready? = @opens
-
-    def closing?
-      @frames >= 2
-    end
-
+    def closing? = @frame >= @frames
     def close = @calls << [:close]
-    def begin_frame(color) = @calls << [:begin_frame, color]
+    def area = Shipinel::Rect.new(0.0, 0.0, 440.0, 100.0)
+    def wheel_move = @wheel
     def load_font(slot, path, size) = @calls << [:load_font, slot, path, size]
+    def style_checkboxes(*colors) = @calls << [:style_checkboxes, *colors]
+    def text_measure = self
+    def text_width(text, style) = text.size * style.size * 0.5
+    def begin_frame(_color) = @clicked = false
+    def end_frame = @frame += 1
+    def draw_rect(_rect, _color) = nil
+    def draw_text(_text, at, _style) = (@text_tops << [@frame, at.top])
 
-    def end_frame
-      @frames += 1
-      @calls << [:end_frame]
-    end
+    def checkbox_clicked?(_rect, _checked)
+      return false if @clicked || @frame != @click_on
 
-    def draw_text(text, at, style)
-      @texts << [text, at.left, at.top, style.size]
+      @clicked = true
     end
   end
 
   def setup
     @dir = Dir.mktmpdir("shipinel")
     @path = File.join(@dir, "semana.md")
+    File.write(@path, "# Semana\n- [ ] Reunião\n")
   end
 
   def teardown
@@ -51,41 +55,40 @@ class AppTest < Minitest::Test
   end
 
   def run_app(screen)
-    options = Shipinel::Options.new(@path, nil, 20)
-    Shipinel::App.new(screen, options, Shipinel::FontPaths.new("/f/sans.ttf", "/f/mono.ttf")).run
+    Shipinel::App.new(screen, @path,
+                      Shipinel::Styles.new(20.0)).run(Shipinel::FontPaths.new("/s.ttf", "/b.ttf", "/m.ttf"))
     screen
   end
 
-  def test_opens_the_window_titled_shipinel
-    screen = run_app(FakeScreen.new)
+  def test_opens_the_window_titled_shipinel_and_closes_it
+    calls = run_app(FakeScreen.new).calls
 
-    assert_equal [:open, 440, 640, "shipinel"], screen.calls.first
-    assert_equal [:close], screen.calls.last
+    assert_equal [[:open, 440, 640, "shipinel"], [:close]], [calls.first, calls.last]
   end
 
-  def test_loads_body_and_mono_fonts_at_the_font_size
-    loads = run_app(FakeScreen.new).calls.select { |call| call.first == :load_font }
+  def test_loads_three_fonts_at_the_largest_text_size_and_styles_checkboxes
+    calls = run_app(FakeScreen.new).calls[1..4]
 
-    assert_equal [[:load_font, 0, "/f/sans.ttf", 20], [:load_font, 1, "/f/mono.ttf", 20]], loads
+    assert_equal [[:load_font, 0, "/s.ttf", 32], [:load_font, 2, "/b.ttf", 32], [:load_font, 1, "/m.ttf", 32]],
+                 calls.first(3)
+    assert_equal :style_checkboxes, calls.last.first
   end
 
-  def test_draws_each_line_until_closed
-    File.write(@path, "# Reunião\r\n- [ ] ação\n")
-    texts = run_app(FakeScreen.new).texts
+  def test_clicking_a_checkbox_toggles_the_task_in_the_file
+    run_app(FakeScreen.new(click_on: 0))
 
-    assert_equal [["# Reunião", 16.0, 16.0, 20.0], ["- [ ] ação", 16.0, 44.0, 20.0]], texts.first(2)
-    assert_equal 4, texts.size
+    assert_equal "# Semana\n- [x] Reunião\n", File.read(@path)
   end
 
-  def test_missing_file_shows_the_problem
-    texts = run_app(FakeScreen.new).texts
+  # The wheel is read before drawing, so even the first frame moves by a step.
+  def test_wheel_scrolls_the_page
+    File.write(@path, "linha\n\n" * 20)
+    tops = run_app(FakeScreen.new(wheel: -1.0)).text_tops
 
-    assert_match(/does not exist/, texts.first.first)
+    assert_equal [[0, -32.0], [1, -80.0]], [tops.first, tops.find { |frame, _top| frame == 1 }]
   end
 
   def test_window_that_does_not_open_ends_the_run
-    screen = run_app(FakeScreen.new(opens: false))
-
-    assert_equal 1, screen.calls.size
+    assert_equal 1, run_app(FakeScreen.new(opens: false)).calls.size
   end
 end
