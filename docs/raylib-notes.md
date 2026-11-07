@@ -229,9 +229,11 @@ about 5 % of one core at 10 FPS.
 ## Wayland
 
 nixpkgs builds raylib against the external GLFW 3.4, and GLFW 3.4 contains
-both the Wayland and X11 backends. It should pick Wayland when
-`WAYLAND_DISPLAY` is set (**to verify in phase 4** on the host; the nixpkgs
-`glfw3` source repo is named `glfw-wayland`, so check what it patches). To
+both the Wayland and X11 backends. It picks Wayland when `WAYLAND_DISPLAY`
+is set. Checked in the nixpkgs revision flake.lock pins: `glfw3` builds with
+wayland, wayland-protocols and libdecor, and patches its `dlopen` names
+(`libwayland-client.so.0`, `libdecor-0.so.0`, ...) to absolute store paths,
+so the Wayland libraries are found at run time without any wrapper. To
 check a build: `ldd result/bin/shipinel | grep -E 'glfw|wayland'`, and
 `WAYLAND_DEBUG=1 shipinel plan.md 2>&1 | head` should show `wl_display`
 traffic. To force XWayland, run with `WAYLAND_DISPLAY=` unset
