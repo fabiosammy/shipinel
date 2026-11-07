@@ -318,6 +318,11 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
      read as part of that method's comment and ignored ("belongs to the
      method's leading comment block"). **Rule:** a blank line after the ivar
      declarations.
+   - `is_a?` narrows a variable for the calls inside the branch, but not a
+     value **returned** from there: `return block if block.is_a?(Task)` in a
+     method annotated `-> Task?` is refused ("annotation contradicted ... this
+     returns Block"). **Rule:** return the base type (`Block?`) and let the
+     caller check `is_a?` again.
    - `Comparable#between?` (and `clamp`) pulls `builtins/comparable.rb` in,
      which reports six widen warnings. **Rule:** `x >= lo && x <= hi`
      (`Style/ComparableBetween` is off for this reason, docs/exceptions.md).

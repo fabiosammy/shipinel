@@ -9,6 +9,7 @@ coverage) are never relaxed.
 | Cop | Where | Why |
 |---|---|---|
 | `Style/ComparableBetween` | disabled in `.rubocop.yml` | It asks for `x.between?(lo, hi)`. Under Spinel that pulls the Comparable builtins (`builtins/comparable.rb`) into the program, and they report six widen warnings, which this project treats as errors. `x >= lo && x <= hi` compiles cleanly and reads the same. |
+| `Naming/RescuedExceptionsVariableName` | `PreferredName: error` | A naming choice, not a relaxation: RuboCop's default `e` is what Reek's `UncommunicativeVariableName` rejects, so both tools now require `error`. |
 | `Layout/LeadingCommentSpace` | `AllowRBSInlineAnnotation: true` | Not a relaxation of the rule's intent: `#: T` is the inline RBS syntax Spinel and rbs-inline read, and it has no space by definition. |
 
 ## Reek

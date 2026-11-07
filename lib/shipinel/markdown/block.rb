@@ -16,6 +16,11 @@ module Shipinel
       def initialize(line_index)
         @line_index = line_index
       end
+
+      #: (Integer other_line_index) -> bool
+      def on_line?(other_line_index)
+        @line_index == other_line_index
+      end
     end
 
     # "## Segunda-feira": level 1 to 6.
@@ -122,6 +127,21 @@ module Shipinel
       #: (Integer position) -> Block
       def at(position)
         @blocks[position]
+      end
+
+      # The task that starts on this source line, if there is one. Typed
+      # Block? because Spinel does not narrow a return through `is_a?`
+      # (docs/spinel-notes.md); callers check `is_a?(Task)` again.
+      #: (Integer line_index) -> Block?
+      def task_on_line(line_index)
+        position = 0
+        while position < @blocks.size
+          block = @blocks[position]
+          return block if block.is_a?(Task) && block.on_line?(line_index)
+
+          position += 1
+        end
+        nil
       end
     end
   end

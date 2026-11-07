@@ -41,3 +41,8 @@ Layout/LeadingCommentSpace:
 # which widen (docs/exceptions.md); `a >= lo && a <= hi` compiles cleanly.
 Style/ComparableBetween:
   Enabled: false
+
+# Reek's UncommunicativeVariableName rejects RuboCop's default `e`, so the
+# two tools agree on `error` (docs/exceptions.md).
+Naming/RescuedExceptionsVariableName:
+  PreferredName: error

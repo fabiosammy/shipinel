@@ -15,8 +15,8 @@ class CliOptionsSnapshot
   def outcome(argv)
     options = Shipinel::CliOptions.new(argv).parse
     "path=#{options.path} font=#{options.font_path.inspect} size=#{options.font_size}"
-  rescue Shipinel::UsageError => e
-    "error: #{e.message.lines.first.to_s.chomp}"
+  rescue Shipinel::UsageError => error
+    "error: #{error.message.lines.first.to_s.chomp}"
   end
 end
 
