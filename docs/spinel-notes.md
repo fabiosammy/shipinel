@@ -337,6 +337,28 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
    bundle lives outside the repo (`bundle config set --local path
    ~/.cache/shipinel-bundle`). `build/` is skipped.
 
+## Found while building the C shim (phase 4)
+
+- **Include flags for carried C:** `spin` compiles a carried `.c` with only
+  `-O2 -I <package root>`. External headers come from a `[native]` table in
+  `spin.toml`: `pkg_config = ["raylib"]` adds `pkg-config --cflags raylib`
+  (read from `tools/spin.rb`, `native_objs_for`). Linking comes from
+  `ffi_lib "raylib"` in `ui.rb`, which the generated C carries as
+  `/* SPINEL_LINK: -lraylib */`.
+- **`:bool` is a C `int`.** A shim function declared `bool` but bound as
+  `:bool` would only set the low byte of the return register. Every shim
+  function that answers yes/no returns `int` (1/0) and is bound as `:int`;
+  `Screen` compares with `== 1`.
+- **`spin test` runs each program with `test/` as its working directory**,
+  while `spinel diff` runs from the project root. A snapshot that writes
+  `build/...` therefore writes `test/build/...` under `spin test`
+  (gitignored).
+- **`spinel -c` still runs the full analysis**, so `spinel --rbs sig
+  --warn-widen bin/shipinel.rb -c -o x.c` checks the app for widening even
+  where raylib cannot be linked.
+- `bin/shipinel.rb` now requires `ui.rb`, so `spinel diff` (which also runs
+  CRuby) only covers the `test/*.rb` programs.
+
 ## Reproducers
 
 Nothing has been refused so far. The constructs above that compile but widen

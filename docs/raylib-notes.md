@@ -190,6 +190,31 @@ These constants are used **inside the C shim**, which includes the real
 headers, so they come from the headers rather than being copied into Ruby. Ruby
 sees none of them.
 
+## The shim's API (ext/ui_shim.h)
+
+What Ruby can call, all scalars and strings (Spinel FFI types in
+`lib/shipinel/ui.rb`, Steep types in `sig/ui.rbs`):
+
+| Function | Wraps |
+|---|---|
+| `void ui_open_window(int, int, const char *)` | `SetConfigFlags(RESIZABLE \| MSAA_4X)`, `SetTraceLogLevel(LOG_WARNING)`, `InitWindow`, `SetWindowMinSize(200, 120)`, `SetTargetFPS(10)`, `SetExitKey(KEY_NULL)` |
+| `int ui_window_ready(void)` | `IsWindowReady` |
+| `int ui_window_should_close(void)` | `WindowShouldClose` |
+| `void ui_close_window(void)` | `UnloadFont` for each loaded slot, `CloseWindow` |
+| `int ui_screen_width(void)`, `int ui_screen_height(void)` | `GetScreenWidth`, `GetScreenHeight` |
+| `void ui_begin_frame(uint32_t)`, `void ui_end_frame(void)` | `BeginDrawing` + `ClearBackground`, `EndDrawing` |
+| `void ui_load_font(int slot, const char *, int)` | `LoadFontEx` with the codepoint ranges above, `IsFontValid`, `SetTextureFilter(BILINEAR)`; falls back to `GetFontDefault` |
+| `int ui_font_loaded(int slot)` | whether the slot holds a file font |
+| `float ui_text_width(int, const char *, float)` | `MeasureTextEx(...).x`, spacing 0 |
+| `void ui_draw_text(int, const char *, float, float, float, uint32_t)` | `DrawTextEx`, spacing 0 |
+
+Yes/no results are `int`, because Spinel's `:bool` is a C `int`.
+
+Checked in the sandbox (X11 via the host's display, software OpenGL): the
+window opens titled `shipinel`, "reuniões", "ação", "Terça" render with
+DejaVu Sans, raylib logs nothing at warning level, and the idle window uses
+about 5 % of one core at 10 FPS.
+
 ## Wayland
 
 nixpkgs builds raylib against the external GLFW 3.4, and GLFW 3.4 contains

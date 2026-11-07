@@ -1,6 +1,6 @@
 # Checks for ext/ (the C shim): bugprone, readability and performance, every
-# finding an error (`rake clang_tidy`). Any check turned off here must be
-# listed with its reason in docs/exceptions.md.
+# finding an error (`rake clang_tidy`). Any check turned off or narrowed here
+# must be listed with its reason in docs/exceptions.md.
 Checks: >-
   -*,
   bugprone-*,
@@ -8,3 +8,8 @@ Checks: >-
   readability-*
 WarningsAsErrors: '*'
 HeaderFilterRegex: 'ext/.*'
+CheckOptions:
+  # Defaults, plus the window coordinates: ui_draw_text takes (left, top)
+  # in raylib's order, and its only caller passes them from a Ruby Point.
+  - key: bugprone-easily-swappable-parameters.IgnoredParameterNames
+    value: '"";iterator;Iterator;begin;Begin;end;End;first;First;last;Last;lhs;LHS;rhs;RHS;left;top'

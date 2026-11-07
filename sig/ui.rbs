@@ -1,0 +1,18 @@
+# Types of the Spinel FFI functions declared in lib/shipinel/ui.rb, which
+# Steep cannot read (ffi_func is not Ruby). Mirrors ext/ui_shim.h.
+module Shipinel
+  module UI
+    def self.ui_open_window: (Integer width, Integer height, String title) -> void
+    def self.ui_window_ready: () -> Integer
+    def self.ui_window_should_close: () -> Integer
+    def self.ui_close_window: () -> void
+    def self.ui_screen_width: () -> Integer
+    def self.ui_screen_height: () -> Integer
+    def self.ui_begin_frame: (Integer background_rgba) -> void
+    def self.ui_end_frame: () -> void
+    def self.ui_load_font: (Integer slot, String path, Integer pixel_size) -> void
+    def self.ui_font_loaded: (Integer slot) -> Integer
+    def self.ui_text_width: (Integer slot, String text, Float size) -> Float
+    def self.ui_draw_text: (Integer slot, String text, Float left, Float top, Float size, Integer rgba) -> void
+  end
+end

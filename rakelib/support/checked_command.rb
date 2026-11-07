@@ -10,14 +10,18 @@ require "open3"
 module CheckedCommand
   WARNING_LINE = /^.*warning.*$/i
 
+  # Returns stdout only: `spin flags` prints compile progress on stderr, and
+  # that must not end up in the flags handed to spinel. Both streams are
+  # printed and checked for warnings.
   def self.run(*command)
-    output, status = Open3.capture2e(*command)
-    print output
+    stdout, stderr, status = Open3.capture3(*command)
+    print stdout
+    $stderr.print stderr
     raise "#{command.join(' ')} exited with #{status.exitstatus}" unless status.success?
 
-    warning = output[WARNING_LINE]
+    warning = "#{stdout}#{stderr}"[WARNING_LINE]
     raise "#{command.first} printed a warning: #{warning}" if warning
 
-    output
+    stdout
   end
 end

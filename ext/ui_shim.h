@@ -1,0 +1,38 @@
+/*
+ * The only C in Shipinel: a thin adapter over raylib for Spinel's FFI.
+ * raylib passes Color, Vector2 and Font by value, which Spinel FFI cannot,
+ * so every function here takes scalars and strings only. Colors are
+ * 0xRRGGBBAA. Loaded fonts stay in this file as static state, named by a
+ * small slot number. No application logic lives here.
+ *
+ * Yes/no results are int (1 or 0), not bool: Spinel's FFI `:bool` is a C
+ * int, and a bool return would only set the low byte of the register.
+ */
+#ifndef SHIPINEL_UI_SHIM_H
+#define SHIPINEL_UI_SHIM_H
+
+#include <stdint.h>
+
+/* Opens the resizable window and sets the idle frame rate. */
+void ui_open_window(int width, int height, const char *title);
+/* 1 when the window (and its OpenGL context) opened. */
+int ui_window_ready(void);
+int ui_window_should_close(void);
+/* Unloads every font, then closes the window. */
+void ui_close_window(void);
+int ui_screen_width(void);
+int ui_screen_height(void);
+
+void ui_begin_frame(uint32_t background_rgba);
+void ui_end_frame(void);
+
+/* Loads a TTF/OTF into a slot with the ASCII, Latin-1 Supplement and Latin
+ * Extended-A glyphs. If it cannot be loaded, the slot holds raylib's
+ * built-in font, which has no accented letters. */
+void ui_load_font(int slot, const char *path, int pixel_size);
+/* 1 when the slot holds a font loaded from a file. */
+int ui_font_loaded(int slot);
+float ui_text_width(int slot, const char *text, float size);
+void ui_draw_text(int slot, const char *text, float left, float top, float size, uint32_t rgba);
+
+#endif
