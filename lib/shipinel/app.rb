@@ -54,16 +54,28 @@ module Shipinel
     #: () -> void
     def prepare
       @page.load_fonts(@document.shown_text)
-      @screen.style_checkboxes(Theme::Checkbox::BORDER, Theme::Checkbox::HOVER, Theme::Checkbox::CHECK)
     end
 
-    # One frame: 10 a second when idle, 60 while the user scrolls or points
-    # (Activity). The layout is reused until the file or the width changes.
+    # One frame, 60 a second. The layout is reused until the file or the
+    # window size changes, and an idle frame showing the same page is not
+    # drawn again (Activity).
     #: () -> void
     def tick
       poll if @poller.due?(Clock.now_ms)
-      clicked = draw(@page.update(@screen, @document))
+      clicked = show(@page.update(@screen, @document))
       act(clicked) if clicked
+      nil
+    end
+
+    #: (Frame frame) -> DrawCommand?
+    def show(frame)
+      frame.pace.redraw? ? draw(frame) : skip
+    end
+
+    # Keeps the window responsive without drawing: waits, reads input.
+    #: () -> DrawCommand?
+    def skip
+      @screen.skip_frame
       nil
     end
 
@@ -78,7 +90,7 @@ module Shipinel
     def draw(frame)
       @screen.begin_frame(Theme::Surface::BACKGROUND)
       clicked = Painter.new(@screen, frame).paint
-      @screen.end_frame(frame.rate)
+      @screen.end_frame
       clicked
     end
 

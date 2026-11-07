@@ -159,10 +159,12 @@ env -u WAYLAND_DISPLAY shipinel ~/notes/week.md
 
 ## Behaviour
 
-- 10 frames per second while idle, 60 while you scroll, click or move the
-  pointer over the window (dropping back half a second later). The page is
-  laid out again only when the file, the window width or the fonts change,
-  and only what the window shows is drawn.
+- Input is read 60 times a second, but the window is only drawn while you
+  scroll, click or move the pointer over it (and half a second after),
+  when the page changes, and every 2 s as a refresh; an idle window costs
+  well under 1 % of a core. The page is laid out again only when the file,
+  the window size or the fonts change, and only what the window shows is
+  drawn.
 - The file is re-read about every 500 ms by comparing its content, which
   also catches editors that save by renaming.
 - When the file has tasks, a strip pinned to the top of the window shows

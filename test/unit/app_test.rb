@@ -33,13 +33,17 @@ class AppTest < Minitest::Test
     def close = @calls << [:close]
     def area = Shipinel::Rect.new(0.0, 0.0, 440.0, 640.0)
     def mouse = Shipinel::MouseState.new(Shipinel::Point.new(0.0, 0.0), 0, @wheel)
-    def style_checkboxes(*colors) = @calls << [:style_checkboxes, *colors]
     def font_shim = (@font_shim ||= FakeShim.new(failing: @broken == :font ? PATHS_FAILING : []))
     def begin_frame(_color) = @pointed = false
     def texts_on(frame) = @texts.select { |text_frame, _text| text_frame == frame }.map(&:last)
 
-    def end_frame(rate)
-      @calls << [:rate, rate]
+    def skip_frame
+      @calls << [:skip]
+      end_frame
+    end
+
+    def end_frame
+      @calls << [:end_frame]
       on_frame_end&.call(@frame)
       @frame += 1
     end
@@ -94,7 +98,7 @@ class AppTest < Minitest::Test
     calls = screen.font_shim.calls
 
     assert_equal [[:use, [0x2192, 0x1F916]], [:load, 0, "/s.ttf", 32]], calls.first(2)
-    assert_equal [5, :style_checkboxes], [calls.count { |call| call.first == :load }, screen.calls[1].first]
+    assert_equal(5, calls.count { |call| call.first == :load })
   end
 
   def test_clicking_a_checkbox_toggles_the_task_in_the_file
@@ -111,12 +115,6 @@ class AppTest < Minitest::Test
     tops = run_app(FakeScreen.new(wheel: -1.0)).text_tops
 
     assert_equal [[0, 7.0], [1, -2.0]], [tops.first, tops.find { |frame, _top| frame == 1 }]
-  end
-
-  def test_runs_fast_while_the_wheel_turns
-    rates = run_app(FakeScreen.new(wheel: -1.0)).calls.select { |call| call.first == :rate }
-
-    assert_equal [[:rate, 60], [:rate, 60]], rates
   end
 
   def test_window_that_does_not_open_ends_the_run
@@ -147,5 +145,15 @@ class AppTest < Minitest::Test
 
     assert_equal "[topo](#topo)\n", File.read(@path)
     assert_equal ["topo"], screen.texts_on(1)
+  end
+
+  # Busy for half a second (30 frames) after the pointer first shows up,
+  # then idle: nothing changes, so nothing more is drawn.
+  def test_an_idle_unchanged_page_is_not_drawn_again
+    screen = run_app(FakeScreen.new(frames: 40))
+    drawn = screen.calls.count { |call| call.first == :end_frame } - screen.calls.count { |call| call.first == :skip }
+
+    assert_equal [31, ["Semana", "Reunião", "0 of 1 task done · 0%"]], [drawn, screen.texts_on(30)]
+    assert_empty screen.texts_on(31)
   end
 end

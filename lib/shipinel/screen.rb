@@ -15,9 +15,12 @@ require_relative "theme"
 module Shipinel
   # See the file comment.
   class Screen
+    # Checkboxes are styled from the theme right away: raygui keeps the
+    # style for every box drawn after.
     #: (Integer width, Integer height, String title) -> void
     def open(width, height, title)
       UI.ui_open_window(width, height, title)
+      UI.ui_style_checkbox(Theme::Checkbox::BORDER, Theme::Checkbox::HOVER, Theme::Checkbox::CHECK)
     end
 
     # Whether `open` got a window (and an OpenGL context).
@@ -53,10 +56,16 @@ module Shipinel
       UI.ui_begin_frame(background)
     end
 
-    # Waits until the frame is due at this rate, then shows it.
-    #: (Integer frames_per_second) -> void
-    def end_frame(frames_per_second)
-      UI.ui_set_frame_rate(frames_per_second)
+    # Waits until the frame is due, then reads input without drawing: the
+    # window keeps showing the last frame.
+    #: () -> void
+    def skip_frame
+      UI.ui_skip_frame
+    end
+
+    # Waits until the frame is due, then shows it.
+    #: () -> void
+    def end_frame
       UI.ui_end_frame
     end
 
@@ -74,11 +83,6 @@ module Shipinel
     #: () -> MouseState
     def mouse
       MouseState.new(Point.new(UI.ui_mouse_x.to_f, UI.ui_mouse_y.to_f), UI.ui_mouse_buttons, UI.ui_wheel_move)
-    end
-
-    #: (Integer border, Integer hover, Integer check) -> void
-    def style_checkboxes(border, hover, check)
-      UI.ui_style_checkbox(border, hover, check)
     end
 
     # A square checkbox filling `rect`. Clicks are read with pointer_on;

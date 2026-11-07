@@ -2,9 +2,10 @@
 
 # What one frame shows: the laid-out document (drawn scrolled, only where
 # the window shows it), the overlay that stays put (progress header and
-# scrollbar), how the document sits in the window, and the frame rate the
-# window should run at now.
+# scrollbar), how the document sits in the window, and how the frame runs
+# (Pace: its rate, and whether it is drawn at all).
 
+require_relative "activity"
 require_relative "draw_list"
 require_relative "geometry"
 
@@ -14,14 +15,14 @@ module Shipinel
     attr_reader :content #: DrawList
     attr_reader :overlay #: DrawList
     attr_reader :view #: Viewport
-    attr_reader :rate #: Integer
+    attr_reader :pace #: Pace
 
-    #: (DrawList content, DrawList overlay, Viewport view, Integer rate) -> void
-    def initialize(content, overlay, view, rate)
+    #: (DrawList content, DrawList overlay, Viewport view, Pace pace) -> void
+    def initialize(content, overlay, view, pace)
       @content = content
       @overlay = overlay
       @view = view
-      @rate = rate
+      @pace = pace
     end
 
     # The lists are read by index, as DrawList is (docs/spinel-notes.md).

@@ -25,8 +25,9 @@ enum {
     CHECKBOX_CHECK_PADDING = 3,
     MIN_WINDOW_WIDTH = 200,
     MIN_WINDOW_HEIGHT = 120,
-    /* Until ui_set_frame_rate: low, so idle CPU stays light. */
-    START_FPS = 10,
+    /* Input is read this often, so a quick click is never missed; idle
+     * frames only sleep and poll (ui_skip_frame). */
+    FRAME_RATE = 60,
     RED_SHIFT = 24,
     GREEN_SHIFT = 16,
     BLUE_SHIFT = 8,
@@ -66,7 +67,7 @@ static int extra_codepoints[MAX_EXTRA_CODEPOINTS];
 static int extra_count = 0;
 /* Frame pacing (ui_end_frame): how long a frame lasts, and when the next
  * one is due on the monotonic clock. */
-static long frame_nanoseconds = NANOSECONDS / START_FPS;
+static const long FRAME_NANOSECONDS = NANOSECONDS / FRAME_RATE;
 static struct timespec next_frame;
 
 static Color color_from(uint32_t rgba) {
@@ -157,15 +158,11 @@ void ui_begin_frame(uint32_t background_rgba) {
     ClearBackground(color_from(background_rgba));
 }
 
-void ui_set_frame_rate(int frames_per_second) {
-    frame_nanoseconds = NANOSECONDS / (frames_per_second > 0 ? frames_per_second : START_FPS);
-}
-
 /* raylib's own frame wait (SetTargetFPS) spins on the CPU for the last 5%
  * of every frame; this sleeps the whole time instead. A frame that ran
  * late starts the next one from now rather than rushing to catch up. */
 static void wait_for_next_frame(void) {
-    next_frame.tv_nsec += frame_nanoseconds;
+    next_frame.tv_nsec += FRAME_NANOSECONDS;
     if (next_frame.tv_nsec >= NANOSECONDS) {
         next_frame.tv_sec += next_frame.tv_nsec / NANOSECONDS;
         next_frame.tv_nsec %= NANOSECONDS;
@@ -186,6 +183,13 @@ static void wait_for_next_frame(void) {
 void ui_end_frame(void) {
     wait_for_next_frame();
     EndDrawing();
+}
+
+/* A frame that draws nothing: no BeginDrawing, no buffer swap, so the
+ * window keeps the last frame shown; input is still read. */
+void ui_skip_frame(void) {
+    wait_for_next_frame();
+    PollInputEvents();
 }
 
 void ui_set_extra_codepoints(const int64_t *codepoints, int count) {

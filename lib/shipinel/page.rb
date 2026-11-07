@@ -57,20 +57,18 @@ module Shipinel
       window = screen.area
       header = ProgressHeader.new(document.blocks.task_progress, @styles, window.width)
       area = window.below(header.height)
-      content = content(area.width, document)
+      content = content(area, document)
       framed(content, header, scroll(screen.mouse, content.height, area))
     end
 
     private
 
-    #: (Float width, DocumentView document) -> DrawList
-    def content(width, document)
-      blocks = document.blocks
-      notices = notices(document)
-      key = LayoutKey.new(blocks, "#{width} #{notices.join("\n")}")
+    #: (Rect area, DocumentView document) -> DrawList
+    def content(area, document)
+      key = LayoutKey.new(document.blocks, area, notices(document))
       return @cache.list if @cache.holds?(key)
 
-      @cache.keep(key, Layout.new(@fonts, @styles, width).arrange(blocks, notices))
+      @cache.keep(key, Layout.new(@fonts, @styles, area.width).arrange(key.blocks, key.notices))
     end
 
     # Applies this frame's input; returns the bar where the page ended up.
@@ -85,7 +83,7 @@ module Shipinel
       overlay = DrawList.new
       header.add_to(overlay)
       bar.add_to(overlay)
-      Frame.new(content, overlay, Viewport.new(@scroll.offset, bar.area), @scroll.frame_rate)
+      Frame.new(content, overlay, Viewport.new(@scroll.offset, bar.area), @scroll.pace(@cache.take_change))
     end
 
     #: (DocumentView document) -> Array[String]

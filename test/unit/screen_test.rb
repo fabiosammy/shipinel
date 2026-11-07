@@ -20,7 +20,10 @@ class ScreenTest < Minitest::Test
     refute_predicate @screen, :closing?
     @screen.close
 
-    assert_equal [[:open, 440, 640, "shipinel"], [:ready], [:should_close], [:close]], Shipinel::UI.calls
+    style = [:style_checkbox, Shipinel::Theme::Checkbox::BORDER, Shipinel::Theme::Checkbox::HOVER,
+             Shipinel::Theme::Checkbox::CHECK]
+
+    assert_equal [[:open, 440, 640, "shipinel"], style, [:ready], [:should_close], [:close]], Shipinel::UI.calls
   end
 
   def test_area_and_frames
@@ -28,9 +31,9 @@ class ScreenTest < Minitest::Test
 
     assert_equal [0.0, 0.0, 440.0, 640.0], [area.left, area.top, area.width, area.height]
     @screen.begin_frame(0x000000FF)
-    @screen.end_frame(60)
+    @screen.end_frame
 
-    assert_equal [[:width], [:height], [:begin_frame, 0x000000FF], [:rate, 60], [:end_frame]], Shipinel::UI.calls
+    assert_equal [[:width], [:height], [:begin_frame, 0x000000FF], [:end_frame]], Shipinel::UI.calls
   end
 
   def test_text_and_rectangles
@@ -39,6 +42,12 @@ class ScreenTest < Minitest::Test
 
     assert_equal [[:draw_text, 1, "ação", 1.0, 2.0, 18.0, 0xFFFFFFFF], [:draw_rect, 1.0, 2.0, 3.0, 4.0, 0x11223344]],
                  Shipinel::UI.calls
+  end
+
+  def test_skipped_frame_waits_and_reads_input_without_drawing
+    @screen.skip_frame
+
+    assert_equal [[:skip_frame]], Shipinel::UI.calls
   end
 
   def test_mouse
@@ -70,10 +79,7 @@ class ScreenTest < Minitest::Test
     assert_equal [[:hand_cursor, true]], Shipinel::UI.calls
   end
 
-  def test_checkbox_style_and_fonts
-    @screen.style_checkboxes(1, 2, 3)
-
-    assert_equal [[:style_checkbox, 1, 2, 3]], Shipinel::UI.calls
+  def test_fonts
     assert_instance_of Shipinel::FontShim, @screen.font_shim
   end
 end

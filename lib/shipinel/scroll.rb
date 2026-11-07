@@ -29,10 +29,11 @@ module Shipinel
       @activity = Activity.new
     end
 
-    # Fast while the user scrolls or points, slow when idle (Activity).
-    #: () -> Integer
-    def frame_rate
-      @activity.frame_rate
+    # Drawn while the user scrolls or points; an idle, unchanged page is
+    # not drawn again (Activity).
+    #: (bool changed) -> Pace
+    def pace(changed)
+      @activity.pace(changed)
     end
 
     # Keeps the page between its top and where its end reaches the bottom

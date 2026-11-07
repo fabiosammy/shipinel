@@ -53,7 +53,7 @@ class PainterTest < Minitest::Test
   # A 400 x 600 window whose page area starts `top` pixels down.
   def paint(screen, offset: 0.0, top: 0.0, overlay: Shipinel::DrawList.new)
     view = Shipinel::Viewport.new(offset, Shipinel::Rect.new(0.0, top, 400.0, 600.0 - top))
-    Shipinel::Painter.new(screen, Shipinel::Frame.new(page, overlay, view, 10)).paint
+    Shipinel::Painter.new(screen, Shipinel::Frame.new(page, overlay, view, Shipinel::Pace.new(true, true))).paint
   end
 
   def test_draws_everything_shifted_up_by_the_scroll

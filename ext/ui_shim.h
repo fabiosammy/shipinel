@@ -24,10 +24,10 @@ int ui_screen_width(void);
 int ui_screen_height(void);
 
 void ui_begin_frame(uint32_t background_rgba);
-/* Frames per second from now on (10 when idle, 60 while the user scrolls
- * or points); 0 or less means the starting 10. */
-void ui_set_frame_rate(int frames_per_second);
 void ui_end_frame(void);
+/* Waits for the frame like ui_end_frame and reads input, without drawing:
+ * the window keeps showing the last frame. */
+void ui_skip_frame(void);
 
 /* Characters to load into every font after the base set (ASCII, Latin-1
  * Supplement, Latin Extended-A, dashes, quotes, bullet, ellipsis): the
