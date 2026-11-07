@@ -22,6 +22,7 @@ class ParserSnapshot
       puts describe(blocks.at(position))
       position += 1
     end
+    puts blocks.task_progress.label
     nil
   end
 

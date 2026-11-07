@@ -39,6 +39,12 @@ module Shipinel
       Rect.new(@left, @top - distance, @width, @height)
     end
 
+    # What is left below the first `height` pixels.
+    #: (Float height) -> Rect
+    def below(height)
+      Rect.new(@left, @top + height, @width, @height - height)
+    end
+
     #: () -> Point
     def corner
       Point.new(@left, @top)
@@ -76,6 +82,19 @@ module Shipinel
     #: (Float height) -> Rect
     def band(height)
       Rect.new(@left, @top + ((@height - height) / 2), @width, height)
+    end
+  end
+
+  # How the page sits in the window: drawn moved up by `shift`, and visible
+  # from `top` down (above it is the progress header).
+  class Viewport
+    attr_reader :shift #: Float
+    attr_reader :top #: Float
+
+    #: (Float shift, Float top) -> void
+    def initialize(shift, top)
+      @shift = shift
+      @top = top
     end
   end
 end

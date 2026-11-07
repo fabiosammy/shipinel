@@ -161,6 +161,10 @@ env -u WAYLAND_DISPLAY shipinel ~/notes/week.md
 
 - About 10 frames per second, and the file is re-read about every 500 ms by
   comparing its content, which also catches editors that save by renaming.
+- When the file has tasks, a strip pinned to the top of the window shows
+  how many are checked ("12 of 40 tasks done · 30%") and a bar filled by
+  that share, which turns green when every task is done. Tasks inside code
+  fences do not count. A file without tasks has no strip.
 - A page taller than the window gets a scrollbar on the right: the wheel
   scrolls, the thumb can be dragged, and a click on the track moves one
   window up or down. The scroll position survives reloads.

@@ -30,4 +30,12 @@ class ScrollbarTest < Minitest::Test
 
     assert_equal [350.0, 0.0, 700.0], [bar.offset_for(105.0), bar.offset_for(-50.0), bar.offset_for(900.0)]
   end
+
+  # Below a 50-pixel header: same sizes, moved down by 50.
+  def test_area_below_a_header
+    bar = Shipinel::Scrollbar.new(1000.0, Shipinel::Rect.new(0.0, 50.0, 400.0, 300.0), 350.0)
+
+    assert_equal [[389.0, 50.0, 8.0, 300.0], [389.0, 155.0, 8.0, 90.0], 350.0],
+                 [rect(bar.track), rect(bar.thumb), bar.offset_for(155.0)]
+  end
 end

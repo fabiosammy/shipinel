@@ -30,6 +30,15 @@ module Shipinel
       PROBLEM = 0xE06C75FF
     end
 
+    # The progress header pinned to the top of the window.
+    module Progress
+      BAND = 0x24272EFF
+      TRACK = 0x3A3E48FF
+      FILL = 0x7AA2F7FF
+      # Every task checked.
+      COMPLETE = 0x98C379FF
+    end
+
     # Task checkboxes.
     module Checkbox
       BORDER = 0x6B7280FF
@@ -70,6 +79,7 @@ module Shipinel
       HEADING_FALLOFF = 0.6
       CODE = 0.9
       CHECKBOX = 0.85
+      STATUS = 0.85
     end
   end
 

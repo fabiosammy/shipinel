@@ -128,7 +128,7 @@ class AppTest < Minitest::Test
     times = [0, 600, 1200, 1800].each
     Shipinel::Clock.stub(:now_ms, -> { times.next }) { run_app(screen) }
 
-    assert_equal [%w[Semana Reunião], ["Domingo"]], [screen.texts_on(0), screen.texts_on(1)]
+    assert_equal [["Semana", "Reunião", "0 of 1 task done · 0%"], ["Domingo"]], [screen.texts_on(0), screen.texts_on(1)]
   end
 
   # A link to a place in the same file opens nothing, so no browser starts.

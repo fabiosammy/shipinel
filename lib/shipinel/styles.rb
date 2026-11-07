@@ -31,6 +31,12 @@ module Shipinel
       TextStyle.new(Theme::FontSlot::ITALIC, @size, Theme::Ink::MUTED)
     end
 
+    # The progress header's "12 of 40 tasks done".
+    #: () -> TextStyle
+    def status
+      TextStyle.new(Theme::FontSlot::BODY, @size * Theme::Scale::STATUS, Theme::Ink::BODY)
+    end
+
     # The text of a checked task.
     #: () -> TextStyle
     def done

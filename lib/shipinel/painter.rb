@@ -2,7 +2,8 @@
 
 # Draws a laid-out page onto the screen, scrolled up by an offset, reports
 # which checkbox or link was clicked, and shows the pointing-hand cursor
-# while the mouse is over one of them.
+# while the mouse is over one of them. Nothing above the visible top (under
+# the progress header) can be clicked.
 
 require_relative "draw_list"
 require_relative "screen"
@@ -12,14 +13,14 @@ module Shipinel
   # See the file comment. One Painter paints one frame.
   class Painter
     # @rbs @screen: Screen
-    # @rbs @scroll: Float
+    # @rbs @view: Viewport
     # @rbs @clicked: DrawCommand?
     # @rbs @hand: bool
 
-    #: (Screen screen, Float scroll) -> void
-    def initialize(screen, scroll)
+    #: (Screen screen, Viewport view) -> void
+    def initialize(screen, view)
       @screen = screen
-      @scroll = scroll
+      @view = view
       @clicked = nil
       @hand = false
     end
@@ -36,9 +37,9 @@ module Shipinel
 
     #: (DrawCommand command) -> void
     def paint_command(command)
-      area = command.rect.up(@scroll)
+      area = command.rect.up(@view.shift)
       draw(command, area)
-      point_at(command, area) if command.is_a?(Clickable)
+      point_at(command, area) if command.is_a?(Clickable) && area.top >= @view.top
       nil
     end
 

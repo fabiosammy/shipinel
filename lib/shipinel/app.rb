@@ -76,7 +76,7 @@ module Shipinel
     #: (DrawList page) -> DrawCommand?
     def draw(page)
       @screen.begin_frame(Theme::Surface::BACKGROUND)
-      clicked = Painter.new(@screen, @page.offset).paint(page)
+      clicked = Painter.new(@screen, @page.viewport).paint(page)
       @screen.end_frame
       clicked
     end

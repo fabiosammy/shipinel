@@ -4,6 +4,8 @@
 # that holds them. Every block keeps the index of its source line, so a click
 # maps back to a line of the file, never to "the n-th checkbox".
 
+require_relative "task_progress"
+
 module Shipinel
   module Markdown
     # The base of every block. Subclasses only add data: Spinel compiles a
@@ -205,6 +207,14 @@ module Shipinel
       #: (Integer position) -> Block
       def at(position)
         @blocks[position]
+      end
+
+      # How many tasks there are, and how many are checked.
+      #: () -> TaskProgress
+      def task_progress
+        progress = TaskProgress.new
+        @blocks.each { |block| progress.add(block) }
+        progress
       end
 
       # The task that starts on this source line, if there is one. Typed

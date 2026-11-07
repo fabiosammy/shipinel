@@ -57,6 +57,11 @@ cp test/fixtures/semana.md /tmp/semana.md
     configured position and size, stays above other windows and on every
     desktop/workspace, and is not in the task bar (where the desktop
     supports that).
+16. **Progress.** A file with tasks shows "N of M tasks done · P%" and a
+    bar at the top that stays put while scrolling; ticking a box updates
+    both at once, and the bar turns green when every task is checked.
+    Checkboxes scrolled under the strip cannot be clicked. A file without
+    tasks shows no strip.
 
 ## Per desktop
 

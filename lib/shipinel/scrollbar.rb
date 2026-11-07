@@ -36,18 +36,18 @@ module Shipinel
 
     #: () -> Rect
     def track
-      Rect.new(@area.width - WIDTH - INSET, 0.0, WIDTH, @area.height)
+      Rect.new(@area.left + @area.width - WIDTH - INSET, @area.top, WIDTH, @area.height)
     end
 
     #: () -> Rect
     def thumb
-      Rect.new(track.left, @offset / range * travel, WIDTH, thumb_height)
+      Rect.new(track.left, @area.top + (@offset / range * travel), WIDTH, thumb_height)
     end
 
     # The offset that puts the thumb's top at `thumb_top`, kept in range.
     #: (Float thumb_top) -> Float
     def offset_for(thumb_top)
-      in_range(thumb_top / travel * range)
+      in_range((thumb_top - @area.top) / travel * range)
     end
 
     # Where the thumb is pressed on the track: -1 above it, 1 below it, 0
@@ -66,14 +66,14 @@ module Shipinel
     end
 
     # The bar stays put while the page moves: Painter shifts every command
-    # up by the offset, so the bar is added shifted down by it.
-    #: (DrawList page) -> void
-    def add_to(page)
+    # up by `shift`, so the bar is added shifted down by it.
+    #: (DrawList page, Float shift) -> void
+    def add_to(page, shift)
       return unless needed?
 
-      shift = -@offset
-      page.add(Box.new(track.up(shift), Theme::Surface::SCROLL_TRACK))
-      page.add(Box.new(thumb.up(shift), Theme::Surface::SCROLL_THUMB))
+      down = -shift
+      page.add(Box.new(track.up(down), Theme::Surface::SCROLL_TRACK))
+      page.add(Box.new(thumb.up(down), Theme::Surface::SCROLL_THUMB))
     end
 
     # How far the page can scroll.
