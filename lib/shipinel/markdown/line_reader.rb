@@ -18,10 +18,12 @@ module Shipinel
       HEADING = /\A {0,3}(?<hashes>\#{1,6})(?:[ \t]+(?<text>.*?))?(?:[ \t]+\#+)?[ \t]*\z/
       # Example match: "---" or "* * *"
       RULE = /\A {0,3}(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})\z/
-      # Example match: "  - [x] Ligar para a Ana" (indent "  ", mark "x")
-      TASK = /\A(?<indent>[ \t]*)[-*+][ \t]+\[(?<mark>[ xX])\](?:[ \t]+(?<text>.*))?\z/
-      # Example match: "* comprar pão" (indent "", text "comprar pão")
-      BULLET = /\A(?<indent>[ \t]*)[-*+][ \t]+(?<text>.*)\z/
+      # Example match: "  - [x] Ligar para a Ana" (indent "  ", mark "x");
+      # also numbered: "1. [ ] Decidir"
+      TASK = /\A(?<indent>[ \t]*)(?:[-*+]|\d{1,9}[.)])[ \t]+\[(?<mark>[ xX])\](?:[ \t]+(?<text>.*))?\z/
+      # Example match: "* comprar pão" (marker "*", text "comprar pão") or
+      # "2. Revisar" (marker "2.")
+      BULLET = /\A(?<indent>[ \t]*)(?<marker>[-*+]|\d{1,9}[.)])[ \t]+(?<text>.*)\z/
       # Example match: "```ruby" (marker "```", info "ruby")
       FENCE = /\A {0,3}(?<marker>`{3,}|~{3,})(?<info>.*)\z/
 
@@ -70,7 +72,14 @@ module Shipinel
         match = BULLET.match(line.text)
         return nil unless match
 
-        Bullet.new(line.line_index, nesting.depth_for(match[:indent].to_s), match[:text].to_s)
+        depth = nesting.depth_for(match[:indent].to_s)
+        Bullet.new(line.line_index, depth, match[:text].to_s, shown_marker(match[:marker].to_s))
+      end
+
+      # A number ("2.", "3)") is shown as written; "-", "*" and "+" as "•".
+      #: (String marker) -> String
+      def self.shown_marker(marker)
+        marker.match?(/\A\d/) ? marker : "•"
       end
     end
   end

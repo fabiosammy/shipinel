@@ -24,7 +24,13 @@ module Shipinel
     def self.ui_draw_rect(*) = record(:draw_rect, *)
     def self.ui_wheel_move = record(:wheel, answer: -1.0)
     def self.ui_style_checkbox(*) = record(:style_checkbox, *)
-    def self.ui_checkbox(*) = record(:checkbox, *, answer: true)
-    def self.ui_clicked_in(*) = record(:clicked_in, *, answer: true)
+    def self.ui_draw_checkbox(*) = record(:checkbox, *)
+    def self.ui_pointer_on(*) = record(:pointer_on, *, answer: @pointer || 2)
+
+    def self.pointer=(answer)
+      @pointer = answer
+    end
+
+    def self.ui_set_hand_cursor(*) = record(:hand_cursor, *)
   end
 end

@@ -19,7 +19,8 @@ module Shipinel
     def self.ui_draw_rect: (Float left, Float top, Float width, Float height, Integer rgba) -> void
     def self.ui_wheel_move: () -> Float
     def self.ui_style_checkbox: (Integer border_rgba, Integer hover_rgba, Integer check_rgba) -> void
-    def self.ui_checkbox: (Float left, Float top, Float size, bool checked) -> bool
-    def self.ui_clicked_in: (Float left, Float top, Float width, Float height) -> bool
+    def self.ui_draw_checkbox: (Float left, Float top, Float size, bool checked) -> void
+    def self.ui_pointer_on: (Float left, Float top, Float width, Float height) -> Integer
+    def self.ui_set_hand_cursor: (bool hand) -> void
   end
 end

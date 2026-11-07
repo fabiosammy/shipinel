@@ -27,7 +27,8 @@ module Shipinel
     ffi_func :ui_draw_rect, %i[float float float float uint32], :void
     ffi_func :ui_wheel_move, [], :float
     ffi_func :ui_style_checkbox, %i[uint32 uint32 uint32], :void
-    ffi_func :ui_checkbox, %i[float float float bool], :bool
-    ffi_func :ui_clicked_in, %i[float float float float], :bool
+    ffi_func :ui_draw_checkbox, %i[float float float bool], :void
+    ffi_func :ui_pointer_on, %i[float float float float], :int
+    ffi_func :ui_set_hand_cursor, %i[bool], :void
   end
 end

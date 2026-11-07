@@ -13,7 +13,6 @@ module Shipinel
   # See the file comment. Layout decides what goes on the page; Flow decides
   # where.
   class Flow
-    BULLET = "•"
     # Tabs in code become this, since the fonts have no tab glyph.
     TAB = "    "
 
@@ -75,10 +74,22 @@ module Shipinel
       add(Checkbox.new(Rect.new(Theme::Spacing::MARGIN + indent, top, size, size), click))
     end
 
-    #: (Float indent, TextStyle style) -> void
-    def bullet(indent, style)
-      left = Theme::Spacing::MARGIN + indent + (style.size * 0.4)
-      add(TextRun.new(BULLET, Rect.new(left, @top, fonts.text_width(BULLET, style), style.line_height), style))
+    # A list marker ("•", "2.") right-aligned to end a little before the
+    # item's text, which starts `text_indent` pixels in.
+    #: (String marker, Float text_indent, TextStyle style) -> void
+    def marker(marker, text_indent, style)
+      width = fonts.text_width(marker, style)
+      left = Theme::Spacing::MARGIN + text_indent - width - (style.size * 0.4)
+      add(TextRun.new(marker, Rect.new(left, @top, width, style.line_height), style))
+    end
+
+    # Tables lay cells out side by side: each starts back at the row's top
+    # and wraps at its column's right edge.
+    #: (Float top, Float right) -> void
+    def restart_at(top, right)
+      @top = top
+      @right = right
+      nil
     end
 
     # Not wrapped: code keeps its lines.

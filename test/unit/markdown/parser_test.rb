@@ -27,7 +27,7 @@ class ParserTest < Minitest::Test
   end
 
   def list_item(item)
-    return "bullet d#{item.depth} #{item.text}" unless item.is_a?(Shipinel::Markdown::Task)
+    return "bullet d#{item.depth} #{item.marker} #{item.text}" unless item.is_a?(Shipinel::Markdown::Task)
 
     "task d#{item.depth} #{item.checked? ? '[x]' : '[ ]'} #{item.text}"
   end
@@ -64,16 +64,16 @@ class ParserTest < Minitest::Test
   end
 
   def test_tab_indents_like_four_spaces
-    assert_equal ["0: bullet d0 a", "1: bullet d1 b"], summary("- a\n\t- b")
+    assert_equal ["0: bullet d0 • a", "1: bullet d1 • b"], summary("- a\n\t- b")
   end
 
   def test_mixed_bullets_and_tasks_nest_together
-    assert_equal ["0: bullet d0 compras", "1: task d1 [ ] pão", "2: bullet d1 leite"],
+    assert_equal ["0: bullet d0 • compras", "1: task d1 [ ] pão", "2: bullet d1 • leite"],
                  summary("* compras\n  - [ ] pão\n  + leite")
   end
 
   def test_rules
-    assert_equal ["0: rule", "1: rule", "2: rule", "3: bullet d0 -"], summary("---\n* * *\n___\n- -")
+    assert_equal ["0: rule", "1: rule", "2: rule", "3: bullet d0 • -"], summary("---\n* * *\n___\n- -")
   end
 
   def test_paragraph_joins_consecutive_lines
@@ -81,7 +81,7 @@ class ParserTest < Minitest::Test
   end
 
   def test_paragraph_after_list_ends_the_list
-    assert_equal ["0: bullet d0 a", "1: p texto", "2: bullet d0 b"], summary("  - a\ntexto\n    - b")
+    assert_equal ["0: bullet d0 • a", "1: p texto", "2: bullet d0 • b"], summary("  - a\ntexto\n    - b")
   end
 
   def test_fenced_lines_are_never_tasks
@@ -110,5 +110,14 @@ class ParserTest < Minitest::Test
     assert_equal "7: task d0 [ ] Reunião de planejamento", lines[3]
     assert_equal "10: task d2 [ ] Confirmar com a Ana", lines[6]
     assert_equal "22: code - [ ] isto não é uma tarefa", lines[-2]
+  end
+
+  def test_numbered_items_keep_their_number_and_nest
+    assert_equal ["0: bullet d0 1. Drata", "1: bullet d1 • sub", "2: bullet d0 10) dez"],
+                 summary("1. Drata\n   - sub\n10) dez")
+  end
+
+  def test_numbered_tasks_are_tasks
+    assert_equal ["0: task d0 [x] Decidir"], summary("1. [x] Decidir")
   end
 end

@@ -35,7 +35,7 @@ class AppTest < Minitest::Test
     def wheel_move = @wheel
     def style_checkboxes(*colors) = @calls << [:style_checkboxes, *colors]
     def font_shim = (@font_shim ||= FakeShim.new(failing: @broken == :font ? PATHS_FAILING : []))
-    def begin_frame(_color) = @clicked = false
+    def begin_frame(_color) = @pointed = false
     def texts_on(frame) = @texts.select { |text_frame, _text| text_frame == frame }.map(&:last)
 
     def end_frame
@@ -50,14 +50,18 @@ class AppTest < Minitest::Test
       (@texts ||= []) << [@frame, text]
     end
 
-    def checkbox_clicked?(_rect, _checked)
-      return false if @clicked || @frame != @click_on
+    def draw_checkbox(_rect, _checked) = nil
 
-      @clicked = true
+    # The pointer clicks the first checkbox or link it is asked about on
+    # frame `click_on`.
+    def pointer_on(_rect)
+      return :away if @pointed || @frame != @click_on
+
+      @pointed = true
+      :clicked
     end
 
-    # Links are clicked like checkboxes: the first one on frame `click_on`.
-    def clicked_in?(rect) = checkbox_clicked?(rect, false)
+    def use_hand_cursor(_hand) = nil
   end
 
   def setup

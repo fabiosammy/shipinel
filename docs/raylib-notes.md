@@ -215,11 +215,17 @@ What Ruby can call, all scalars and strings (Spinel FFI types in
 | `void ui_draw_rect(float, float, float, float, uint32_t)` | `DrawRectangleRec` |
 | `float ui_wheel_move(void)` | `GetMouseWheelMove` |
 | `void ui_style_checkbox(uint32_t, uint32_t, uint32_t)` | `GuiSetStyle(CHECKBOX, ...)`: border normal; border focused and pressed; check mark (TEXT_COLOR_*) in all states; `BORDER_WIDTH` 2, `CHECK_PADDING` 3 |
-| `int ui_checkbox(float, float, float, int)` | `GuiCheckBox(bounds, NULL, &state) == RESULT_CHANGED` |
 
 | `void ui_set_extra_codepoints(const int64_t *, int)` | kept for every following `ui_load_font`: the document's characters beyond the base set (Ruby `:int_array`) |
 | `int ui_glyph_slots(int codepoint)` | bit n set when slot n's glyphs include it (one argument, so nothing to swap) |
-| `int ui_clicked_in(float, float, float, float)` | `IsMouseButtonReleased(LEFT)` and `CheckCollisionPointRec(GetMousePosition(), ...)` |
+| `int ui_pointer_on(float, float, float, float)` | 0 away, 1 over (`CheckCollisionPointRec(GetMousePosition(), ...)`), 2 clicked (also `IsMouseButtonReleased(LEFT)`): the click for links and checkboxes alike |
+| `void ui_set_hand_cursor(int)` | `SetMouseCursor(MOUSE_CURSOR_POINTING_HAND / DEFAULT)`, only when it changes |
+| `void ui_draw_checkbox(float, float, float, int)` | `GuiCheckBox(bounds, NULL, &copy)`, result ignored: draws with its hover look |
+
+**Cursor.** `SetMouseCursor` (rcore_desktop_glfw.c:1260) calls
+`glfwCreateStandardCursor` every time and never destroys the cursor, so the
+shim calls it only when the wanted cursor changes. Checked in Xvfb with
+XFixes: `hand2` over a link, the default over text.
 
 Yes/no values are `int`, bound in Ruby as FFI `:bool` (a C `int`). Font
 slots: 0 body, 1 mono, 2 bold, 3 symbol (emoji).

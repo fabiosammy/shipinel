@@ -7,41 +7,13 @@
 require_relative "draw_list"
 require_relative "geometry"
 require_relative "markdown/inline"
+require_relative "span_look"
 require_relative "theme"
 
 module Shipinel
-  # How one span is drawn: its style and, for a link, where it goes ("").
-  class SpanLook
-    attr_reader :style #: TextStyle
-    attr_reader :url #: String
-
-    #: (TextStyle style, String url) -> void
-    def initialize(style, url)
-      @style = style
-      @url = url
-    end
-
-    # The same look in the symbol font, for an emoji inside the span.
-    #: () -> SpanLook
-    def as_symbol
-      SpanLook.new(@style.with_font(Theme::FontSlot::SYMBOL), @url)
-    end
-
-    # What goes under a piece of text drawn in `line`: a code background,
-    # or a link's underline and the area a click opens it from.
-    #: (Rect line, Flow flow) -> void
-    def decorate(line, flow)
-      flow.add(Box.new(line, Theme::Surface::CODE_BACKGROUND)) if @style.font_slot == Theme::FontSlot::MONO
-      return if @url.empty?
-
-      flow.add(Box.new(line.underline(@style.line_height, @style.size), Theme::Accent::LINK))
-      flow.add(LinkArea.new(line, @url))
-    end
-  end
-
   # Places text piece by piece, starting a new line when the next piece
-  # would pass the right edge. A word longer than a whole line is left to
-  # overflow rather than broken.
+  # would pass the right edge. A word longer than a whole line (a long path
+  # in a narrow table column) is broken between characters instead.
   class LineWrap
     # Example match: "ação " in "ação de teste" (a word with the spaces
     # after it), or a run of spaces.
@@ -100,12 +72,29 @@ module Shipinel
 
     #: (String piece, SpanLook look) -> void
     def place(piece, look)
-      look = look_for(piece.ord, look)
-      width = @flow.fonts.text_width(piece, look.style)
-      new_line if @cursor > @left && @cursor + width > @flow.right
-      return if @cursor == @left && piece.strip.empty?
+      placed = measure(piece, look)
+      too_wide?(placed) ? piece.each_char { |char| place(char, placed.look) } : fit(placed)
+      nil
+    end
 
-      draw(piece, width, look)
+    #: (String piece, SpanLook look) -> PlacedPiece
+    def measure(piece, look)
+      look = look_for(piece.ord, look)
+      PlacedPiece.new(piece, @flow.fonts.text_width(piece, look.style), look)
+    end
+
+    # Wider than a whole line, and more than one character to break.
+    #: (PlacedPiece placed) -> bool
+    def too_wide?(placed)
+      placed.width > @flow.right - @left && placed.text.size > 1
+    end
+
+    #: (PlacedPiece placed) -> void
+    def fit(placed)
+      new_line if @cursor > @left && @cursor + placed.width > @flow.right
+      return if @cursor == @left && placed.blank?
+
+      draw(placed)
     end
 
     #: () -> void
@@ -115,13 +104,10 @@ module Shipinel
       nil
     end
 
-    # Smaller text (code) is centered on the line.
-    #: (String piece, Float width, SpanLook look) -> void
-    def draw(piece, width, look)
-      line = Rect.new(@cursor, @flow.top, width, @base.line_height)
-      look.decorate(line, @flow)
-      style = look.style
-      @flow.add(TextRun.new(piece, line.band(style.line_height), style))
+    #: (PlacedPiece placed) -> void
+    def draw(placed)
+      width = placed.width
+      placed.add_to(@flow, Rect.new(@cursor, @flow.top, width, @base.line_height))
       @cursor += width
     end
   end

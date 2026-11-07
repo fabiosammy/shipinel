@@ -50,16 +50,18 @@ Wrong arguments print a usage message and exit with status 2.
 | `#`, `##`, `###` (up to `######`) headings, optional closing `#`s | Bold, sized by level |
 | `- [ ] task`, `- [x] task`, `- [X] task`, also with `*` or `+` | A checkbox you can click; done tasks are dimmed |
 | `- item`, `* item`, `+ item` | A bullet |
+| `1. item`, `2) item` | A numbered item, with its own number; `1. [ ] task` is a task |
 | Indented items (2 or 4 spaces, or tabs) | Nested, indented by depth |
 | Consecutive text lines | One wrapped paragraph |
 | `**bold**`, `` `code` `` inside any text | Bold; monospace on a dark background |
-| `[text](url)`, `<https://…>`, bare `https://…` URLs | An underlined link; a click opens it with `xdg-open` (a relative link opens the file next to the plan) |
+| `[text](url)`, `<https://…>`, bare `https://…` URLs | An underlined link; the pointer turns into a hand over it, and a click opens it with `xdg-open` (a relative link opens the file next to the plan) |
+| `\| a \| b \|` tables, with a `\|---\|---\|` row under the header | Columns sized to their content and shrunk to fit the window; text wraps inside each cell; header rows bold |
 | Arrows, symbols, emoji (`→ ✓ 🤖 ⏳`) | Drawn from the text font when it has them, otherwise from the emoji font |
 | `---`, `***`, `___` | A horizontal rule |
 | ```` ``` ```` or `~~~` fenced blocks | Monospaced lines; a `- [ ]` inside a fence is never a task |
 
-Anything else (tables, numbered lists, images, emphasis with single `*`,
-block quotes) is shown as plain text. Windows line endings and a missing final newline are kept
+Anything else (images, emphasis with single `*` or `_`, block quotes,
+tables without leading and trailing `|`) is shown as plain text. Windows line endings and a missing final newline are kept
 exactly when a checkbox is toggled.
 
 ### How saving works

@@ -43,8 +43,26 @@ class ScreenTest < Minitest::Test
 
   def test_input
     assert_in_delta(-1.0, @screen.wheel_move)
-    assert @screen.checkbox_clicked?(RECT, true)
-    assert @screen.clicked_in?(RECT)
+    @screen.draw_checkbox(RECT, true)
+
+    assert_equal [[:wheel], [:checkbox, 1.0, 2.0, 3.0, true]], Shipinel::UI.calls
+  end
+
+  def test_pointer_states
+    states = [2, 1, 0].map do |answer|
+      Shipinel::UI.pointer = answer
+      @screen.pointer_on(RECT)
+    end
+
+    assert_equal %i[clicked over away], states
+  ensure
+    Shipinel::UI.pointer = nil
+  end
+
+  def test_hand_cursor
+    @screen.use_hand_cursor(true)
+
+    assert_equal [[:hand_cursor, true]], Shipinel::UI.calls
   end
 
   def test_checkbox_style_and_fonts

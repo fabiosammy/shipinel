@@ -45,9 +45,13 @@ module Shipinel
     end
   end
 
+  # Something the user can click: the pointer turns into a hand over it.
+  class Clickable < DrawCommand
+  end
+
   # A task checkbox, with the click a user would make on it: its task's
   # line index and the state the file had when it was laid out.
-  class Checkbox < DrawCommand
+  class Checkbox < Clickable
     attr_reader :click #: TaskClick
 
     #: (Rect rect, TaskClick click) -> void
@@ -58,7 +62,7 @@ module Shipinel
   end
 
   # Where a link's text was drawn: a click inside opens the url.
-  class LinkArea < DrawCommand
+  class LinkArea < Clickable
     attr_reader :url #: String
 
     #: (Rect rect, String url) -> void

@@ -40,15 +40,18 @@ int ui_font_loaded(int slot);
 int ui_glyph_slots(int codepoint);
 float ui_text_width(int slot, const char *text, float size);
 void ui_draw_rect(float left, float top, float width, float height, uint32_t rgba);
-/* 1 on the frame the left button was released inside the rectangle. */
-int ui_clicked_in(float left, float top, float width, float height);
+/* Where the mouse is relative to the rectangle: 0 away, 1 over it, 2 the
+ * left button was released over it this frame (a click). */
+int ui_pointer_on(float left, float top, float width, float height);
+/* 1: the pointing-hand cursor (over something clickable); 0: the default. */
+void ui_set_hand_cursor(int hand);
 /* How far the mouse wheel moved this frame; positive is away from the user. */
 float ui_wheel_move(void);
 /* Colors of every checkbox: its border, its border under the mouse, and
  * the check mark. */
 void ui_style_checkbox(uint32_t border_rgba, uint32_t hover_rgba, uint32_t check_rgba);
-/* Draws a checkbox; 1 on the frame it was clicked. */
-int ui_checkbox(float left, float top, float size, int checked);
+/* Draws a checkbox (with its hover look); clicks come from ui_pointer_on. */
+void ui_draw_checkbox(float left, float top, float size, int checked);
 void ui_draw_text(int slot, const char *text, float left, float top, float size, uint32_t rgba);
 
 #endif

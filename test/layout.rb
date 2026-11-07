@@ -16,9 +16,9 @@ module Shipinel
       text.size * size * 0.5
     end
 
-    #: (Array[Integer] codepoints, Integer count) -> void
-    def self.ui_set_extra_codepoints(codepoints, count)
-      puts "extra codepoints #{codepoints.inspect} (#{count})"
+    #: (Array[Integer] codepoints, Integer size) -> void
+    def self.ui_set_extra_codepoints(codepoints, size)
+      puts "extra codepoints #{codepoints.inspect} (#{size})"
     end
 
     #: (Integer slot, String path, Integer pixel_size) -> void
@@ -46,7 +46,8 @@ require_relative "../lib/shipinel/font_shim"
 # Lays out a document 300 pixels wide and prints each draw command.
 class LayoutSnapshot
   SOURCE = "# Semana 45\n\nFoco: **entregar** o `shipinel` hoje, sem falta.\n\n" \
-           "- [ ] 🤖 Reunião → [DOS-558](https://linear.app/x)\n  - [x] Pauta\n* pão\n---\n```\nx\tcódigo\n```\nFim"
+           "- [ ] 🤖 Reunião → [DOS-558](https://linear.app/x)\n  - [x] Pauta\n* pão\n1. Drata\n2. Twingate\n" \
+           "| Goal | State |\n|---|---|\n| Drata | 12 tests failed at the last run |\n---\n```\nx\tcódigo\n```\nFim"
   PATHS = Shipinel::FontPaths.new("/s.ttf", "/b.ttf", "/m.ttf", "/e.ttf")
 
   #: () -> Shipinel::FontSet

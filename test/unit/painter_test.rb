@@ -4,26 +4,33 @@ require_relative "test_helper"
 require_relative "../../lib/shipinel/painter"
 
 class PainterTest < Minitest::Test
-  # Records draws; "clicks" the checkboxes whose top is listed.
+  # Records draws; the mouse is over the things whose top is in
+  # `over_tops`, and clicks those whose top is in `click_tops`.
   class FakeScreen
-    attr_reader :draws
+    attr_reader :draws, :hand
 
-    def initialize(click_tops = [])
+    def initialize(click_tops = [], over_tops: [])
       @click_tops = click_tops
+      @over_tops = over_tops + click_tops
       @draws = []
+    end
+
+    def use_hand_cursor(hand)
+      @hand = hand
+    end
+
+    def pointer_on(rect)
+      @draws << [:pointer, rect.top]
+      return :away unless @over_tops.include?(rect.top)
+
+      @click_tops.include?(rect.top) ? :clicked : :over
     end
 
     def draw_text(text, at, _style) = @draws << [:text, text, at.top]
     def draw_rect(rect, color) = @draws << [:rect, rect.top, color]
 
-    def checkbox_clicked?(rect, checked)
+    def draw_checkbox(rect, checked)
       @draws << [:checkbox, rect.top, checked]
-      @click_tops.include?(rect.top)
-    end
-
-    def clicked_in?(rect)
-      @draws << [:link, rect.top]
-      @click_tops.include?(rect.top)
     end
   end
 
@@ -45,23 +52,32 @@ class PainterTest < Minitest::Test
 
   def test_draws_everything_shifted_up_by_the_scroll
     screen = FakeScreen.new
-    Shipinel::Painter.paint(screen, page, 100.0)
+    Shipinel::Painter.new(screen, 100.0).paint(page)
 
-    assert_equal [[:rect, 0.0, 0x123456FF], [:text, "ação", 10.0], [:checkbox, 20.0, false], [:checkbox, 40.0, true],
-                  [:link, 60.0]], screen.draws
+    assert_equal [[:rect, 0.0, 0x123456FF], [:text, "ação", 10.0], [:checkbox, 20.0, false], [:pointer, 20.0],
+                  [:checkbox, 40.0, true], [:pointer, 40.0], [:pointer, 60.0]], screen.draws
   end
 
   def test_no_click_returns_nil
-    assert_nil Shipinel::Painter.paint(FakeScreen.new, page, 0.0)
+    assert_nil Shipinel::Painter.new(FakeScreen.new, 0.0).paint(page)
   end
 
   def test_a_clicked_checkbox_is_returned_with_its_task_click
-    click = Shipinel::Painter.paint(FakeScreen.new([140.0]), page, 0.0).click
+    click = Shipinel::Painter.new(FakeScreen.new([140.0]), 0.0).paint(page).click
 
     assert_equal [5, true], [click.line_index, click.checked?]
   end
 
   def test_a_clicked_link_is_returned_with_its_url
-    assert_equal "https://x.test", Shipinel::Painter.paint(FakeScreen.new([160.0]), page, 0.0).url
+    assert_equal "https://x.test", Shipinel::Painter.new(FakeScreen.new([160.0]), 0.0).paint(page).url
+  end
+
+  def test_hand_cursor_only_over_something_clickable
+    away = FakeScreen.new
+    over = FakeScreen.new(over_tops: [160.0])
+    Shipinel::Painter.new(away, 0.0).paint(page)
+    Shipinel::Painter.new(over, 0.0).paint(page)
+
+    assert_equal [false, true], [away.hand, over.hand]
   end
 end

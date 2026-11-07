@@ -23,12 +23,6 @@ module Shipinel
 
     # @rbs @checked: bool
 
-    # The click on a task's checkbox, or nil for a block that has none.
-    #: (Markdown::Block block) -> TaskClick?
-    def self.for_block(block)
-      block.is_a?(Markdown::Task) ? new(block.line_index, block.checked?) : nil
-    end
-
     #: (Integer line_index, bool checked) -> void
     def initialize(line_index, checked)
       @line_index = line_index

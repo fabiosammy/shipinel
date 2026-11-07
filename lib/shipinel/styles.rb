@@ -42,6 +42,12 @@ module Shipinel
       TextStyle.new(Theme::FontSlot::MONO, @size * Theme::Scale::CODE, Theme::Ink::CODE)
     end
 
+    # Room on each side of a table cell's text.
+    #: () -> Float
+    def cell_padding
+      @size * 0.4
+    end
+
     #: () -> Float
     def checkbox_size
       @size * Theme::Scale::CHECKBOX

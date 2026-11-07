@@ -16,7 +16,8 @@ module Shipinel
       # @rbs @blocks: BlockList
       # @rbs @nesting: ListNesting
       # @rbs @fence: String?
-      # @rbs @paragraph: Paragraph?
+      # The paragraph or table the next line may continue.
+      # @rbs @open: Block?
 
       #: (String source) -> BlockList
       def self.parse(source)
@@ -28,7 +29,7 @@ module Shipinel
         @blocks = BlockList.new
         @nesting = ListNesting.new
         @fence = nil
-        @paragraph = nil
+        @open = nil
       end
 
       # `lines` keeps "\r\n" endings, which `chomp` removes.
@@ -48,7 +49,7 @@ module Shipinel
       def read_line(line)
         open_marker = @fence
         if open_marker then read_fenced(line, open_marker)
-        elsif line.blank? then @paragraph = nil
+        elsif line.blank? then @open = nil
         else read_text(line)
         end
         nil
@@ -67,12 +68,15 @@ module Shipinel
       #: (SourceLine line) -> void
       def read_text(line)
         marker = LineReader.fence_marker(line)
-        marker.empty? ? read_block(line) : open_fence(marker)
+        return open_fence(marker) unless marker.empty?
+
+        cells = Table.cells_in(line.text)
+        cells.empty? ? read_block(line) : add_table_row(line, cells)
       end
 
       #: (String marker) -> void
       def open_fence(marker)
-        @paragraph = nil
+        @open = nil
         @nesting.reset
         @fence = marker
         nil
@@ -88,26 +92,39 @@ module Shipinel
 
       #: (Block block) -> void
       def add_block(block)
-        @paragraph = nil
+        @open = nil
         @nesting.reset unless block.is_a?(ListItem)
         @blocks.add(block)
       end
 
-      #: (SourceLine line) -> void
-      def add_paragraph_line(line)
-        paragraph = @paragraph
-        return paragraph.append(line.text.strip) if paragraph
-
-        start_paragraph(line)
+      # (Not `return open.add_row(...)`: Spinel types the result of a call
+      # on a value narrowed by is_a? as untyped.)
+      #: (SourceLine line, Array[String] cells) -> void
+      def add_table_row(line, cells)
+        open = @open
+        if open.is_a?(Table)
+          open.add_row(cells)
+        else
+          start(Table.new(line.line_index, cells))
+        end
+        nil
       end
 
-      # Text that is not a list item ends the list.
       #: (SourceLine line) -> void
-      def start_paragraph(line)
+      def add_paragraph_line(line)
+        open = @open
+        text = line.text.strip
+        return open.append(text) if open.is_a?(Paragraph)
+
+        start(Paragraph.new(line.line_index, text))
+      end
+
+      # A paragraph or table that later lines may continue. It ends any list.
+      #: (Block block) -> void
+      def start(block)
         @nesting.reset
-        paragraph = Paragraph.new(line.line_index, line.text.strip)
-        @paragraph = paragraph
-        @blocks.add(paragraph)
+        @open = block
+        @blocks.add(block)
       end
     end
   end

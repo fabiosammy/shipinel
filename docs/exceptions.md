@@ -16,6 +16,7 @@ coverage) are never relaxed.
 
 | Smell | Where | Why |
 |---|---|---|
+| `FeatureEnvy`, `DuplicateMethodCall` | `Shipinel::Layout#place_kind` (both) and `Shipinel::Painter#draw` (`FeatureEnvy`) only (`.reek.yml`) | The method dispatches on the block's kind with `case`. Spinel refuses to pass a block narrowed by `is_a?` to a method typed with its subclass, so each branch reads its kind's fields (`level`; `depth`, `line_index`, `checked?`; `depth`, `marker`) right there: Reek sees many references to `block`, and `block.depth` in two exclusive branches. |
 | `UtilityFunction` | `Shipinel::Screen`, `Shipinel::FontShim` and `Shipinel::Fontconfig` only (`.reek.yml`) | These are adapters over something outside Ruby: the first two make single calls into `ext/ui_shim.c`, which holds the window and font state; `Fontconfig` runs `fc-match`. They exist so `App`, `FontSet` and `FontLocator` can take fakes in CRuby tests; giving them state of their own would duplicate the outside side. Every other class keeps the smell on. |
 
 ## Spinel widen warnings

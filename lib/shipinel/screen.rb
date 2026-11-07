@@ -78,18 +78,28 @@ module Shipinel
       UI.ui_style_checkbox(border, hover, check)
     end
 
-    # Draws a square checkbox filling `rect`; true on the frame it was
-    # clicked. The file, not the box, holds the state, so the caller toggles
-    # the task and the next layout shows the result.
-    #: (Rect rect, bool checked) -> bool
-    def checkbox_clicked?(rect, checked)
-      UI.ui_checkbox(rect.left, rect.top, rect.width, checked)
+    # A square checkbox filling `rect`. Clicks are read with pointer_on;
+    # the file, not the box, holds the state.
+    #: (Rect rect, bool checked) -> void
+    def draw_checkbox(rect, checked)
+      UI.ui_draw_checkbox(rect.left, rect.top, rect.width, checked)
     end
 
-    # True on the frame the left button was released inside `rect`.
-    #: (Rect rect) -> bool
-    def clicked_in?(rect)
-      UI.ui_clicked_in(rect.left, rect.top, rect.width, rect.height)
+    # Where the mouse is relative to `rect`: :away, :over, or :clicked (the
+    # left button was released over it this frame).
+    #: (Rect rect) -> Symbol
+    def pointer_on(rect)
+      case UI.ui_pointer_on(rect.left, rect.top, rect.width, rect.height)
+      when 2 then :clicked
+      when 1 then :over
+      else :away
+      end
+    end
+
+    # The pointing hand while the mouse is over something clickable.
+    #: (bool hand) -> void
+    def use_hand_cursor(hand)
+      UI.ui_set_hand_cursor(hand)
     end
   end
 end

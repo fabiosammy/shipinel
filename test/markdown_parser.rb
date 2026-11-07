@@ -9,7 +9,8 @@ require_relative "../lib/shipinel/markdown/inline"
 # Prints one line per block, then the spans of every inline-styled text.
 class ParserSnapshot
   SOURCE = "# Semana 45 ##\r\n\r\nFoco: **entregar** o `shipinel`.\r\nSem reuniões.\r\n\r\n" \
-           "- [ ] Reunião\r\n  - [x] Pauta\r\n    * [X] Ana\r\n+ [ ] Ação\r\n---\r\n" \
+           "- [ ] Reunião\r\n  - [x] Pauta\r\n    * [X] Ana\r\n+ [ ] Ação\r\n1. **Drata**\r\n2) [x] Twingate\r\n" \
+           "| Goal | State |\r\n|---|:-:|\r\n| Drata | 12 |\r\n| Twingate |\r\n---\r\n" \
            "* pão\r\n\t* queijo\r\n- [ ]\r\n```\r\n- [ ] não é tarefa\r\n````\r\n~~~\r\nx\r\nFim"
 
   #: () -> void
@@ -33,11 +34,26 @@ class ParserSnapshot
     case block
     when Shipinel::Markdown::Heading then "heading #{block.level} #{spans(block.text)}"
     when Shipinel::Markdown::Task then "task #{block.depth} #{block.checked?} #{spans(block.text)}"
-    when Shipinel::Markdown::Bullet then "bullet #{block.depth} #{spans(block.text)}"
+    when Shipinel::Markdown::Bullet then "bullet #{block.depth} #{block.marker} #{spans(block.text)}"
+    else other(block)
+    end
+  end
+
+  #: (Shipinel::Markdown::Block block) -> String
+  def other(block)
+    case block
     when Shipinel::Markdown::Paragraph then "paragraph #{spans(block.text)}"
     when Shipinel::Markdown::CodeLine then "code [#{block.text}]"
-    else "rule"
+    else table_or_rule(block)
     end
+  end
+
+  #: (Shipinel::Markdown::Block block) -> String
+  def table_or_rule(block)
+    return "rule" unless block.is_a?(Shipinel::Markdown::Table)
+
+    "table #{block.columns}x#{block.rows} header #{block.header_rows} " \
+      "#{block.text.split(Shipinel::Markdown::Table::SEPARATOR, -1).join('|')}"
   end
 
   #: (String text) -> String

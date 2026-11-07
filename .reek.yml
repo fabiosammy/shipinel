@@ -13,3 +13,15 @@ detectors:
       - "Shipinel::FontShim"
       # The same for the fc-match process: FontLocator takes a fake in tests.
       - "Shipinel::Fontconfig"
+  FeatureEnvy:
+    exclude:
+      # Dispatch on the block's kind: Spinel cannot pass a block narrowed by
+      # is_a? to a method typed with its subclass (docs/spinel-notes.md), so
+      # each branch reads that kind's fields here. Painter#draw is the same
+      # dispatch over draw commands.
+      - "Shipinel::Layout#place_kind"
+      - "Shipinel::Painter#draw"
+  DuplicateMethodCall:
+    exclude:
+      # The same dispatch: `block.depth` is read in two exclusive branches.
+      - "Shipinel::Layout#place_kind"

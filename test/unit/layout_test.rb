@@ -53,8 +53,8 @@ class LayoutTest < Minitest::Test
   end
 
   def test_space_left_at_a_line_start_is_dropped
-    assert_equal ["text \"aaaaaaa\" at 16.0,16.0 slot 2", "text \"bbbb\" at 16.0,43.0 slot 0"],
-                 commands("**aaaaaaa** bbbb", 100.0)
+    assert_equal ["text \"aaaaaaaa\" at 16.0,16.0 slot 2", "text \"bbbb\" at 16.0,43.0 slot 0"],
+                 commands("**aaaaaaaa** bbbb", 120.0)
   end
 
   def test_heading_uses_the_bold_slot_and_has_no_gap_at_the_top
@@ -82,7 +82,7 @@ class LayoutTest < Minitest::Test
   end
 
   def test_bullet_marker_and_text
-    assert_equal ["text \"•\" at 24.0,16.0 slot 0", "text \"pão\" at 46.0,16.0 slot 0"], commands("* pão")
+    assert_equal ["text \"•\" at 28.0,16.0 slot 0", "text \"pão\" at 46.0,16.0 slot 0"], commands("* pão")
   end
 
   def test_code_line_on_a_background_without_wrapping
@@ -133,5 +133,15 @@ class LayoutTest < Minitest::Test
 
   def test_link_text_is_in_the_link_color
     assert_equal Shipinel::Theme::Accent::LINK, arrange("<https://a.test>").at(2).style.color
+  end
+
+  def test_numbers_end_where_the_bullet_would
+    assert_equal ["text \"2.\" at 18.0,16.0 slot 0", "text \"Twingate\" at 46.0,16.0 slot 0"], commands("2. Twingate")
+  end
+
+  def test_a_word_wider_than_the_line_breaks_between_characters
+    tops = commands("#{'x' * 12} fim", 100.0).map { |command| command[/,(\S+)/, 1] }.uniq
+
+    assert_equal %w[16.0 43.0 70.0], tops
   end
 end

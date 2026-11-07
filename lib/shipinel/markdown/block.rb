@@ -24,7 +24,13 @@ module Shipinel
       # spans several lines.
       #: (String more) -> void
       def append(more)
-        @text = "#{@text} #{more}"
+        join_text(" ", more)
+      end
+
+      #: (String separator, String more) -> void
+      def join_text(separator, more)
+        @text = "#{@text}#{separator}#{more}"
+        nil
       end
 
       #: (Integer other_line_index) -> bool
@@ -57,7 +63,16 @@ module Shipinel
     end
 
     # "- comprar pão"
+    # "- comprar pão" or "2. Revisar": the marker shown before the text is
+    # "•" for an unordered item and the item's own number ("2.") otherwise.
     class Bullet < ListItem
+      attr_reader :marker #: String
+
+      #: (Integer line_index, Integer depth, String text, String marker) -> void
+      def initialize(line_index, depth, text, marker)
+        super(line_index, depth, text)
+        @marker = marker
+      end
     end
 
     # "- [x] Ligar para a Ana"
@@ -83,6 +98,66 @@ module Shipinel
 
     # A horizontal rule: "---", "* * *" or "___".
     class Rule < Block
+    end
+
+    # A table: consecutive "| a | b |" lines. Its cells are its text, joined
+    # by SEPARATOR, row after row: Spinel does not carry an array attribute
+    # through `is_a?` (docs/spinel-notes.md), and has no typed array of
+    # arrays. Every row has `columns` cells, padded or cut to the first
+    # row's count. The row of dashes under the header is not kept: it marks
+    # the rows above it as header rows.
+    class Table < Block
+      # The ASCII unit separator: never typed in a Markdown file.
+      SEPARATOR = "\u001F"
+      # Example match: "| 1. Drata | 12 tests FAILED |" (inner
+      # " 1. Drata | 12 tests FAILED ")
+      ROW = /\A\s*\|(?<inner>.*)\|\s*\z/
+
+      attr_reader :columns #: Integer
+      attr_reader :header_rows #: Integer
+
+      # The cells of a table row line, or [] for any other line.
+      #: (String text) -> Array[String]
+      def self.cells_in(text)
+        match = ROW.match(text)
+        match ? match[:inner].to_s.split("|").map(&:strip) : []
+      end
+
+      # The row under the header: every cell dashes, with colons for
+      # alignment (":---:"). Not all?/grep_v: Spinel's Enumerable versions
+      # widen (docs/spinel-notes.md).
+      #: (Array[String] cells) -> bool
+      def self.delimiter?(cells)
+        cells.reject { |cell| cell.include?("-") && cell.delete(":-").empty? }.empty?
+      end
+
+      #: (Integer line_index, Array[String] cells) -> void
+      def initialize(line_index, cells)
+        super(line_index, cells.join(SEPARATOR))
+        @columns = cells.size
+        @header_rows = 0
+      end
+
+      #: (Array[String] cells) -> void
+      def add_row(cells)
+        return mark_header if Table.delimiter?(cells)
+
+        row = Array.new(@columns) { |column| cells[column].to_s }
+        join_text(SEPARATOR, row.join(SEPARATOR))
+      end
+
+      #: () -> Integer
+      def rows
+        text.split(SEPARATOR, -1).size / @columns
+      end
+
+      private
+
+      #: () -> void
+      def mark_header
+        @header_rows = rows if @header_rows.zero?
+        nil
+      end
     end
 
     # One line inside a fenced code block, shown as it is.

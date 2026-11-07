@@ -25,7 +25,11 @@ enum {
     CHANNEL_MASK = 0xFF,
     MAX_CODEPOINTS = 512,
     /* Characters a document may add on top of the base set (arrows, emoji). */
-    MAX_EXTRA_CODEPOINTS = 2048
+    MAX_EXTRA_CODEPOINTS = 2048,
+    /* ui_pointer_on's answers. */
+    POINTER_AWAY = 0,
+    POINTER_OVER = 1,
+    POINTER_CLICKED = 2
 };
 
 /* No extra space between glyphs: the font's own advance widths apply. */
@@ -194,12 +198,23 @@ void ui_draw_rect(float left, float top, float width, float height, uint32_t rgb
     DrawRectangleRec(rect, color_from(rgba));
 }
 
-int ui_clicked_in(float left, float top, float width, float height) {
+int ui_pointer_on(float left, float top, float width, float height) {
     const Rectangle area = {left, top, width, height};
-    return (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) &&
-            CheckCollisionPointRec(GetMousePosition(), area))
-               ? 1
-               : 0;
+    if (!CheckCollisionPointRec(GetMousePosition(), area)) {
+        return POINTER_AWAY;
+    }
+    return IsMouseButtonReleased(MOUSE_BUTTON_LEFT) ? POINTER_CLICKED : POINTER_OVER;
+}
+
+/* raylib's SetMouseCursor creates a new GLFW cursor on every call and never
+ * frees it, so the cursor is only set when it changes. */
+void ui_set_hand_cursor(int hand) {
+    static int current = 0;
+    const int wanted = hand != 0 ? 1 : 0;
+    if (wanted != current) {
+        SetMouseCursor(wanted != 0 ? MOUSE_CURSOR_POINTING_HAND : MOUSE_CURSOR_DEFAULT);
+        current = wanted;
+    }
 }
 
 float ui_wheel_move(void) {
@@ -218,12 +233,13 @@ void ui_style_checkbox(uint32_t border_rgba, uint32_t hover_rgba, uint32_t check
     GuiSetStyle(CHECKBOX, CHECK_PADDING, CHECKBOX_CHECK_PADDING);
 }
 
-/* raygui flips its own copy of the state; the caller only needs to know a
- * click happened, because the file (not this box) is the source of truth. */
-int ui_checkbox(float left, float top, float size, int checked) {
+/* Draws only: clicks come from ui_pointer_on, as for links. raygui flips
+ * its own copy of the state, which is dropped: the file, not this box, is
+ * the source of truth. */
+void ui_draw_checkbox(float left, float top, float size, int checked) {
     const Rectangle bounds = {left, top, size, size};
     bool state = checked != 0;
-    return GuiCheckBox(bounds, NULL, &state) == RESULT_CHANGED ? 1 : 0;
+    (void)GuiCheckBox(bounds, NULL, &state);
 }
 
 float ui_text_width(int slot, const char *text, float size) {

@@ -1,54 +1,64 @@
 # frozen_string_literal: true
 
-# Draws a laid-out page onto the screen, scrolled up by an offset, and
-# reports which checkbox or link was clicked.
+# Draws a laid-out page onto the screen, scrolled up by an offset, reports
+# which checkbox or link was clicked, and shows the pointing-hand cursor
+# while the mouse is over one of them.
 
 require_relative "draw_list"
 require_relative "screen"
 require_relative "task_toggler"
 
 module Shipinel
-  # See the file comment. Stateless: the screen and the page come in each
-  # frame.
-  module Painter
-    # At most one thing can be clicked in a frame; the last one wins.
-    #: (Screen screen, DrawList page, Float scroll) -> DrawCommand?
-    def self.paint(screen, page, scroll)
-      # @type var clicked: DrawCommand?
-      clicked = nil
-      position = 0
-      while position < page.size
-        clicked = paint_command(screen, page.at(position), scroll) || clicked
-        position += 1
-      end
-      clicked
+  # See the file comment. One Painter paints one frame.
+  class Painter
+    # @rbs @screen: Screen
+    # @rbs @scroll: Float
+    # @rbs @clicked: DrawCommand?
+    # @rbs @hand: bool
+
+    #: (Screen screen, Float scroll) -> void
+    def initialize(screen, scroll)
+      @screen = screen
+      @scroll = scroll
+      @clicked = nil
+      @hand = false
     end
 
-    # The command itself when it is a checkbox or link clicked this frame.
-    #: (Screen screen, DrawCommand command, Float scroll) -> DrawCommand?
-    def self.paint_command(screen, command, scroll)
-      area = command.rect.up(scroll)
-      draw(screen, command, area)
-      clicked?(screen, command, area) ? command : nil
+    # The checkbox or link clicked this frame, if any (the last one wins).
+    #: (DrawList page) -> DrawCommand?
+    def paint(page)
+      page.size.times { |position| paint_command(page.at(position)) }
+      @screen.use_hand_cursor(@hand)
+      @clicked
     end
 
-    #: (Screen screen, DrawCommand command, Rect area) -> void
-    def self.draw(screen, command, area)
+    private
+
+    #: (DrawCommand command) -> void
+    def paint_command(command)
+      area = command.rect.up(@scroll)
+      draw(command, area)
+      point_at(command, area) if command.is_a?(Clickable)
+      nil
+    end
+
+    # Each branch reads its kind's fields here (.reek.yml, as Layout).
+    #: (DrawCommand command, Rect area) -> void
+    def draw(command, area)
       case command
-      when TextRun then screen.draw_text(command.text, area.corner, command.style)
-      when Box then screen.draw_rect(area, command.color)
+      when TextRun then @screen.draw_text(command.text, area.corner, command.style)
+      when Box then @screen.draw_rect(area, command.color)
+      when Checkbox then @screen.draw_checkbox(area, command.click.checked?)
       end
       nil
     end
 
-    # raygui draws a checkbox and reports its click in one call.
-    #: (Screen screen, DrawCommand command, Rect area) -> bool
-    def self.clicked?(screen, command, area)
-      case command
-      when Checkbox then screen.checkbox_clicked?(area, command.click.checked?)
-      when LinkArea then screen.clicked_in?(area)
-      else false
-      end
+    #: (DrawCommand command, Rect area) -> void
+    def point_at(command, area)
+      pointer = @screen.pointer_on(area)
+      @hand ||= pointer != :away
+      @clicked = command if pointer == :clicked
+      nil
     end
   end
 end

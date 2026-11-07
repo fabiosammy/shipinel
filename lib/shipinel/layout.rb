@@ -8,10 +8,11 @@
 
 require_relative "draw_list"
 require_relative "flow"
+require_relative "list_layout"
 require_relative "markdown/block"
 require_relative "font_set"
 require_relative "styles"
-require_relative "task_toggler"
+require_relative "table_layout"
 
 module Shipinel
   # See the file comment. One Layout lays out one page, for one width.
@@ -53,13 +54,16 @@ module Shipinel
       place_kind(block)
     end
 
-    # Headings and list items carry more than their text.
+    # Headings and list items carry more than their text. Each branch reads
+    # its kind's fields here, since Spinel cannot pass the narrowed block on
+    # (.reek.yml).
     #: (Markdown::Block block) -> void
     def place_kind(block)
       text = block.text
       case block
       when Markdown::Heading then place_heading(text, block.level)
-      when Markdown::ListItem then place_item(block.depth, text, TaskClick.for_block(block))
+      when Markdown::Task then list(block.depth).task(text, block.line_index, block.checked?)
+      when Markdown::Bullet then list(block.depth).bullet(text, block.marker)
       else place_plain(block)
       end
     end
@@ -70,6 +74,7 @@ module Shipinel
       case block
       when Markdown::Paragraph then place_paragraph(text)
       when Markdown::CodeLine then @flow.code_line(text)
+      when Markdown::Table then place_table(text, block.columns, block.header_rows)
       else @flow.rule
       end
     end
@@ -93,37 +98,15 @@ module Shipinel
       @flow.gap(block_gap)
     end
 
-    #: (Integer depth, String text, TaskClick? click) -> void
-    def place_item(depth, text, click)
-      indent = indent_for(depth)
-      @flow.text(text, text_indent(indent), mark(indent, click))
+    #: (String cells, Integer columns, Integer header_rows) -> void
+    def place_table(cells, columns, header_rows)
+      TableLayout.new(@flow, cells, columns, header_rows).place
+      @flow.gap(block_gap)
     end
 
-    # Draws the checkbox or bullet, and returns the style of the item's text.
-    #: (Float indent, TaskClick? click) -> TextStyle
-    def mark(indent, click)
-      return bullet(indent) unless click
-
-      @flow.checkbox(indent, click)
-      click.checked? ? @styles.done : @styles.body
-    end
-
-    #: (Float indent) -> TextStyle
-    def bullet(indent)
-      style = @styles.body
-      @flow.bullet(indent, style)
-      style
-    end
-
-    #: (Integer depth) -> Float
-    def indent_for(depth)
-      depth * @styles.size * Theme::Spacing::INDENT
-    end
-
-    # Where an item's text starts: after its bullet or checkbox.
-    #: (Float indent) -> Float
-    def text_indent(indent)
-      indent + (@styles.size * Theme::Spacing::MARKER)
+    #: (Integer depth) -> ListLayout
+    def list(depth)
+      ListLayout.new(@flow, depth)
     end
 
     #: () -> Float

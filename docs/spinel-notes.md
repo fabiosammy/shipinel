@@ -329,6 +329,15 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
      sp_Heading * slot"). Calls on the narrowed value are fine. **Rule:**
      pass the fields (`block.text, block.level`), or a small value object
      built in the branch (`TaskClick.new(block.line_index, block.checked?)`).
+   - Through an `is_a?` narrowing, scalar attributes keep their type
+     (`block.level`, `block.marker`), but an **array** attribute
+     (`block.cells`) and the result of a `void` method come back untyped.
+     **Rule:** a Table keeps its cells in its String `text` (joined by
+     `\u001F`, split back with `split(SEPARATOR, -1)`), and a narrowed
+     `void` call is a statement, not a returned value.
+   - `grep_v`, `all?` and `none?` (block or pattern) also pull in the
+     widening Enumerable builtins (35 warnings each); `select`, `reject`,
+     `map`, `min`/`max` on an Array do not.
    - `Comparable#between?` (and `clamp`) pulls `builtins/comparable.rb` in,
      which reports six widen warnings. **Rule:** `x >= lo && x <= hi`
      (`Style/ComparableBetween` is off for this reason, docs/exceptions.md).
