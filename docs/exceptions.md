@@ -27,6 +27,7 @@ None. `rake spinel_widen` fails on any warning.
 
 | Check | Where | Why |
 |---|---|---|
+| `bugprone-reserved-identifier` | the `#define _POSIX_C_SOURCE 200809L` line at the top of `ext/ui_shim.c` only (`NOLINTNEXTLINE`) | Frame pacing sleeps with `clock_nanosleep`, which is POSIX, not C11, so under `-std=c11` the C library declares it only when this feature-test macro is defined first. The name is reserved precisely because the C library reads it; POSIX tells programs to define it. The check stays on for every other identifier. |
 | `bugprone-easily-swappable-parameters` | `IgnoredParameterNames` adds the geometry names `left`, `top`, `width`, `height`, `size` (`.clang-tidy`) | Structs cannot cross Spinel's FFI, so `ui_draw_text`, `ui_draw_rect` and `ui_checkbox` take positions and sizes as separate floats in raylib's order. Their only callers are `Screen` methods that unpack a Ruby `Point` or `Rect`, so a swap cannot happen at a call site that people write. The check stays on for every other parameter name. |
 
 cppcheck: none.

@@ -2,9 +2,17 @@
  * See ui_shim.h. Signatures of every raylib call used here are copied in
  * docs/raylib-notes.md from the raylib.h this is built against.
  */
+/* clock_nanosleep is POSIX, not C11. This feature-test macro is how POSIX
+ * asks for it; its name is reserved because the C library reads it
+ * (docs/exceptions.md). */
+// NOLINTNEXTLINE(bugprone-reserved-identifier)
+#define _POSIX_C_SOURCE 200809L
+
 #include "ui_shim.h"
 
+#include <errno.h>
 #include <raylib.h>
+#include <time.h>
 
 /* raygui is header-only: this is the one translation unit that holds its
  * implementation. Included as a system header (docs/raylib-notes.md). */
@@ -17,8 +25,8 @@ enum {
     CHECKBOX_CHECK_PADDING = 3,
     MIN_WINDOW_WIDTH = 200,
     MIN_WINDOW_HEIGHT = 120,
-    /* Low on purpose: idle CPU stays light, and file polling still runs. */
-    TARGET_FPS = 10,
+    /* Until ui_set_frame_rate: low, so idle CPU stays light. */
+    START_FPS = 10,
     RED_SHIFT = 24,
     GREEN_SHIFT = 16,
     BLUE_SHIFT = 8,
@@ -34,6 +42,8 @@ enum {
     MOUSE_DOWN = 1,
     MOUSE_PRESSED = 2
 };
+
+static const long NANOSECONDS = 1000000000L;
 
 /* No extra space between glyphs: the font's own advance widths apply. */
 static const float GLYPH_SPACING = 0.0F;
@@ -54,6 +64,10 @@ static bool font_owned[FONT_SLOTS];
 /* Set by ui_set_extra_codepoints, used by every ui_load_font after it. */
 static int extra_codepoints[MAX_EXTRA_CODEPOINTS];
 static int extra_count = 0;
+/* Frame pacing (ui_end_frame): how long a frame lasts, and when the next
+ * one is due on the monotonic clock. */
+static long frame_nanoseconds = NANOSECONDS / START_FPS;
+static struct timespec next_frame;
 
 static Color color_from(uint32_t rgba) {
     Color color = {
@@ -96,14 +110,18 @@ static void release_font(int slot) {
 }
 
 void ui_open_window(int width, int height, const char *title) {
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT);
+    /* No MSAA: everything drawn is text or an axis-aligned rectangle, and
+     * multisampling made each frame several times dearer to render. */
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     /* Errors only: on Wayland, InitWindow's attempt to centre the window logs
      * GLFW "window position" warnings that are expected there (the compositor
      * places windows), and font problems are shown in the window instead. */
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(width, height, title);
     SetWindowMinSize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
-    SetTargetFPS(TARGET_FPS);
+    /* No SetTargetFPS: raylib then never waits, and ui_end_frame paces the
+     * frames itself (see wait_for_next_frame). */
+    clock_gettime(CLOCK_MONOTONIC, &next_frame);
     /* Escape must not quit: only the window's close button does. */
     SetExitKey(KEY_NULL);
     for (int slot = 0; slot < FONT_SLOTS; slot++) {
@@ -139,7 +157,34 @@ void ui_begin_frame(uint32_t background_rgba) {
     ClearBackground(color_from(background_rgba));
 }
 
+void ui_set_frame_rate(int frames_per_second) {
+    frame_nanoseconds = NANOSECONDS / (frames_per_second > 0 ? frames_per_second : START_FPS);
+}
+
+/* raylib's own frame wait (SetTargetFPS) spins on the CPU for the last 5%
+ * of every frame; this sleeps the whole time instead. A frame that ran
+ * late starts the next one from now rather than rushing to catch up. */
+static void wait_for_next_frame(void) {
+    next_frame.tv_nsec += frame_nanoseconds;
+    if (next_frame.tv_nsec >= NANOSECONDS) {
+        next_frame.tv_sec += next_frame.tv_nsec / NANOSECONDS;
+        next_frame.tv_nsec %= NANOSECONDS;
+    }
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    if (now.tv_sec > next_frame.tv_sec ||
+        (now.tv_sec == next_frame.tv_sec && now.tv_nsec > next_frame.tv_nsec)) {
+        next_frame = now;
+        return;
+    }
+    while (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_frame, NULL) == EINTR) {
+    }
+}
+
+/* The wait comes before EndDrawing, which polls input: the next frame then
+ * acts on input from right after the sleep, not from before it. */
 void ui_end_frame(void) {
+    wait_for_next_frame();
     EndDrawing();
 }
 

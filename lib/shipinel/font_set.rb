@@ -44,11 +44,10 @@ module Shipinel
       remember(codepoints)
     end
 
-    # Loads again only when the document now uses characters not loaded.
-    #: (Array[Integer] codepoints, Integer pixel_size) -> void
-    def refresh(codepoints, pixel_size)
-      load(codepoints, pixel_size) unless (codepoints - @loaded).empty?
-      nil
+    # Whether every one of these characters is loaded already.
+    #: (Array[Integer] codepoints) -> bool
+    def covers?(codepoints)
+      (codepoints - @loaded).empty?
     end
 
     # Whether the character is drawn in the symbol font.

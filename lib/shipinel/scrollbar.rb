@@ -17,8 +17,10 @@ module Shipinel
     # The thumb never gets shorter than this, so it stays easy to grab.
     MIN_THUMB = 24.0
 
+    # The window area the page scrolls in.
+    attr_reader :area #: Rect
+
     # @rbs @page_height: Float
-    # @rbs @area: Rect
     # @rbs @offset: Float
 
     #: (Float page_height, Rect area, Float offset) -> void
@@ -65,15 +67,13 @@ module Shipinel
       Scrollbar.new(@page_height, @area, offset)
     end
 
-    # The bar stays put while the page moves: Painter shifts every command
-    # up by `shift`, so the bar is added shifted down by it.
-    #: (DrawList page, Float shift) -> void
-    def add_to(page, shift)
+    # Into the overlay, which does not scroll.
+    #: (DrawList overlay) -> void
+    def add_to(overlay)
       return unless needed?
 
-      down = -shift
-      page.add(Box.new(track.up(down), Theme::Surface::SCROLL_TRACK))
-      page.add(Box.new(thumb.up(down), Theme::Surface::SCROLL_THUMB))
+      overlay.add(Box.new(track, Theme::Surface::SCROLL_TRACK))
+      overlay.add(Box.new(thumb, Theme::Surface::SCROLL_THUMB))
     end
 
     # How far the page can scroll.

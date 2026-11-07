@@ -49,7 +49,9 @@ cp test/fixtures/semana.md /tmp/semana.md
     cannot be made smaller than 200 × 120.
 12. **Keys.** Escape does not close the window; the close button does.
 13. **Idle CPU.** `top -p $(pgrep -f result/bin/shipinel)` shows a few
-    percent at most while nothing changes.
+    percent at most while nothing changes, on a long file too. Scrolling
+    and dragging the scrollbar move smoothly (60 FPS), and the CPU drops
+    back about half a second after the pointer stops.
 14. **Fonts.** `--font /nonexistent.ttf` exits with
     `--font /nonexistent.ttf: no such file`. `--font` with a real TTF and
     `--font-size 28` changes the text accordingly.

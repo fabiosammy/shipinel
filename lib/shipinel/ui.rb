@@ -18,6 +18,7 @@ module Shipinel
     ffi_func :ui_screen_height, [], :int
     ffi_func :ui_begin_frame, %i[uint32], :void
     ffi_func :ui_end_frame, [], :void
+    ffi_func :ui_set_frame_rate, %i[int], :void
     ffi_func :ui_set_extra_codepoints, %i[int_array int], :void
     ffi_func :ui_load_font, %i[int str int], :void
     ffi_func :ui_font_loaded, %i[int], :bool

@@ -10,6 +10,7 @@ module Shipinel
     def self.ui_screen_height: () -> Integer
     def self.ui_begin_frame: (Integer background_rgba) -> void
     def self.ui_end_frame: () -> void
+    def self.ui_set_frame_rate: (Integer frames_per_second) -> void
     def self.ui_set_extra_codepoints: (Array[Integer] codepoints, Integer count) -> void
     def self.ui_load_font: (Integer slot, String path, Integer pixel_size) -> void
     def self.ui_font_loaded: (Integer slot) -> bool

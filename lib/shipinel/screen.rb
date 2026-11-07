@@ -53,8 +53,10 @@ module Shipinel
       UI.ui_begin_frame(background)
     end
 
-    #: () -> void
-    def end_frame
+    # Waits until the frame is due at this rate, then shows it.
+    #: (Integer frames_per_second) -> void
+    def end_frame(frames_per_second)
+      UI.ui_set_frame_rate(frames_per_second)
       UI.ui_end_frame
     end
 

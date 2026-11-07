@@ -30,6 +30,12 @@ module Shipinel
       @buttons.anybits?(DOWN)
     end
 
+    # The wheel turned or the button is held or pressed.
+    #: () -> bool
+    def input?
+      !@wheel.zero? || @buttons.positive?
+    end
+
     # The left button went down this frame.
     #: () -> bool
     def pressed?

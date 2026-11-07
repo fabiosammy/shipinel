@@ -36,14 +36,13 @@ module Shipinel
       (PADDING * 3) + @style.line_height + BAR
     end
 
-    # Painter moves the page up by `shift`, so the header is placed that far
-    # down the page and is drawn at the top of the window.
-    #: (DrawList page, Float shift) -> void
-    def add_to(page, shift)
+    # Into the overlay, which does not scroll.
+    #: (DrawList overlay) -> void
+    def add_to(overlay)
       return unless @progress.tasks?
 
-      add_label(page, shift)
-      add_bar(page, shift + height - PADDING - BAR)
+      add_label(overlay, 0.0)
+      add_bar(overlay, height - PADDING - BAR)
     end
 
     private

@@ -5,6 +5,7 @@
 # window's height). It survives reloads: after the file changes, the same
 # offset is kept, only clamped to the new page height.
 
+require_relative "activity"
 require_relative "mouse_state"
 require_relative "scrollbar"
 
@@ -19,11 +20,19 @@ module Shipinel
 
     # How far below the thumb's top it was grabbed, while it is dragged.
     # @rbs @grab: Float
+    # @rbs @activity: Activity
 
     #: () -> void
     def initialize
       @offset = 0.0
       @grab = NOT_DRAGGING
+      @activity = Activity.new
+    end
+
+    # Fast while the user scrolls or points, slow when idle (Activity).
+    #: () -> Integer
+    def frame_rate
+      @activity.frame_rate
     end
 
     # Keeps the page between its top and where its end reaches the bottom
@@ -31,6 +40,7 @@ module Shipinel
     # the new offset.
     #: (MouseState mouse, Scrollbar bar) -> Float
     def apply(mouse, bar)
+      @activity.note(mouse)
       @offset = bar.in_range(@offset - (mouse.wheel * STEP))
       drag(mouse, bar) if bar.needed?
       @offset

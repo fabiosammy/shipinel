@@ -22,14 +22,10 @@ class FontSetTest < Minitest::Test
     assert_equal [false, true, false], [fonts.symbol?(0x2192), fonts.symbol?(0x1F916), fonts.symbol?(0x41)]
   end
 
-  def test_refresh_loads_only_for_new_characters
-    shim = FakeShim.new
-    fonts = Shipinel::FontSet.new(shim, PATHS)
-    fonts.load([0x2192], 32)
-    fonts.refresh([0x2192], 32)
-    fonts.refresh([0x2192, 0x1F916], 32)
+  def test_covers_only_the_loaded_characters
+    fonts = fake_font_set("→")
 
-    assert_equal(2, shim.calls.count { |call| call.first == :use })
+    assert_equal [true, true, false], [fonts.covers?([0x2192]), fonts.covers?([]), fonts.covers?([0x2192, 0x1F916])]
   end
 
   def test_pieces_split_where_the_font_changes

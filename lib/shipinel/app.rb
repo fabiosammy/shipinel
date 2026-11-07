@@ -10,6 +10,7 @@ require_relative "draw_list"
 require_relative "font_locator"
 require_relative "font_set"
 require_relative "font_shim"
+require_relative "frame"
 require_relative "page"
 require_relative "painter"
 require_relative "poller"
@@ -56,12 +57,12 @@ module Shipinel
       @screen.style_checkboxes(Theme::Checkbox::BORDER, Theme::Checkbox::HOVER, Theme::Checkbox::CHECK)
     end
 
-    # One frame, ten times a second. Laid out every frame: the window may
-    # have been resized, and a page of text costs next to nothing.
+    # One frame: 10 a second when idle, 60 while the user scrolls or points
+    # (Activity). The layout is reused until the file or the width changes.
     #: () -> void
     def tick
       poll if @poller.due?(Clock.now_ms)
-      clicked = draw(@page.lay_out(@screen, @document))
+      clicked = draw(@page.update(@screen, @document))
       act(clicked) if clicked
       nil
     end
@@ -73,11 +74,11 @@ module Shipinel
       @page.refresh_fonts(@document.shown_text)
     end
 
-    #: (DrawList page) -> DrawCommand?
-    def draw(page)
+    #: (Frame frame) -> DrawCommand?
+    def draw(frame)
       @screen.begin_frame(Theme::Surface::BACKGROUND)
-      clicked = Painter.new(@screen, @page.viewport).paint(page)
-      @screen.end_frame
+      clicked = Painter.new(@screen, frame).paint
+      @screen.end_frame(frame.rate)
       clicked
     end
 

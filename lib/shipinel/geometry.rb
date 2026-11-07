@@ -15,6 +15,11 @@ module Shipinel
       @left = left
       @top = top
     end
+
+    #: (Point other) -> bool
+    def same_as?(other)
+      @left == other.left && @top == other.top
+    end
   end
 
   # A rectangle: a code background, a rule, a checkbox.
@@ -85,16 +90,28 @@ module Shipinel
     end
   end
 
-  # How the page sits in the window: drawn moved up by `shift`, and visible
-  # from `top` down (above it is the progress header).
+  # How the page sits in the window: scrolled to `offset` inside `area`,
+  # the part of the window below the progress header.
   class Viewport
+    # How far up the page is drawn: the offset, less the header's room.
     attr_reader :shift #: Float
     attr_reader :top #: Float
 
-    #: (Float shift, Float top) -> void
-    def initialize(shift, top)
-      @shift = shift
+    # @rbs @bottom: Float
+
+    #: (Float offset, Rect area) -> void
+    def initialize(offset, area)
+      top = area.top
+      @shift = offset - top
       @top = top
+      @bottom = top + area.height
+    end
+
+    # Whether any of `rect`, in window position, is inside the area.
+    #: (Rect rect) -> bool
+    def shows?(rect)
+      top = rect.top
+      top < @bottom && top + rect.height > @top
     end
   end
 end

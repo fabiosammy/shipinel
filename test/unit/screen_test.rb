@@ -28,9 +28,9 @@ class ScreenTest < Minitest::Test
 
     assert_equal [0.0, 0.0, 440.0, 640.0], [area.left, area.top, area.width, area.height]
     @screen.begin_frame(0x000000FF)
-    @screen.end_frame
+    @screen.end_frame(60)
 
-    assert_equal [[:width], [:height], [:begin_frame, 0x000000FF], [:end_frame]], Shipinel::UI.calls
+    assert_equal [[:width], [:height], [:begin_frame, 0x000000FF], [:rate, 60], [:end_frame]], Shipinel::UI.calls
   end
 
   def test_text_and_rectangles

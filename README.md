@@ -159,8 +159,12 @@ env -u WAYLAND_DISPLAY shipinel ~/notes/week.md
 
 ## Behaviour
 
-- About 10 frames per second, and the file is re-read about every 500 ms by
-  comparing its content, which also catches editors that save by renaming.
+- 10 frames per second while idle, 60 while you scroll, click or move the
+  pointer over the window (dropping back half a second later). The page is
+  laid out again only when the file, the window width or the fonts change,
+  and only what the window shows is drawn.
+- The file is re-read about every 500 ms by comparing its content, which
+  also catches editors that save by renaming.
 - When the file has tasks, a strip pinned to the top of the window shows
   how many are checked ("12 of 40 tasks done · 30%") and a bar filled by
   that share, which turns green when every task is done. Tasks inside code

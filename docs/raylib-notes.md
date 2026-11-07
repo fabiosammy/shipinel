@@ -96,7 +96,18 @@ RLAPI void SetExitKey(int key);                                   // raylib.h:12
 - `SetConfigFlags` must be called **before** `InitWindow`.
 - `WindowShouldClose` is also true on Escape. We call `SetExitKey(KEY_NULL)`
   so only the window close button quits.
-- No `EnableEventWaiting()` (it would block file polling); `SetTargetFPS(10)`.
+- No `EnableEventWaiting()` (it would block file polling), and no
+  `SetTargetFPS`: raylib's frame wait (`WaitTime`, rcore.c) sleeps 95% of
+  the frame and spins on the CPU for the last 5%
+  (`SUPPORT_PARTIALBUSY_WAIT_LOOP`, on by default in config.h). Without a
+  target FPS raylib never waits; `ui_end_frame` sleeps until the frame is
+  due with POSIX `clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, ...)`,
+  then calls `EndDrawing`, which polls input right after the sleep.
+  `ui_set_frame_rate` picks the rate: 10 when idle, 60 while the user
+  scrolls or points (`Activity`).
+- No `FLAG_MSAA_4X_HINT`: the page is text and axis-aligned rectangles,
+  which multisampling does not improve, and it made every frame several
+  times dearer to render.
 
 ## Input
 
@@ -175,7 +186,6 @@ RAYGUIAPI int GuiCheckBox(Rectangle bounds, const char *text, bool *checked); //
 | Name | Value | Source |
 |---|---|---|
 | `FLAG_WINDOW_RESIZABLE` | `0x00000004` | raylib.h:558 |
-| `FLAG_MSAA_4X_HINT` | `0x00000020` | raylib.h:570 |
 | `FLAG_WINDOW_HIGHDPI` | `0x00002000` | raylib.h:567 |
 | `KEY_NULL` | `0` | raylib.h:590 |
 | `MOUSE_BUTTON_LEFT` | `0` | raylib.h:713 |
@@ -203,7 +213,8 @@ What Ruby can call, all scalars and strings (Spinel FFI types in
 
 | Function | Wraps |
 |---|---|
-| `void ui_open_window(int, int, const char *)` | `SetConfigFlags(RESIZABLE \| MSAA_4X)`, `SetTraceLogLevel(LOG_ERROR)` (Wayland logs expected "window position" warnings), `InitWindow`, `SetWindowMinSize(200, 120)`, `SetTargetFPS(10)`, `SetExitKey(KEY_NULL)` |
+| `void ui_open_window(int, int, const char *)` | `SetConfigFlags(RESIZABLE)`, `SetTraceLogLevel(LOG_ERROR)` (Wayland logs expected "window position" warnings), `InitWindow`, `SetWindowMinSize(200, 120)`, `SetExitKey(KEY_NULL)`, starts frame pacing at 10 FPS |
+| `void ui_set_frame_rate(int)` | sets the pacing interval used by `ui_end_frame` |
 | `int ui_window_ready(void)` | `IsWindowReady` |
 | `int ui_window_should_close(void)` | `WindowShouldClose` |
 | `void ui_close_window(void)` | `UnloadFont` for each loaded slot, `CloseWindow` |
@@ -250,6 +261,14 @@ Checked in the sandbox (X11 via the host's display, software OpenGL): the
 window opens titled `shipinel`, "reuniões", "ação", "Terça" render with
 DejaVu Sans, raylib logs nothing at warning level, and the idle window uses
 about 5 % of one core at 10 FPS.
+
+Measured again on 2026-11-07 in Xvfb (software OpenGL, so rendering is CPU
+time here and GPU time on a desktop), with the 98-line week runbook: idle
+CPU went from 24.5 % to 6.4 % of one core after the layout cache, drawing
+only what the window shows, dropping MSAA and replacing raylib's spinning
+frame wait. Before, each frame spent about 6.4 ms laying out and drawing
+(1,564 width measurements and 1,548 text draws) and raylib spun for the
+last 5 ms of every 100 ms frame.
 
 ## Wayland
 

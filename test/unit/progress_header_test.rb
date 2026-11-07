@@ -12,9 +12,9 @@ class ProgressHeaderTest < Minitest::Test
     Shipinel::ProgressHeader.new(Shipinel::Markdown::Parser.parse(source).task_progress, STYLES, 400.0)
   end
 
-  def commands(source, shift = 0.0)
+  def commands(source)
     page = Shipinel::DrawList.new
-    header(source).add_to(page, shift)
+    header(source).add_to(page)
     Array.new(page.size) { |position| page.at(position) }
   end
 
@@ -34,10 +34,5 @@ class ProgressHeaderTest < Minitest::Test
 
   def test_bar_turns_green_when_everything_is_done
     assert_equal Shipinel::Theme::Progress::COMPLETE, commands("- [x] a\n").last.color
-  end
-
-  # Painter moves the page up by the shift; the header moves down by it.
-  def test_stays_at_the_top_of_the_window_while_the_page_scrolls
-    assert_in_delta 250.0, commands("- [x] a\n", 250.0).first.rect.top
   end
 end

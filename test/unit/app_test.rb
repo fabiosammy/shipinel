@@ -31,14 +31,15 @@ class AppTest < Minitest::Test
     def ready? = @broken != :window
     def closing? = @frame >= @frames
     def close = @calls << [:close]
-    def area = Shipinel::Rect.new(0.0, 0.0, 440.0, 100.0)
+    def area = Shipinel::Rect.new(0.0, 0.0, 440.0, 640.0)
     def mouse = Shipinel::MouseState.new(Shipinel::Point.new(0.0, 0.0), 0, @wheel)
     def style_checkboxes(*colors) = @calls << [:style_checkboxes, *colors]
     def font_shim = (@font_shim ||= FakeShim.new(failing: @broken == :font ? PATHS_FAILING : []))
     def begin_frame(_color) = @pointed = false
     def texts_on(frame) = @texts.select { |text_frame, _text| text_frame == frame }.map(&:last)
 
-    def end_frame
+    def end_frame(rate)
+      @calls << [:rate, rate]
       on_frame_end&.call(@frame)
       @frame += 1
     end
@@ -102,12 +103,20 @@ class AppTest < Minitest::Test
     assert_equal "# Semana\n- [x] Reunião\n", File.read(@path)
   end
 
-  # The wheel is read before drawing, so even the first frame moves by a step.
+  # The wheel is read before drawing, so even the first frame moves by a
+  # step. Lines are 39 apart from 16 down: one step (48) puts the first at
+  # -32, out of sight and not drawn, so the first drawn is the second, at 7.
   def test_wheel_scrolls_the_page
     File.write(@path, "linha\n\n" * 20)
     tops = run_app(FakeScreen.new(wheel: -1.0)).text_tops
 
-    assert_equal [[0, -32.0], [1, -80.0]], [tops.first, tops.find { |frame, _top| frame == 1 }]
+    assert_equal [[0, 7.0], [1, -2.0]], [tops.first, tops.find { |frame, _top| frame == 1 }]
+  end
+
+  def test_runs_fast_while_the_wheel_turns
+    rates = run_app(FakeScreen.new(wheel: -1.0)).calls.select { |call| call.first == :rate }
+
+    assert_equal [[:rate, 60], [:rate, 60]], rates
   end
 
   def test_window_that_does_not_open_ends_the_run
