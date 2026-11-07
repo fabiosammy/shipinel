@@ -20,6 +20,11 @@ module Shipinel
       # Done tasks fade back.
       MUTED = 0x7E8490FF
       CODE = 0xE5C07BFF
+    end
+
+    # Colors that ask for attention.
+    module Accent
+      LINK = 0x7AA2F7FF
       PROBLEM = 0xE06C75FF
     end
 
@@ -35,6 +40,8 @@ module Shipinel
       BODY = 0
       MONO = 1
       BOLD = 2
+      # Emoji and other symbols the text fonts lack.
+      SYMBOL = 3
     end
 
     # Spacing, in multiples of the body font size unless said otherwise.
@@ -79,6 +86,16 @@ module Shipinel
     #: () -> Float
     def line_height
       @size * Theme::Spacing::LINE
+    end
+
+    #: (Integer font_slot) -> TextStyle
+    def with_font(font_slot)
+      TextStyle.new(font_slot, @size, @color)
+    end
+
+    #: (Integer color) -> TextStyle
+    def with_color(color)
+      TextStyle.new(@font_slot, @size, color)
     end
   end
 end

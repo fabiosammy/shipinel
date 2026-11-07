@@ -26,14 +26,22 @@ int ui_screen_height(void);
 void ui_begin_frame(uint32_t background_rgba);
 void ui_end_frame(void);
 
-/* Loads a TTF/OTF into a slot with the ASCII, Latin-1 Supplement and Latin
- * Extended-A glyphs. If it cannot be loaded, the slot holds raylib's
- * built-in font, which has no accented letters. */
+/* Characters to load into every font after the base set (ASCII, Latin-1
+ * Supplement, Latin Extended-A, dashes, quotes, bullet, ellipsis): the
+ * ones a document uses beyond it. Kept until the next call. */
+void ui_set_extra_codepoints(const int64_t *codepoints, int count);
+/* Loads a TTF/OTF into a slot with the base and extra characters it has.
+ * If it cannot be loaded, the slot holds raylib's built-in font, which has
+ * no accented letters. */
 void ui_load_font(int slot, const char *path, int pixel_size);
 /* 1 when the slot holds a font loaded from a file. */
 int ui_font_loaded(int slot);
+/* Which loaded fonts can draw the character: bit n set for slot n. */
+int ui_glyph_slots(int codepoint);
 float ui_text_width(int slot, const char *text, float size);
 void ui_draw_rect(float left, float top, float width, float height, uint32_t rgba);
+/* 1 on the frame the left button was released inside the rectangle. */
+int ui_clicked_in(float left, float top, float width, float height);
 /* How far the mouse wheel moved this frame; positive is away from the user. */
 float ui_wheel_move(void);
 /* Colors of every checkbox: its border, its border under the mouse, and

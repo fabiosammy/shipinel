@@ -10,13 +10,16 @@ module Shipinel
     def self.ui_screen_height: () -> Integer
     def self.ui_begin_frame: (Integer background_rgba) -> void
     def self.ui_end_frame: () -> void
+    def self.ui_set_extra_codepoints: (Array[Integer] codepoints, Integer count) -> void
     def self.ui_load_font: (Integer slot, String path, Integer pixel_size) -> void
     def self.ui_font_loaded: (Integer slot) -> bool
+    def self.ui_glyph_slots: (Integer codepoint) -> Integer
     def self.ui_text_width: (Integer slot, String text, Float size) -> Float
     def self.ui_draw_text: (Integer slot, String text, Float left, Float top, Float size, Integer rgba) -> void
     def self.ui_draw_rect: (Float left, Float top, Float width, Float height, Integer rgba) -> void
     def self.ui_wheel_move: () -> Float
     def self.ui_style_checkbox: (Integer border_rgba, Integer hover_rgba, Integer check_rgba) -> void
     def self.ui_checkbox: (Float left, Float top, Float size, bool checked) -> bool
+    def self.ui_clicked_in: (Float left, Float top, Float width, Float height) -> bool
   end
 end

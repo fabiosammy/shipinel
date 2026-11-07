@@ -42,4 +42,19 @@ class InlineTest < Minitest::Test
   def test_single_star_is_text
     assert_equal ["plain:*itálico*"], spans("*itálico*")
   end
+
+  def test_links_of_every_kind
+    assert_equal ["plain:Ver ", "link:DOS-558", "plain:, ", "link:https://a.test", "plain: e ", "link:https://c.test/d",
+                  "plain:."], spans("Ver [DOS-558](https://linear.app/x), <https://a.test> e https://c.test/d.")
+  end
+
+  def test_link_spans_carry_their_url
+    list = Shipinel::Markdown::Inline.parse("[semana](week.md)")
+
+    assert_equal ["week.md", 1], [list.at(0).url, list.size]
+  end
+
+  def test_url_in_code_stays_code
+    assert_equal ["code:https://x.test"], spans("`https://x.test`")
+  end
 end

@@ -12,7 +12,7 @@
 #include <raygui.h>
 
 enum {
-    FONT_SLOTS = 3,
+    FONT_SLOTS = 4,
     CHECKBOX_BORDER_WIDTH = 2,
     CHECKBOX_CHECK_PADDING = 3,
     MIN_WINDOW_WIDTH = 200,
@@ -23,7 +23,9 @@ enum {
     GREEN_SHIFT = 16,
     BLUE_SHIFT = 8,
     CHANNEL_MASK = 0xFF,
-    MAX_CODEPOINTS = 512
+    MAX_CODEPOINTS = 512,
+    /* Characters a document may add on top of the base set (arrows, emoji). */
+    MAX_EXTRA_CODEPOINTS = 2048
 };
 
 /* No extra space between glyphs: the font's own advance widths apply. */
@@ -42,6 +44,9 @@ static const int CODEPOINT_RANGES[][2] = {
 
 static Font fonts[FONT_SLOTS];
 static bool font_owned[FONT_SLOTS];
+/* Set by ui_set_extra_codepoints, used by every ui_load_font after it. */
+static int extra_codepoints[MAX_EXTRA_CODEPOINTS];
+static int extra_count = 0;
 
 static Color color_from(uint32_t rgba) {
     Color color = {
@@ -58,6 +63,7 @@ static int checked_slot(int slot) {
     return (slot >= 0 && slot < FONT_SLOTS) ? slot : 0;
 }
 
+/* The base ranges, then the extra codepoints. */
 static int fill_codepoints(int *codepoints) {
     int count = 0;
     const int ranges = (int)(sizeof CODEPOINT_RANGES / sizeof CODEPOINT_RANGES[0]);
@@ -67,6 +73,10 @@ static int fill_codepoints(int *codepoints) {
             codepoints[count] = codepoint;
             count++;
         }
+    }
+    for (int extra = 0; extra < extra_count; extra++) {
+        codepoints[count] = extra_codepoints[extra];
+        count++;
     }
     return count;
 }
@@ -126,8 +136,16 @@ void ui_end_frame(void) {
     EndDrawing();
 }
 
+void ui_set_extra_codepoints(const int64_t *codepoints, int count) {
+    extra_count = 0;
+    for (int index = 0; index < count && index < MAX_EXTRA_CODEPOINTS; index++) {
+        extra_codepoints[index] = (int)codepoints[index];
+        extra_count++;
+    }
+}
+
 void ui_load_font(int slot, const char *path, int pixel_size) {
-    static int codepoints[MAX_CODEPOINTS];
+    static int codepoints[MAX_CODEPOINTS + MAX_EXTRA_CODEPOINTS];
     const int count = fill_codepoints(codepoints);
     const int target = checked_slot(slot);
     const Font loaded = LoadFontEx(path, pixel_size, codepoints, count);
@@ -147,9 +165,41 @@ int ui_font_loaded(int slot) {
     return font_owned[checked_slot(slot)] ? 1 : 0;
 }
 
+/* raylib loads only the glyphs a font really has (LoadFontData skips
+ * missing ones), so a loaded glyph is a drawable one. */
+static bool slot_has_glyph(int slot, int codepoint) {
+    if (!font_owned[slot]) {
+        return false;
+    }
+    for (int glyph = 0; glyph < fonts[slot].glyphCount; glyph++) {
+        if (fonts[slot].glyphs[glyph].value == codepoint) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int ui_glyph_slots(int codepoint) {
+    int slots = 0;
+    for (int slot = 0; slot < FONT_SLOTS; slot++) {
+        if (slot_has_glyph(slot, codepoint)) {
+            slots |= 1 << slot;
+        }
+    }
+    return slots;
+}
+
 void ui_draw_rect(float left, float top, float width, float height, uint32_t rgba) {
     const Rectangle rect = {left, top, width, height};
     DrawRectangleRec(rect, color_from(rgba));
+}
+
+int ui_clicked_in(float left, float top, float width, float height) {
+    const Rectangle area = {left, top, width, height};
+    return (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) &&
+            CheckCollisionPointRec(GetMousePosition(), area))
+               ? 1
+               : 0;
 }
 
 float ui_wheel_move(void) {

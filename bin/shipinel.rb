@@ -12,9 +12,9 @@ require_relative "../lib/shipinel/ui"
 
 begin
   options = Shipinel::CliOptions.new(ARGV).parse
-  fonts = Shipinel::FontLocator.new(Shipinel::Fontconfig.new).locate(options.font_path)
+  fonts = Shipinel::FontLocator.new(Shipinel::Fontconfig.new).locate(options)
   styles = Shipinel::Styles.new(options.font_size.to_f)
-  Shipinel::App.new(Shipinel::Screen.new, options.path, styles).run(fonts)
+  Shipinel::App.new(Shipinel::Screen.new, options.path, styles, fonts).run
 rescue Shipinel::UsageError => error
   warn error.message
   exit 2

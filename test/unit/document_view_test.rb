@@ -78,4 +78,17 @@ class DocumentViewTest < Minitest::Test
 
     assert_empty @view.notices
   end
+
+  def test_a_link_to_a_place_in_the_same_file_opens_nothing
+    @view.follow("#goal-1")
+
+    assert_empty @view.notices
+  end
+
+  def test_shown_text_includes_the_notices
+    File.unlink(@path)
+    @view.reload
+
+    assert_match(/does not exist/, @view.shown_text)
+  end
 end

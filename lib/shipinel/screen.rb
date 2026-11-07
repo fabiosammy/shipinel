@@ -7,8 +7,8 @@
 # The shim's yes/no answers are C ints, which is exactly what the FFI's
 # :bool is, so they arrive here as true/false.
 
+require_relative "font_shim"
 require_relative "geometry"
-require_relative "text_measure"
 require_relative "theme"
 
 module Shipinel
@@ -41,6 +41,12 @@ module Shipinel
       Rect.new(0.0, 0.0, UI.ui_screen_width.to_f, UI.ui_screen_height.to_f)
     end
 
+    # The fonts this window draws with.
+    #: () -> FontShim
+    def font_shim
+      FontShim.new
+    end
+
     #: (Integer background) -> void
     def begin_frame(background)
       UI.ui_begin_frame(background)
@@ -49,24 +55,6 @@ module Shipinel
     #: () -> void
     def end_frame
       UI.ui_end_frame
-    end
-
-    #: (Integer font_slot, String path, Integer pixel_size) -> void
-    def load_font(font_slot, path, pixel_size)
-      UI.ui_load_font(font_slot, path, pixel_size)
-    end
-
-    # False when the font could not be loaded; the slot then has raylib's
-    # built-in font, which lacks accented letters.
-    #: (Integer font_slot) -> bool
-    def font_loaded?(font_slot)
-      UI.ui_font_loaded(font_slot)
-    end
-
-    # Measures text in the fonts this window loaded.
-    #: () -> TextMeasure
-    def text_measure
-      TextMeasure.new
     end
 
     #: (String text, Point at, TextStyle style) -> void
@@ -96,6 +84,12 @@ module Shipinel
     #: (Rect rect, bool checked) -> bool
     def checkbox_clicked?(rect, checked)
       UI.ui_checkbox(rect.left, rect.top, rect.width, checked)
+    end
+
+    # True on the frame the left button was released inside `rect`.
+    #: (Rect rect) -> bool
+    def clicked_in?(rect)
+      UI.ui_clicked_in(rect.left, rect.top, rect.width, rect.height)
     end
   end
 end

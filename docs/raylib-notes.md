@@ -217,8 +217,19 @@ What Ruby can call, all scalars and strings (Spinel FFI types in
 | `void ui_style_checkbox(uint32_t, uint32_t, uint32_t)` | `GuiSetStyle(CHECKBOX, ...)`: border normal; border focused and pressed; check mark (TEXT_COLOR_*) in all states; `BORDER_WIDTH` 2, `CHECK_PADDING` 3 |
 | `int ui_checkbox(float, float, float, int)` | `GuiCheckBox(bounds, NULL, &state) == RESULT_CHANGED` |
 
+| `void ui_set_extra_codepoints(const int64_t *, int)` | kept for every following `ui_load_font`: the document's characters beyond the base set (Ruby `:int_array`) |
+| `int ui_glyph_slots(int codepoint)` | bit n set when slot n's glyphs include it (one argument, so nothing to swap) |
+| `int ui_clicked_in(float, float, float, float)` | `IsMouseButtonReleased(LEFT)` and `CheckCollisionPointRec(GetMousePosition(), ...)` |
+
 Yes/no values are `int`, bound in Ruby as FFI `:bool` (a C `int`). Font
-slots: 0 body, 1 mono, 2 bold.
+slots: 0 body, 1 mono, 2 bold, 3 symbol (emoji).
+
+**Glyph coverage.** `LoadFontData` (rtext.c) keeps only the codepoints the
+font file has (`stbtt_FindGlyphIndex(...) > 0`), so after loading, a glyph in
+`font.glyphs` is a drawable one; `ui_glyph_slots` relies on that. Colour
+emoji fonts (CBDT/CBLC bitmaps, e.g. Noto Color Emoji) have cmap entries but
+no outlines stb_truetype can rasterise, so their glyphs would load blank:
+the symbol slot asks fontconfig for `color=false` (Noto Emoji, Symbola).
 
 `GuiCheckBox` (raygui.h:2317) toggles on `GUI_BUTTON_RELEASED` inside the
 bounds and returns `RESULT_CHANGED` (2, raygui.h:562) on that frame; it

@@ -1,20 +1,18 @@
 # frozen_string_literal: true
 
 require_relative "test_helper"
+require_relative "support/fake_fonts"
 require_relative "../../lib/shipinel/layout"
 require_relative "../../lib/shipinel/markdown/parser"
 
 # With size 20: line height 27, margin 16, marker 30, indent 28 per depth,
 # block gap 12; the fake font is 0.5 * size wide per character.
 class LayoutTest < Minitest::Test
-  class FakeMeasurer
-    def text_width(text, style) = text.size * style.size * 0.5
-  end
-
   STYLES = Shipinel::Styles.new(20.0)
 
   def arrange(source, width = 400.0, notices: [])
-    Shipinel::Layout.new(FakeMeasurer.new, STYLES, width).arrange(Shipinel::Markdown::Parser.parse(source), notices)
+    fonts = fake_font_set(source)
+    Shipinel::Layout.new(fonts, STYLES, width).arrange(Shipinel::Markdown::Parser.parse(source), notices)
   end
 
   def commands(source, width = 400.0)
@@ -26,8 +24,14 @@ class LayoutTest < Minitest::Test
     case command
     when Shipinel::TextRun then "text #{command.text.inspect} at #{xy(command.rect)} slot #{command.style.font_slot}"
     when Shipinel::Box then "box #{rect(command.rect)}"
-    else "check #{rect(command.rect)} line #{command.click.line_index} #{command.click.checked?}"
+    else area(command)
     end
+  end
+
+  def area(command)
+    return "link #{rect(command.rect)} #{command.url}" if command.is_a?(Shipinel::LinkArea)
+
+    "check #{rect(command.rect)} line #{command.click.line_index} #{command.click.checked?}"
   end
 
   def xy(point) = "#{point.left.round(1)},#{point.top.round(1)}"
@@ -106,7 +110,28 @@ class LayoutTest < Minitest::Test
 
     notice = page.at(0)
 
-    assert_equal ["falhou", Shipinel::Theme::Ink::PROBLEM, 16.0], [notice.text, notice.style.color, notice.rect.top]
+    assert_equal ["falhou", Shipinel::Theme::Accent::PROBLEM, 16.0], [notice.text, notice.style.color, notice.rect.top]
     assert_in_delta 55.0, page.at(1).rect.top
+  end
+
+  def test_emoji_go_to_the_symbol_font
+    expected = ["text \"🤖\" at 16.0,16.0 slot 3", "text \" \" at 26.0,16.0 slot 0",
+                "text \"feito\" at 36.0,16.0 slot 0"]
+
+    assert_equal expected, commands("🤖 feito")
+  end
+
+  def test_emoji_variation_selectors_are_dropped
+    assert_equal ["text \"✅\" at 16.0,16.0 slot 0"], commands("✅\uFE0F")
+  end
+
+  def test_a_link_is_underlined_and_clickable
+    expected = ["box 16.0,35.0 30.0x1.0", "link 16.0,16.0 30.0x27.0 week.md", "text \"ver\" at 16.0,16.0 slot 0"]
+
+    assert_equal expected, commands("[ver](week.md)")
+  end
+
+  def test_link_text_is_in_the_link_color
+    assert_equal Shipinel::Theme::Accent::LINK, arrange("<https://a.test>").at(2).style.color
   end
 end

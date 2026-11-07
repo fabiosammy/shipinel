@@ -48,6 +48,13 @@ module Shipinel
       Rect.new(@left + by, @top, @width - by, @height)
     end
 
+    # A one-pixel line under text drawn in `band(band_height)` at `text_size`:
+    # just under the baseline.
+    #: (Float band_height, Float text_size) -> Rect
+    def underline(band_height, text_size)
+      Rect.new(@left, band(band_height).top + (text_size * 0.95), @width, 1.0)
+    end
+
     # A strip of this rectangle, `height` tall, centered vertically: where
     # smaller text sits on a line.
     #: (Float height) -> Rect

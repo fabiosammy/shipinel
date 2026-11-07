@@ -13,18 +13,21 @@ module Shipinel
     attr_reader :path #: String
     attr_reader :font_path #: String?
     attr_reader :font_size #: Integer
+    attr_reader :emoji_font_path #: String?
 
-    #: (String path, String? font_path, Integer font_size) -> void
-    def initialize(path, font_path, font_size)
+    #: (String path, String? font_path, Integer font_size, String? emoji_font_path) -> void
+    def initialize(path, font_path, font_size, emoji_font_path)
       @path = path
       @font_path = font_path
       @font_size = font_size
+      @emoji_font_path = emoji_font_path
     end
   end
 
-  # Reads `PATH.md [--font PATH] [--font-size N]`, in any order.
+  # Reads `PATH.md [--font PATH] [--font-size N] [--emoji-font PATH]`, in
+  # any order. A flag given twice keeps its last value.
   class CliOptions
-    USAGE = "usage: shipinel PATH.md [--font PATH] [--font-size N]"
+    USAGE = "usage: shipinel PATH.md [--font PATH] [--font-size N] [--emoji-font PATH]"
     DEFAULT_FONT_SIZE = 20
     MIN_FONT_SIZE = 8
     MAX_FONT_SIZE = 72
@@ -33,21 +36,19 @@ module Shipinel
 
     # @rbs @args: Array[String]
     # @rbs @path: String?
-    # @rbs @font_path: String?
-    # @rbs @font_size: Integer
+    # @rbs @values: Hash[String, String]
 
     #: (Array[String] argv) -> void
     def initialize(argv)
       @args = argv.dup
       @path = nil
-      @font_path = nil
-      @font_size = DEFAULT_FONT_SIZE
+      @values = {}
     end
 
     #: () -> Options
     def parse
       take(@args.shift.to_s) until @args.empty?
-      Options.new(path, @font_path, @font_size)
+      Options.new(path, @values["--font"], font_size, @values["--emoji-font"])
     end
 
     private
@@ -63,8 +64,7 @@ module Shipinel
     #: (String arg) -> void
     def take(arg)
       case arg
-      when "--font" then @font_path = value_after("--font")
-      when "--font-size" then take_font_size(value_after("--font-size"))
+      when "--font", "--font-size", "--emoji-font" then @values[arg] = value_after(arg)
       else take_path(arg)
       end
       nil
@@ -77,15 +77,11 @@ module Shipinel
       @args.shift.to_s
     end
 
-    #: (String value) -> void
-    def take_font_size(value)
-      @font_size = WHOLE_NUMBER.match?(value) ? value.to_i : 0
-      check_font_size
-    end
-
-    #: () -> void
-    def check_font_size
-      return if @font_size >= MIN_FONT_SIZE && @font_size <= MAX_FONT_SIZE
+    #: () -> Integer
+    def font_size
+      text = @values.fetch("--font-size", DEFAULT_FONT_SIZE.to_s)
+      size = WHOLE_NUMBER.match?(text) ? text.to_i : 0
+      return size if size >= MIN_FONT_SIZE && size <= MAX_FONT_SIZE
 
       raise UsageError, "--font-size must be a whole number from #{MIN_FONT_SIZE} to #{MAX_FONT_SIZE}"
     end

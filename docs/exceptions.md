@@ -16,7 +16,7 @@ coverage) are never relaxed.
 
 | Smell | Where | Why |
 |---|---|---|
-| `UtilityFunction` | `Shipinel::Screen`, `Shipinel::TextMeasure` and `Shipinel::Fontconfig` only (`.reek.yml`) | These are adapters over something outside Ruby: the first two make single calls into `ext/ui_shim.c`, which holds the window and font state; `Fontconfig` runs `fc-match`. They exist so `App`, `Layout` and `FontLocator` can take fakes in CRuby tests; giving them state of their own would duplicate the outside side. Every other class keeps the smell on. |
+| `UtilityFunction` | `Shipinel::Screen`, `Shipinel::FontShim` and `Shipinel::Fontconfig` only (`.reek.yml`) | These are adapters over something outside Ruby: the first two make single calls into `ext/ui_shim.c`, which holds the window and font state; `Fontconfig` runs `fc-match`. They exist so `App`, `FontSet` and `FontLocator` can take fakes in CRuby tests; giving them state of their own would duplicate the outside side. Every other class keeps the smell on. |
 
 ## Spinel widen warnings
 

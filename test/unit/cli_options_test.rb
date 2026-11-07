@@ -61,4 +61,12 @@ class CliOptionsTest < Minitest::Test
     assert_match(/--font-size must be/, usage_error("a.md", "--font-size", "7"))
     assert_match(/--font-size must be/, usage_error("a.md", "--font-size", "73"))
   end
+
+  def test_emoji_font
+    assert_equal "/e/NotoEmoji.ttf", parse("a.md", "--emoji-font", "/e/NotoEmoji.ttf").emoji_font_path
+  end
+
+  def test_a_flag_given_twice_keeps_the_last_value
+    assert_equal "/second.ttf", parse("--font", "/first.ttf", "a.md", "--font", "/second.ttf").font_path
+  end
 end

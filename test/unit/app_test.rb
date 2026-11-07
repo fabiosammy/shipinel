@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "test_helper"
+require_relative "support/fake_fonts"
 require "fileutils"
 require "tmpdir"
 require "minitest/mock"
@@ -32,12 +33,9 @@ class AppTest < Minitest::Test
     def close = @calls << [:close]
     def area = Shipinel::Rect.new(0.0, 0.0, 440.0, 100.0)
     def wheel_move = @wheel
-    def load_font(slot, path, size) = @calls << [:load_font, slot, path, size]
     def style_checkboxes(*colors) = @calls << [:style_checkboxes, *colors]
-    def text_measure = self
-    def text_width(text, style) = text.size * style.size * 0.5
+    def font_shim = (@font_shim ||= FakeShim.new(failing: @broken == :font ? PATHS_FAILING : []))
     def begin_frame(_color) = @clicked = false
-    def font_loaded?(_slot) = @broken != :font
     def texts_on(frame) = @texts.select { |text_frame, _text| text_frame == frame }.map(&:last)
 
     def end_frame
@@ -57,6 +55,9 @@ class AppTest < Minitest::Test
 
       @clicked = true
     end
+
+    # Links are clicked like checkboxes: the first one on frame `click_on`.
+    def clicked_in?(rect) = checkbox_clicked?(rect, false)
   end
 
   def setup
@@ -69,9 +70,10 @@ class AppTest < Minitest::Test
     FileUtils.remove_entry(@dir)
   end
 
+  PATHS_FAILING = ["/s.ttf", "/b.ttf", "/m.ttf", "/e.ttf"].freeze
+
   def run_app(screen)
-    Shipinel::App.new(screen, @path,
-                      Shipinel::Styles.new(20.0)).run(Shipinel::FontPaths.new("/s.ttf", "/b.ttf", "/m.ttf"))
+    Shipinel::App.new(screen, @path, Shipinel::Styles.new(20.0), PATHS).run
     screen
   end
 
@@ -81,12 +83,12 @@ class AppTest < Minitest::Test
     assert_equal [[:open, 440, 640, "shipinel"], [:close]], [calls.first, calls.last]
   end
 
-  def test_loads_three_fonts_at_the_largest_text_size_and_styles_checkboxes
-    calls = run_app(FakeScreen.new).calls[1..4]
+  def test_loads_four_fonts_with_the_documents_characters_and_styles_checkboxes
+    File.write(@path, "# Semana → 🤖\n")
+    screen = run_app(FakeScreen.new)
 
-    assert_equal [[:load_font, 0, "/s.ttf", 32], [:load_font, 2, "/b.ttf", 32], [:load_font, 1, "/m.ttf", 32]],
-                 calls.first(3)
-    assert_equal :style_checkboxes, calls.last.first
+    assert_equal [[:use, [0x2192, 0x1F916]], [:load, 0, "/s.ttf", 32]], screen.font_shim.calls.first(2)
+    assert_equal :style_checkboxes, screen.calls[1].first
   end
 
   def test_clicking_a_checkbox_toggles_the_task_in_the_file
@@ -110,7 +112,7 @@ class AppTest < Minitest::Test
   def test_each_font_that_does_not_load_is_a_notice
     notices = run_app(FakeScreen.new(broken: :font)).texts_on(0).select { |text| text.start_with?("\"/") }
 
-    assert_equal ["\"/s.ttf\"", "\"/b.ttf\"", "\"/m.ttf\""], notices.map(&:strip)
+    assert_equal ["\"/s.ttf\"", "\"/b.ttf\"", "\"/m.ttf\"", "\"/e.ttf\""], notices.map(&:strip)
   end
 
   # The clock is stubbed: 0 ms at start, then 600 ms later per frame, so
@@ -122,5 +124,14 @@ class AppTest < Minitest::Test
     Shipinel::Clock.stub(:now_ms, -> { times.next }) { run_app(screen) }
 
     assert_equal [%w[Semana Reunião], ["Domingo"]], [screen.texts_on(0), screen.texts_on(1)]
+  end
+
+  # A link to a place in the same file opens nothing, so no browser starts.
+  def test_clicking_a_link_follows_it
+    File.write(@path, "[topo](#topo)\n")
+    screen = run_app(FakeScreen.new(click_on: 0))
+
+    assert_equal "[topo](#topo)\n", File.read(@path)
+    assert_equal ["topo"], screen.texts_on(1)
   end
 end

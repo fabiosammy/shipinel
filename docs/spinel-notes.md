@@ -389,6 +389,19 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
 - **raygui defines `TEXT_SPACING`** (a style enum), which collided with the
   shim's own constant of that name; the shim's is `GLYPH_SPACING`.
 
+## Found while adding emoji and links
+
+- **`:int_array`** passes an `Array[Integer]` as `const int64_t *` for the
+  call; the shim copies it into its own `int` array.
+- **`Process.detach` widens** (`builtins/process_detach.rb`), so links are
+  opened with `system("sh", "-c", '"$1" "$2" … &', "sh", launcher, url)`:
+  the shell exits at once (no zombie), and the URL is an argument, never
+  shell text.
+- **A typed `Hash[String, String]` ivar** seeded with `# @rbs` and
+  initialised with `{}` compiles without widening (CliOptions' flag values).
+- `Integer#anybits?` / `nobits?`, `String#codepoints`, `String#delete` with
+  non-ASCII characters, `Array#-` and `Integer#times` all compile cleanly.
+
 ## Reproducers
 
 Nothing has been refused so far. The constructs above that compile but widen

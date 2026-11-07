@@ -10,6 +10,6 @@ detectors:
       # The FFI adapters: each method is one call into the C shim, which owns
       # the window and font state. Holding state here would duplicate it.
       - "Shipinel::Screen"
-      - "Shipinel::TextMeasure"
+      - "Shipinel::FontShim"
       # The same for the fc-match process: FontLocator takes a fake in tests.
       - "Shipinel::Fontconfig"

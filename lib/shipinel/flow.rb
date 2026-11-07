@@ -36,9 +36,10 @@ module Shipinel
       @layout.styles
     end
 
-    #: (String text, TextStyle style) -> Float
-    def width_of(text, style)
-      @layout.width_of(text, style)
+    # Measures text and splits it between the text and symbol fonts.
+    #: () -> FontSet
+    def fonts
+      @layout.fonts
     end
 
     #: () -> bool
@@ -77,7 +78,7 @@ module Shipinel
     #: (Float indent, TextStyle style) -> void
     def bullet(indent, style)
       left = Theme::Spacing::MARGIN + indent + (style.size * 0.4)
-      add(TextRun.new(BULLET, Rect.new(left, @top, width_of(BULLET, style), style.line_height), style))
+      add(TextRun.new(BULLET, Rect.new(left, @top, fonts.text_width(BULLET, style), style.line_height), style))
     end
 
     # Not wrapped: code keeps its lines.

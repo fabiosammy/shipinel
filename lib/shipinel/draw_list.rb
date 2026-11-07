@@ -57,6 +57,17 @@ module Shipinel
     end
   end
 
+  # Where a link's text was drawn: a click inside opens the url.
+  class LinkArea < DrawCommand
+    attr_reader :url #: String
+
+    #: (Rect rect, String url) -> void
+    def initialize(rect, url)
+      super(rect)
+      @url = url
+    end
+  end
+
   # The commands of one laid-out page, in drawing order, and its height.
   class DrawList
     attr_reader :height #: Float

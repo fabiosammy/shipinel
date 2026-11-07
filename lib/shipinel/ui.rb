@@ -18,13 +18,16 @@ module Shipinel
     ffi_func :ui_screen_height, [], :int
     ffi_func :ui_begin_frame, %i[uint32], :void
     ffi_func :ui_end_frame, [], :void
+    ffi_func :ui_set_extra_codepoints, %i[int_array int], :void
     ffi_func :ui_load_font, %i[int str int], :void
     ffi_func :ui_font_loaded, %i[int], :bool
+    ffi_func :ui_glyph_slots, %i[int], :int
     ffi_func :ui_text_width, %i[int str float], :float
     ffi_func :ui_draw_text, %i[int str float float float uint32], :void
     ffi_func :ui_draw_rect, %i[float float float float uint32], :void
     ffi_func :ui_wheel_move, [], :float
     ffi_func :ui_style_checkbox, %i[uint32 uint32 uint32], :void
     ffi_func :ui_checkbox, %i[float float float bool], :bool
+    ffi_func :ui_clicked_in, %i[float float float float], :bool
   end
 end

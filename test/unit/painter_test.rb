@@ -20,6 +20,11 @@ class PainterTest < Minitest::Test
       @draws << [:checkbox, rect.top, checked]
       @click_tops.include?(rect.top)
     end
+
+    def clicked_in?(rect)
+      @draws << [:link, rect.top]
+      @click_tops.include?(rect.top)
+    end
   end
 
   STYLE = Shipinel::TextStyle.new(0, 20.0, 0xFFFFFFFF)
@@ -34,6 +39,7 @@ class PainterTest < Minitest::Test
     list.add(Shipinel::TextRun.new("ação", Shipinel::Rect.new(0.0, 110.0, 40.0, 27.0), STYLE))
     list.add(checkbox(120.0, 4, false))
     list.add(checkbox(140.0, 5, true))
+    list.add(Shipinel::LinkArea.new(Shipinel::Rect.new(0.0, 160.0, 40.0, 27.0), "https://x.test"))
     list
   end
 
@@ -41,17 +47,21 @@ class PainterTest < Minitest::Test
     screen = FakeScreen.new
     Shipinel::Painter.paint(screen, page, 100.0)
 
-    assert_equal [[:rect, 0.0, 0x123456FF], [:text, "ação", 10.0], [:checkbox, 20.0, false], [:checkbox, 40.0, true]],
-                 screen.draws
+    assert_equal [[:rect, 0.0, 0x123456FF], [:text, "ação", 10.0], [:checkbox, 20.0, false], [:checkbox, 40.0, true],
+                  [:link, 60.0]], screen.draws
   end
 
   def test_no_click_returns_nil
     assert_nil Shipinel::Painter.paint(FakeScreen.new, page, 0.0)
   end
 
-  def test_click_maps_to_the_task_line_and_seen_state
-    click = Shipinel::Painter.paint(FakeScreen.new([140.0]), page, 0.0)
+  def test_a_clicked_checkbox_is_returned_with_its_task_click
+    click = Shipinel::Painter.paint(FakeScreen.new([140.0]), page, 0.0).click
 
     assert_equal [5, true], [click.line_index, click.checked?]
+  end
+
+  def test_a_clicked_link_is_returned_with_its_url
+    assert_equal "https://x.test", Shipinel::Painter.paint(FakeScreen.new([160.0]), page, 0.0).url
   end
 end

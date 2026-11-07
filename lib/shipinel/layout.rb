@@ -2,13 +2,14 @@
 
 # Turns blocks into positioned draw commands for a page of a given width:
 # headings, wrapped paragraphs, indented bullets and tasks with their
-# checkboxes, code lines on a background, rules. Pure: text is measured
-# through the injected TextMeasure (or a fake in tests).
+# checkboxes, code lines on a background, rules. Pure: text is measured,
+# and split into text and symbol pieces, by the injected FontSet (or a fake
+# in tests).
 
 require_relative "draw_list"
 require_relative "flow"
 require_relative "markdown/block"
-require_relative "text_measure"
+require_relative "font_set"
 require_relative "styles"
 require_relative "task_toggler"
 
@@ -20,14 +21,14 @@ module Shipinel
   # parameter typed with the subclass (docs/spinel-notes.md).
   class Layout
     attr_reader :styles #: Styles
+    attr_reader :fonts #: FontSet
 
-    # @rbs @measurer: TextMeasure
     # @rbs @flow: Flow
     # @rbs @in_code: bool
 
-    #: (TextMeasure measurer, Styles styles, Float width) -> void
-    def initialize(measurer, styles, width)
-      @measurer = measurer
+    #: (FontSet fonts, Styles styles, Float width) -> void
+    def initialize(fonts, styles, width)
+      @fonts = fonts
       @styles = styles
       @flow = Flow.new(self, width)
       @in_code = false
@@ -39,11 +40,6 @@ module Shipinel
       notices.each { |notice| place_notice(notice) }
       blocks.size.times { |position| place(blocks.at(position)) }
       @flow.finish
-    end
-
-    #: (String text, TextStyle style) -> Float
-    def width_of(text, style)
-      @measurer.text_width(text, style)
     end
 
     private

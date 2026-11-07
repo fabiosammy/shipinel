@@ -9,8 +9,8 @@ class FontLocatorTest < Minitest::Test
     def file_for(pattern) = "/fonts/#{pattern}.ttf"
   end
 
-  def locate(requested)
-    Shipinel::FontLocator.new(FakeFontconfig.new).locate(requested)
+  def locate(requested, emoji = nil)
+    Shipinel::FontLocator.new(FakeFontconfig.new).locate(Shipinel::Options.new("a.md", requested, 20, emoji))
   end
 
   def test_fontconfig_picks_both_fonts_by_default
@@ -46,5 +46,15 @@ class FontLocatorTest < Minitest::Test
 
   def test_first_loadable_is_empty_when_nothing_fits
     assert_equal "", Shipinel::Fontconfig.first_loadable("/n/NotoSans-Regular.ttc\n")
+  end
+
+  def test_requested_emoji_font
+    assert_equal __FILE__, locate(nil, __FILE__).symbol
+  end
+
+  def test_missing_emoji_font_is_a_usage_error
+    error = assert_raises(Shipinel::UsageError) { locate(nil, "/no/emoji.ttf") }
+
+    assert_equal "--emoji-font /no/emoji.ttf: no such file", error.message
   end
 end

@@ -22,7 +22,7 @@ module Shipinel
     # Notices about the file or the font, above the document.
     #: () -> TextStyle
     def problem
-      TextStyle.new(Theme::FontSlot::BODY, @size, Theme::Ink::PROBLEM)
+      TextStyle.new(Theme::FontSlot::BODY, @size, Theme::Accent::PROBLEM)
     end
 
     # The text of a checked task.
