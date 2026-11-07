@@ -39,8 +39,8 @@ class InlineTest < Minitest::Test
     assert_equal ["code:**não negrito**"], spans("`**não negrito**`")
   end
 
-  def test_single_star_is_text
-    assert_equal ["plain:*itálico*"], spans("*itálico*")
+  def test_italics_with_stars_and_underscores
+    assert_equal ["italic:(confirm)", "plain: e ", "italic:itálico"], spans("*(confirm)* e _itálico_")
   end
 
   def test_links_of_every_kind

@@ -68,9 +68,20 @@ module Shipinel
       #: (SourceLine line) -> void
       def read_text(line)
         marker = LineReader.fence_marker(line)
-        return open_fence(marker) unless marker.empty?
+        marker.empty? ? read_content(line) : open_fence(marker)
+      end
 
-        cells = Table.cells_in(line.text)
+      # A quote, a table row, or a line LineReader recognises.
+      #: (SourceLine line) -> void
+      def read_content(line)
+        text = line.text
+        quoted = Quote.text_in(text)
+        quoted ? add_quote_line(line, quoted) : read_table_or_block(line, text)
+      end
+
+      #: (SourceLine line, String text) -> void
+      def read_table_or_block(line, text)
+        cells = Table.cells_in(text)
         cells.empty? ? read_block(line) : add_table_row(line, cells)
       end
 
@@ -106,6 +117,17 @@ module Shipinel
           open.add_row(cells)
         else
           start(Table.new(line.line_index, cells))
+        end
+        nil
+      end
+
+      # (Not `return open.append(...)`: see add_table_row.)
+      #: (SourceLine line, String text) -> void
+      def add_quote_line(line, text)
+        open = @open
+        if text.empty? then @open = nil
+        elsif open.is_a?(Quote) then open.append(text)
+        else start(Quote.new(line.line_index, text))
         end
         nil
       end

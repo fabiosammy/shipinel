@@ -18,6 +18,9 @@ module Shipinel
     def self.ui_draw_text: (Integer slot, String text, Float left, Float top, Float size, Integer rgba) -> void
     def self.ui_draw_rect: (Float left, Float top, Float width, Float height, Integer rgba) -> void
     def self.ui_wheel_move: () -> Float
+    def self.ui_mouse_x: () -> Integer
+    def self.ui_mouse_y: () -> Integer
+    def self.ui_mouse_buttons: () -> Integer
     def self.ui_style_checkbox: (Integer border_rgba, Integer hover_rgba, Integer check_rgba) -> void
     def self.ui_draw_checkbox: (Float left, Float top, Float size, bool checked) -> void
     def self.ui_pointer_on: (Float left, Float top, Float width, Float height) -> Integer

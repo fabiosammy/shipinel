@@ -2,7 +2,8 @@
 
 # How the document is presented: its styles, where it is scrolled to, and
 # the fonts (with their warnings). Each frame it lays the document out for
-# the window's current size and applies the mouse wheel.
+# the window's current size, applies the wheel and the scrollbar, and adds
+# the scrollbar to the page.
 
 require_relative "document_view"
 require_relative "draw_list"
@@ -10,6 +11,7 @@ require_relative "font_set"
 require_relative "layout"
 require_relative "screen"
 require_relative "scroll"
+require_relative "scrollbar"
 require_relative "styles"
 
 module Shipinel
@@ -48,11 +50,18 @@ module Shipinel
     def lay_out(screen, document)
       area = screen.area
       page = Layout.new(@fonts, @styles, area.width).arrange(document.blocks, notices(document))
-      @scroll.apply(screen.wheel_move, page.height, area.height)
+      scroll(screen.mouse, page, area)
       page
     end
 
     private
+
+    # The bar is drawn where the page ended up after this frame's input.
+    #: (MouseState mouse, DrawList page, Rect area) -> void
+    def scroll(mouse, page, area)
+      bar = Scrollbar.new(page.height, area, @scroll.offset)
+      bar.moved_to(@scroll.apply(mouse, bar)).add_to(page)
+    end
 
     #: (DocumentView document) -> Array[String]
     def notices(document)

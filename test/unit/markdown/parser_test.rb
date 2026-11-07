@@ -22,6 +22,7 @@ class ParserTest < Minitest::Test
     when Shipinel::Markdown::ListItem then list_item(block)
     when Shipinel::Markdown::Paragraph then "p #{block.text}"
     when Shipinel::Markdown::CodeLine then "code #{block.text}"
+    when Shipinel::Markdown::Quote then "quote #{block.text}"
     else "rule"
     end
   end

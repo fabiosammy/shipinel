@@ -25,6 +25,12 @@ module Shipinel
       TextStyle.new(Theme::FontSlot::BODY, @size, Theme::Accent::PROBLEM)
     end
 
+    # Quoted text: italic and quieter than the text around it.
+    #: () -> TextStyle
+    def quote
+      TextStyle.new(Theme::FontSlot::ITALIC, @size, Theme::Ink::MUTED)
+    end
+
     # The text of a checked task.
     #: () -> TextStyle
     def done

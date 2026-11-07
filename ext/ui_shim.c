@@ -12,7 +12,7 @@
 #include <raygui.h>
 
 enum {
-    FONT_SLOTS = 4,
+    FONT_SLOTS = 5,
     CHECKBOX_BORDER_WIDTH = 2,
     CHECKBOX_CHECK_PADDING = 3,
     MIN_WINDOW_WIDTH = 200,
@@ -29,7 +29,10 @@ enum {
     /* ui_pointer_on's answers. */
     POINTER_AWAY = 0,
     POINTER_OVER = 1,
-    POINTER_CLICKED = 2
+    POINTER_CLICKED = 2,
+    /* ui_mouse_buttons' bits. */
+    MOUSE_DOWN = 1,
+    MOUSE_PRESSED = 2
 };
 
 /* No extra space between glyphs: the font's own advance widths apply. */
@@ -215,6 +218,19 @@ void ui_set_hand_cursor(int hand) {
         SetMouseCursor(wanted != 0 ? MOUSE_CURSOR_POINTING_HAND : MOUSE_CURSOR_DEFAULT);
         current = wanted;
     }
+}
+
+int ui_mouse_x(void) {
+    return GetMouseX();
+}
+
+int ui_mouse_y(void) {
+    return GetMouseY();
+}
+
+int ui_mouse_buttons(void) {
+    return (IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? MOUSE_DOWN : 0) |
+           (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ? MOUSE_PRESSED : 0);
 }
 
 float ui_wheel_move(void) {

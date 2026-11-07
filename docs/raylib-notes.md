@@ -102,6 +102,7 @@ RLAPI void SetExitKey(int key);                                   // raylib.h:12
 
 ```c
 RLAPI bool IsMouseButtonPressed(int button);                  // raylib.h:1226
+RLAPI bool IsMouseButtonDown(int button);                     // raylib.h:1227
 RLAPI int GetMouseX(void);                                    // raylib.h:1230
 RLAPI int GetMouseY(void);                                    // raylib.h:1231
 RLAPI float GetMouseWheelMove(void);                          // raylib.h:1237
@@ -214,6 +215,8 @@ What Ruby can call, all scalars and strings (Spinel FFI types in
 | `void ui_draw_text(int, const char *, float, float, float, uint32_t)` | `DrawTextEx`, spacing 0 |
 | `void ui_draw_rect(float, float, float, float, uint32_t)` | `DrawRectangleRec` |
 | `float ui_wheel_move(void)` | `GetMouseWheelMove` |
+| `int ui_mouse_x(void)`, `int ui_mouse_y(void)` | `GetMouseX`, `GetMouseY`: the scrollbar's pointer position |
+| `int ui_mouse_buttons(void)` | bit 1 `IsMouseButtonDown(LEFT)`, bit 2 `IsMouseButtonPressed(LEFT)`: dragging the thumb, paging on the track |
 | `void ui_style_checkbox(uint32_t, uint32_t, uint32_t)` | `GuiSetStyle(CHECKBOX, ...)`: border normal; border focused and pressed; check mark (TEXT_COLOR_*) in all states; `BORDER_WIDTH` 2, `CHECK_PADDING` 3 |
 
 | `void ui_set_extra_codepoints(const int64_t *, int)` | kept for every following `ui_load_font`: the document's characters beyond the base set (Ruby `:int_array`) |

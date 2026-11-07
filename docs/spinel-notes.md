@@ -312,8 +312,9 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
      Enumerable; `select`, `map`, `first`, `size`, `position` and the like do
      not. Found with `spinel-reduce --oracle-cmd`. Reproducer:
      `i = 0` works, `index = 0; while index < 2; index += 1; end` → 35 widen
-     warnings, all inside `builtins/`. **Rule:** never use those four names;
-     say `position` (in a list) or `line_index` (in the file).
+     warnings, all inside `builtins/`. **Rule:** never use those four names
+     (nor `clamp`, found later); say `position` (in a list) or `line_index`
+     (in the file).
    - An `# @rbs @ivar: T` line directly above a method's `#:` comment is
      read as part of that method's comment and ignored ("belongs to the
      method's leading comment block"). **Rule:** a blank line after the ivar
@@ -338,6 +339,10 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
    - `grep_v`, `all?` and `none?` (block or pattern) also pull in the
      widening Enumerable builtins (35 warnings each); `select`, `reject`,
      `map`, `min`/`max` on an Array do not.
+   - **A method of our own named `clamp`** pulls in the Comparable builtins
+     (13 warnings), like `index`/`find`/`count`/`detect` do for Enumerable.
+     `[[x, hi].min, lo].max` itself is fine. **Rule:** add `clamp` to the
+     names never used (Scrollbar's is `in_range`).
    - `Comparable#between?` (and `clamp`) pulls `builtins/comparable.rb` in,
      which reports six widen warnings. **Rule:** `x >= lo && x <= hi`
      (`Style/ComparableBetween` is off for this reason, docs/exceptions.md).

@@ -41,11 +41,16 @@ class ScreenTest < Minitest::Test
                  Shipinel::UI.calls
   end
 
-  def test_input
-    assert_in_delta(-1.0, @screen.wheel_move)
+  def test_mouse
+    mouse = @screen.mouse
+
+    assert_equal [12.0, 34.0, -1.0, true, true], [mouse.at.left, mouse.at.top, mouse.wheel, mouse.down?, mouse.pressed?]
+  end
+
+  def test_checkbox
     @screen.draw_checkbox(RECT, true)
 
-    assert_equal [[:wheel], [:checkbox, 1.0, 2.0, 3.0, true]], Shipinel::UI.calls
+    assert_equal [[:checkbox, 1.0, 2.0, 3.0, true]], Shipinel::UI.calls
   end
 
   def test_pointer_states

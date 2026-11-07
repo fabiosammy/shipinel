@@ -64,17 +64,17 @@ module Shipinel
       when Markdown::Heading then place_heading(text, block.level)
       when Markdown::Task then list(block.depth).task(text, block.line_index, block.checked?)
       when Markdown::Bullet then list(block.depth).bullet(text, block.marker)
-      else place_plain(block)
+      else place_plain(block, text)
       end
     end
 
-    #: (Markdown::Block block) -> void
-    def place_plain(block)
-      text = block.text
+    #: (Markdown::Block block, String text) -> void
+    def place_plain(block, text)
       case block
       when Markdown::Paragraph then place_paragraph(text)
       when Markdown::CodeLine then @flow.code_line(text)
       when Markdown::Table then place_table(text, block.columns, block.header_rows)
+      when Markdown::Quote then place_quote(text)
       else @flow.rule
       end
     end
@@ -96,6 +96,21 @@ module Shipinel
     def place_paragraph(text)
       @flow.text(text, 0.0, @styles.body)
       @flow.gap(block_gap)
+    end
+
+    # Indented, with a bar down its left side as tall as its text.
+    #: (String text) -> void
+    def place_quote(text)
+      top = @flow.top
+      @flow.text(text, @styles.size, @styles.quote)
+      add_quote_bar(top)
+      @flow.gap(block_gap)
+    end
+
+    # From `top` down to where the quote's text ended.
+    #: (Float top) -> void
+    def add_quote_bar(top)
+      @flow.add(Box.new(Rect.new(Theme::Spacing::MARGIN, top, 3.0, @flow.top - top), Theme::Surface::RULE))
     end
 
     #: (String cells, Integer columns, Integer header_rows) -> void

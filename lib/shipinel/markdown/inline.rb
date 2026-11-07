@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
-# Splits one line of block text into styled spans: **bold**, `code`, links
-# and plain text. A marker without its closing partner stays as literal
+# Splits one line of block text into styled spans: **bold**, *italic*,
+# `code`, links and plain text. A marker without its closing partner stays as literal
 # text.
 
+require_relative "emphasis"
 require_relative "links"
 
 module Shipinel
   module Markdown
-    # A run of text in one style: :plain, :bold, :code or :link. A link
+    # A run of text in one style: :plain, :bold, :italic, :code or :link. A link
     # also has its url; every other span's url is "".
     class Span
       attr_reader :text #: String
@@ -89,8 +90,18 @@ module Shipinel
       def step
         if marker_at?(CODE, @position) then take(CODE, :code)
         elsif marker_at?(BOLD, @position) then take(BOLD, :bold)
-        else take_link_or_char
+        else take_italic_link_or_char
         end
+        nil
+      end
+
+      #: () -> void
+      def take_italic_link_or_char
+        close = Emphasis.close_of(@text, @position)
+        return take_link_or_char if close == NOT_FOUND
+
+        add_span(:italic, @position + 1, close)
+        @position += 1
         nil
       end
 

@@ -19,6 +19,8 @@ module Shipinel
 
   # A rectangle: a code background, a rule, a checkbox.
   class Rect
+    OUTSIDE = -1.0
+
     attr_reader :left #: Float
     attr_reader :top #: Float
     attr_reader :width #: Float
@@ -40,6 +42,20 @@ module Shipinel
     #: () -> Point
     def corner
       Point.new(@left, @top)
+    end
+
+    #: (Point point) -> bool
+    def contains?(point)
+      left = point.left
+      top = point.top
+      left >= @left && left < @left + @width && top >= @top && top < @top + @height
+    end
+
+    # How far below the top edge `point` is, or OUTSIDE when it is not in
+    # the rectangle.
+    #: (Point point) -> Float
+    def depth_of(point)
+      contains?(point) ? point.top - @top : OUTSIDE
     end
 
     # The same rectangle with its left edge moved right by `by`.

@@ -47,8 +47,9 @@ require_relative "../lib/shipinel/font_shim"
 class LayoutSnapshot
   SOURCE = "# Semana 45\n\nFoco: **entregar** o `shipinel` hoje, sem falta.\n\n" \
            "- [ ] 🤖 Reunião → [DOS-558](https://linear.app/x)\n  - [x] Pauta\n* pão\n1. Drata\n2. Twingate\n" \
-           "| Goal | State |\n|---|---|\n| Drata | 12 tests failed at the last run |\n---\n```\nx\tcódigo\n```\nFim"
-  PATHS = Shipinel::FontPaths.new("/s.ttf", "/b.ttf", "/m.ttf", "/e.ttf")
+           "| Goal | State |\n|---|---|\n| Drata | 12 tests failed at the last run |\n" \
+           "> *Citação* longa que quebra em duas linhas\n---\n```\nx\tcódigo\n```\nFim"
+  PATHS = Shipinel::FontPaths.new(Shipinel::TextFaces.new("/s.ttf", "/b.ttf", "/i.ttf"), "/m.ttf", "/e.ttf")
 
   #: () -> Shipinel::FontSet
   def fonts

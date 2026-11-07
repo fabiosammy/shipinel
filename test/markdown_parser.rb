@@ -9,6 +9,7 @@ require_relative "../lib/shipinel/markdown/inline"
 # Prints one line per block, then the spans of every inline-styled text.
 class ParserSnapshot
   SOURCE = "# Semana 45 ##\r\n\r\nFoco: **entregar** o `shipinel`.\r\nSem reuniões.\r\n\r\n" \
+           "> _Citação_ e *mais*\r\n> junto\r\n>\r\n> outra\r\n" \
            "- [ ] Reunião\r\n  - [x] Pauta\r\n    * [X] Ana\r\n+ [ ] Ação\r\n1. **Drata**\r\n2) [x] Twingate\r\n" \
            "| Goal | State |\r\n|---|:-:|\r\n| Drata | 12 |\r\n| Twingate |\r\n---\r\n" \
            "* pão\r\n\t* queijo\r\n- [ ]\r\n```\r\n- [ ] não é tarefa\r\n````\r\n~~~\r\nx\r\nFim"
@@ -44,6 +45,7 @@ class ParserSnapshot
     case block
     when Shipinel::Markdown::Paragraph then "paragraph #{spans(block.text)}"
     when Shipinel::Markdown::CodeLine then "code [#{block.text}]"
+    when Shipinel::Markdown::Quote then "quote #{spans(block.text)}"
     else table_or_rule(block)
     end
   end

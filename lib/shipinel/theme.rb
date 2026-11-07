@@ -11,6 +11,8 @@ module Shipinel
       BACKGROUND = 0x1D1F24FF
       CODE_BACKGROUND = 0x2A2D35FF
       RULE = 0x3A3E48FF
+      SCROLL_TRACK = 0x25282EFF
+      SCROLL_THUMB = 0x4B5160FF
     end
 
     # Text colors.
@@ -42,6 +44,7 @@ module Shipinel
       BOLD = 2
       # Emoji and other symbols the text fonts lack.
       SYMBOL = 3
+      ITALIC = 4
     end
 
     # Spacing, in multiples of the body font size unless said otherwise.

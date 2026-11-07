@@ -96,6 +96,22 @@ module Shipinel
     class Paragraph < Block
     end
 
+    # "> Lembrete": consecutive quoted lines, joined like a paragraph. A ">"
+    # line with nothing after it starts a new one. Markdown inside a quote
+    # ("> - item") is shown as written.
+    class Quote < Block
+      # Example match: "> Lembrete" (text "Lembrete"), and ">" alone
+      LINE = /\A {0,3}>[ \t]?(?<text>.*)\z/
+
+      # The quoted text of a quote line ("" for ">" alone), or nil for any
+      # other line.
+      #: (String text) -> String?
+      def self.text_in(text)
+        match = LINE.match(text)
+        match ? match[:text].to_s.strip : nil
+      end
+    end
+
     # A horizontal rule: "---", "* * *" or "___".
     class Rule < Block
     end

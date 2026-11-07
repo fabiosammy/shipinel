@@ -57,6 +57,7 @@ module Shipinel
     def style_for(span)
       case span.style
       when :bold then @base.with_font(Theme::FontSlot::BOLD)
+      when :italic then @base.with_font(Theme::FontSlot::ITALIC)
       when :code then @flow.styles.code_block
       when :link then @base.with_color(Theme::Accent::LINK)
       else @base

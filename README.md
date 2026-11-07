@@ -37,7 +37,7 @@ shipinel PATH.md [--font PATH] [--font-size N] [--emoji-font PATH]
 | Option | Meaning |
 |---|---|
 | `PATH.md` | The file to show. If it does not exist yet, the window says so and shows it as soon as it appears. |
-| `--font PATH` | A TTF/OTF font for the text (also used for bold). Default: what `fc-match sans` returns, with `fc-match sans:bold` for bold. Code always uses `fc-match monospace`. |
+| `--font PATH` | A TTF/OTF font for the text (also used for bold and italic). Default: what `fc-match sans` returns, with `fc-match sans:bold` for bold and `fc-match sans:italic` for italic; if no italic face is installed, fontconfig returns the upright one and italics look upright. Code always uses `fc-match monospace`. |
 | `--font-size N` | Body text size in pixels, 8 to 72. Default 20. Headings are larger, code slightly smaller. |
 | `--emoji-font PATH` | A **monochrome** TTF/OTF for emoji and other symbols the text font lacks. Default: `fc-match 'emoji:color=false'`; the Nix package passes Noto Emoji. Colour emoji fonts (Noto Color Emoji) are bitmaps raylib cannot draw. |
 
@@ -54,15 +54,17 @@ Wrong arguments print a usage message and exit with status 2.
 | Indented items (2 or 4 spaces, or tabs) | Nested, indented by depth |
 | Consecutive text lines | One wrapped paragraph |
 | `**bold**`, `` `code` `` inside any text | Bold; monospace on a dark background |
+| `*italic*`, `_italic_` | Italic. The markers must touch the text (`2 * 3 * 4` stays as written), and `_` only counts at word edges, so `snake_case` and `workspace_id` are left alone |
+| `> quoted` lines | Indented, italic and dimmed, with a bar on the left; consecutive lines join, a lone `>` starts a new quote. Markdown inside a quote other than inline styles is shown as written |
 | `[text](url)`, `<https://…>`, bare `https://…` URLs | An underlined link; the pointer turns into a hand over it, and a click opens it with `xdg-open` (a relative link opens the file next to the plan) |
 | `\| a \| b \|` tables, with a `\|---\|---\|` row under the header | Columns sized to their content and shrunk to fit the window; text wraps inside each cell; header rows bold |
 | Arrows, symbols, emoji (`→ ✓ 🤖 ⏳`) | Drawn from the text font when it has them, otherwise from the emoji font |
 | `---`, `***`, `___` | A horizontal rule |
 | ```` ``` ```` or `~~~` fenced blocks | Monospaced lines; a `- [ ]` inside a fence is never a task |
 
-Anything else (images, emphasis with single `*` or `_`, block quotes,
-tables without leading and trailing `|`) is shown as plain text. Windows line endings and a missing final newline are kept
-exactly when a checkbox is toggled.
+Anything else (images, nested quotes, lists inside quotes, tables without
+leading and trailing `|`) is shown as plain text. Windows line endings and a
+missing final newline are kept exactly when a checkbox is toggled.
 
 ### How saving works
 
@@ -159,7 +161,9 @@ env -u WAYLAND_DISPLAY shipinel ~/notes/week.md
 
 - About 10 frames per second, and the file is re-read about every 500 ms by
   comparing its content, which also catches editors that save by renaming.
-- The mouse wheel scrolls; the scroll position survives reloads.
+- A page taller than the window gets a scrollbar on the right: the wheel
+  scrolls, the thumb can be dragged, and a click on the track moves one
+  window up or down. The scroll position survives reloads.
 - Escape does nothing; only the window's close button quits.
 - The window is resizable, and text re-wraps to its width.
 

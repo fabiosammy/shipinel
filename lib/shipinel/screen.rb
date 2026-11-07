@@ -9,6 +9,7 @@
 
 require_relative "font_shim"
 require_relative "geometry"
+require_relative "mouse_state"
 require_relative "theme"
 
 module Shipinel
@@ -67,10 +68,10 @@ module Shipinel
       UI.ui_draw_rect(rect.left, rect.top, rect.width, rect.height, color)
     end
 
-    # How far the wheel moved this frame; positive scrolls toward the top.
-    #: () -> Float
-    def wheel_move
-      UI.ui_wheel_move
+    # The mouse this frame: where it is, its left button, and its wheel.
+    #: () -> MouseState
+    def mouse
+      MouseState.new(Point.new(UI.ui_mouse_x.to_f, UI.ui_mouse_y.to_f), UI.ui_mouse_buttons, UI.ui_wheel_move)
     end
 
     #: (Integer border, Integer hover, Integer check) -> void

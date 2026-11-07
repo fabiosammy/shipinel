@@ -12,8 +12,8 @@ class FontSetTest < Minitest::Test
     shim = FakeShim.new
     Shipinel::FontSet.new(shim, PATHS).load([0x2192], 32)
 
-    assert_equal [[:use, [0x2192]], [:load, 0, "/s.ttf", 32], [:load, 2, "/b.ttf", 32], [:load, 1, "/m.ttf", 32],
-                  [:load, 3, "/e.ttf", 32]], shim.calls
+    assert_equal [[:use, [0x2192]], [:load, 0, "/s.ttf", 32], [:load, 2, "/b.ttf", 32], [:load, 4, "/i.ttf", 32],
+                  [:load, 1, "/m.ttf", 32], [:load, 3, "/e.ttf", 32]], shim.calls
   end
 
   def test_only_characters_the_body_font_lacks_are_symbols

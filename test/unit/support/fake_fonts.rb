@@ -26,7 +26,7 @@ class FakeShim
   def text_width(text, style) = text.size * style.size * 0.5
 end
 
-PATHS = Shipinel::FontPaths.new("/s.ttf", "/b.ttf", "/m.ttf", "/e.ttf")
+PATHS = Shipinel::FontPaths.new(Shipinel::TextFaces.new("/s.ttf", "/b.ttf", "/i.ttf"), "/m.ttf", "/e.ttf")
 
 # A FontSet over a FakeShim, loaded with the characters of `text`.
 def fake_font_set(text = "", failing: [])

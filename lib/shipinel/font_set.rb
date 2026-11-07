@@ -73,7 +73,8 @@ module Shipinel
     #: () -> Array[String]
     def notices
       [notice(Theme::FontSlot::BODY, @paths.body), notice(Theme::FontSlot::BOLD, @paths.bold),
-       notice(Theme::FontSlot::MONO, @paths.mono), notice(Theme::FontSlot::SYMBOL, @paths.symbol)].reject(&:empty?).uniq
+       notice(Theme::FontSlot::ITALIC, @paths.italic), notice(Theme::FontSlot::MONO, @paths.mono),
+       notice(Theme::FontSlot::SYMBOL, @paths.symbol)].reject(&:empty?).uniq
     end
 
     private
@@ -89,6 +90,7 @@ module Shipinel
     def load_slots(pixel_size)
       @shim.load(Theme::FontSlot::BODY, @paths.body, pixel_size)
       @shim.load(Theme::FontSlot::BOLD, @paths.bold, pixel_size)
+      @shim.load(Theme::FontSlot::ITALIC, @paths.italic, pixel_size)
       @shim.load(Theme::FontSlot::MONO, @paths.mono, pixel_size)
       @shim.load(Theme::FontSlot::SYMBOL, @paths.symbol, pixel_size)
     end

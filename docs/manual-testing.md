@@ -40,9 +40,11 @@ cp test/fixtures/semana.md /tmp/semana.md
    /tmp/ro/ && chmod 555 /tmp/ro`, run shipinel on `/tmp/ro/semana.md` and
    click a box: a red "Cannot save" notice appears and the file is
    unchanged. Clean up with `chmod 755 /tmp/ro && rm -r /tmp/ro`.
-10. **Scrolling.** Make the window short (or use a long file): the wheel
-    scrolls, stops at the top and at the end, and the position stays when
-    the file is edited externally.
+10. **Scrolling.** Make the window short (or use a long file): a scrollbar
+    appears on the right. The wheel scrolls and stops at the top and at the
+    end; dragging the thumb moves the page; a click on the track above or
+    below the thumb moves one window up or down; the position stays when
+    the file is edited externally. A file that fits shows no scrollbar.
 11. **Resize.** Make the window narrow: the paragraph re-wraps; the window
     cannot be made smaller than 200 × 120.
 12. **Keys.** Escape does not close the window; the close button does.

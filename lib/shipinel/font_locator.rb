@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-# Decides which font files to load: the --font file if given (for body and
-# bold text alike), otherwise fontconfig's "sans" and "sans:bold";
+# Decides which font files to load: the --font file if given (for regular,
+# bold and italic text alike), otherwise fontconfig's "sans", "sans:bold"
+# and "sans:italic";
 # fontconfig's "monospace" for code; and --emoji-font, otherwise
 # fontconfig's monochrome "emoji", for symbols the text fonts lack. raylib
 # reads only .ttf and .otf files, so fontconfig's whole ranked list is asked
@@ -32,20 +33,48 @@ module Shipinel
     end
   end
 
-  # The font files chosen for body text, bold text, code, and symbols
-  # (emoji) the text fonts lack.
-  class FontPaths
-    attr_reader :body #: String
+  # The text font in its three faces. With --font they are all that file.
+  class TextFaces
+    attr_reader :regular #: String
     attr_reader :bold #: String
+    attr_reader :italic #: String
+
+    #: (String regular, String bold, String italic) -> void
+    def initialize(regular, bold, italic)
+      @regular = regular
+      @bold = bold
+      @italic = italic
+    end
+  end
+
+  # The font files chosen for text (three faces), code, and symbols (emoji)
+  # the text fonts lack.
+  class FontPaths
     attr_reader :mono #: String
     attr_reader :symbol #: String
 
-    #: (String body, String bold, String mono, String symbol) -> void
-    def initialize(body, bold, mono, symbol)
-      @body = body
-      @bold = bold
+    # @rbs @text: TextFaces
+
+    #: (TextFaces text, String mono, String symbol) -> void
+    def initialize(text, mono, symbol)
+      @text = text
       @mono = mono
       @symbol = symbol
+    end
+
+    #: () -> String
+    def body
+      @text.regular
+    end
+
+    #: () -> String
+    def bold
+      @text.bold
+    end
+
+    #: () -> String
+    def italic
+      @text.italic
     end
   end
 
@@ -63,9 +92,10 @@ module Shipinel
     #: (Options options) -> FontPaths
     def locate(options)
       font = options.font_path
+      faces = TextFaces.new(pick(font, "--font", "sans"), pick(font, "--font", "sans:bold"),
+                            pick(font, "--font", "sans:italic"))
       emoji = pick(options.emoji_font_path, "--emoji-font", "emoji:color=false")
-      mono = @fontconfig.file_for("monospace")
-      FontPaths.new(pick(font, "--font", "sans"), pick(font, "--font", "sans:bold"), mono, emoji)
+      FontPaths.new(faces, @fontconfig.file_for("monospace"), emoji)
     end
 
     private

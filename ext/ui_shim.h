@@ -45,6 +45,11 @@ void ui_draw_rect(float left, float top, float width, float height, uint32_t rgb
 int ui_pointer_on(float left, float top, float width, float height);
 /* 1: the pointing-hand cursor (over something clickable); 0: the default. */
 void ui_set_hand_cursor(int hand);
+/* The mouse position in the window, in pixels. */
+int ui_mouse_x(void);
+int ui_mouse_y(void);
+/* The left button: bit 1 held down, bit 2 pressed this frame. */
+int ui_mouse_buttons(void);
 /* How far the mouse wheel moved this frame; positive is away from the user. */
 float ui_wheel_move(void);
 /* Colors of every checkbox: its border, its border under the mouse, and

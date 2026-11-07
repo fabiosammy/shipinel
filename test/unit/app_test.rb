@@ -32,7 +32,7 @@ class AppTest < Minitest::Test
     def closing? = @frame >= @frames
     def close = @calls << [:close]
     def area = Shipinel::Rect.new(0.0, 0.0, 440.0, 100.0)
-    def wheel_move = @wheel
+    def mouse = Shipinel::MouseState.new(Shipinel::Point.new(0.0, 0.0), 0, @wheel)
     def style_checkboxes(*colors) = @calls << [:style_checkboxes, *colors]
     def font_shim = (@font_shim ||= FakeShim.new(failing: @broken == :font ? PATHS_FAILING : []))
     def begin_frame(_color) = @pointed = false
@@ -74,7 +74,7 @@ class AppTest < Minitest::Test
     FileUtils.remove_entry(@dir)
   end
 
-  PATHS_FAILING = ["/s.ttf", "/b.ttf", "/m.ttf", "/e.ttf"].freeze
+  PATHS_FAILING = ["/s.ttf", "/b.ttf", "/i.ttf", "/m.ttf", "/e.ttf"].freeze
 
   def run_app(screen)
     Shipinel::App.new(screen, @path, Shipinel::Styles.new(20.0), PATHS).run
@@ -87,12 +87,13 @@ class AppTest < Minitest::Test
     assert_equal [[:open, 440, 640, "shipinel"], [:close]], [calls.first, calls.last]
   end
 
-  def test_loads_four_fonts_with_the_documents_characters_and_styles_checkboxes
+  def test_loads_every_font_with_the_documents_characters_and_styles_checkboxes
     File.write(@path, "# Semana → 🤖\n")
     screen = run_app(FakeScreen.new)
+    calls = screen.font_shim.calls
 
-    assert_equal [[:use, [0x2192, 0x1F916]], [:load, 0, "/s.ttf", 32]], screen.font_shim.calls.first(2)
-    assert_equal :style_checkboxes, screen.calls[1].first
+    assert_equal [[:use, [0x2192, 0x1F916]], [:load, 0, "/s.ttf", 32]], calls.first(2)
+    assert_equal [5, :style_checkboxes], [calls.count { |call| call.first == :load }, screen.calls[1].first]
   end
 
   def test_clicking_a_checkbox_toggles_the_task_in_the_file
@@ -116,7 +117,7 @@ class AppTest < Minitest::Test
   def test_each_font_that_does_not_load_is_a_notice
     notices = run_app(FakeScreen.new(broken: :font)).texts_on(0).select { |text| text.start_with?("\"/") }
 
-    assert_equal ["\"/s.ttf\"", "\"/b.ttf\"", "\"/m.ttf\"", "\"/e.ttf\""], notices.map(&:strip)
+    assert_equal ["\"/s.ttf\"", "\"/b.ttf\"", "\"/i.ttf\"", "\"/m.ttf\"", "\"/e.ttf\""], notices.map(&:strip)
   end
 
   # The clock is stubbed: 0 ms at start, then 600 ms later per frame, so
