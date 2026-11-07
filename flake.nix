@@ -57,14 +57,16 @@
           pname = "shipinel";
           version = "0.1.0";
           src = self;
-          nativeBuildInputs = [ spinel pkgs.pkg-config ];
-          buildInputs = nativeLibs ++ [ pkgs.fontconfig ];
+          nativeBuildInputs = [ spinel pkgs.pkg-config pkgs.makeWrapper ];
+          buildInputs = nativeLibs;
           buildPhase = ''
             export HOME=$TMPDIR
             spin build
           '';
+          # The app asks `fc-match` for its default fonts at run time.
           installPhase = ''
             install -D -m 755 build/bin/shipinel $out/bin/shipinel
+            wrapProgram $out/bin/shipinel --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.fontconfig ]}
           '';
         };
       };
@@ -73,7 +75,8 @@
         packages = devTools ++ nativeLibs;
       };
 
-      # `nix flake check` runs the same gate as `rake check`.
+      # `nix flake check` runs the same gate as `rake check`. Needs
+      # gemset.nix (generate it with `bundix` after changing Gemfile.lock).
       checks.${system}.default = pkgs.stdenv.mkDerivation {
         name = "shipinel-rake-check";
         src = self;

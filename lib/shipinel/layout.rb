@@ -33,13 +33,11 @@ module Shipinel
       @in_code = false
     end
 
-    #: (Markdown::BlockList blocks) -> DrawList
-    def arrange(blocks)
-      position = 0
-      while position < blocks.size
-        place(blocks.at(position))
-        position += 1
-      end
+    # Notices (a missing file, a failed save, a font problem) go first.
+    #: (Markdown::BlockList blocks, Array[String] notices) -> DrawList
+    def arrange(blocks, notices)
+      notices.each { |notice| place_notice(notice) }
+      blocks.size.times { |position| place(blocks.at(position)) }
       @flow.finish
     end
 
@@ -85,6 +83,12 @@ module Shipinel
       @flow.gap(block_gap) unless @flow.at_top?
       @flow.text(text, 0.0, @styles.heading(level))
       @flow.gap(block_gap / 2)
+    end
+
+    #: (String text) -> void
+    def place_notice(text)
+      @flow.text(text, 0.0, @styles.problem)
+      @flow.gap(block_gap)
     end
 
     #: (String text) -> void

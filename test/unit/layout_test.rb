@@ -13,8 +13,8 @@ class LayoutTest < Minitest::Test
 
   STYLES = Shipinel::Styles.new(20.0)
 
-  def arrange(source, width = 400.0)
-    Shipinel::Layout.new(FakeMeasurer.new, STYLES, width).arrange(Shipinel::Markdown::Parser.parse(source))
+  def arrange(source, width = 400.0, notices: [])
+    Shipinel::Layout.new(FakeMeasurer.new, STYLES, width).arrange(Shipinel::Markdown::Parser.parse(source), notices)
   end
 
   def commands(source, width = 400.0)
@@ -99,5 +99,14 @@ class LayoutTest < Minitest::Test
 
   def test_inline_code_gets_its_background
     assert_equal ["box 16.0,16.0 18.0x27.0", "text \"ok\" at 16.0,17.4 slot 1"], commands("`ok`")
+  end
+
+  def test_notices_come_first_in_the_problem_color
+    page = arrange("texto", notices: ["falhou"])
+
+    notice = page.at(0)
+
+    assert_equal ["falhou", Shipinel::Theme::Ink::PROBLEM, 16.0], [notice.text, notice.style.color, notice.rect.top]
+    assert_in_delta 55.0, page.at(1).rect.top
   end
 end

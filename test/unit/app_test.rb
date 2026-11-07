@@ -3,6 +3,7 @@
 require_relative "test_helper"
 require "fileutils"
 require "tmpdir"
+require "minitest/mock"
 require_relative "../../lib/shipinel/app"
 
 class AppTest < Minitest::Test
@@ -12,18 +13,21 @@ class AppTest < Minitest::Test
   class FakeScreen
     attr_reader :calls, :text_tops
 
-    def initialize(frames: 2, click_on: nil, wheel: 0.0, opens: true)
+    attr_accessor :on_frame_end
+
+    # broken: :window (it never opens) or :font (the body font fails).
+    def initialize(frames: 2, click_on: nil, wheel: 0.0, broken: nil)
       @frames = frames
       @click_on = click_on
       @wheel = wheel
-      @opens = opens
+      @broken = broken
       @frame = 0
       @calls = []
       @text_tops = []
     end
 
     def open(width, height, title) = @calls << [:open, width, height, title]
-    def ready? = @opens
+    def ready? = @broken != :window
     def closing? = @frame >= @frames
     def close = @calls << [:close]
     def area = Shipinel::Rect.new(0.0, 0.0, 440.0, 100.0)
@@ -33,9 +37,20 @@ class AppTest < Minitest::Test
     def text_measure = self
     def text_width(text, style) = text.size * style.size * 0.5
     def begin_frame(_color) = @clicked = false
-    def end_frame = @frame += 1
+    def font_loaded?(_slot) = @broken != :font
+    def texts_on(frame) = @texts.select { |text_frame, _text| text_frame == frame }.map(&:last)
+
+    def end_frame
+      on_frame_end&.call(@frame)
+      @frame += 1
+    end
+
     def draw_rect(_rect, _color) = nil
-    def draw_text(_text, at, _style) = (@text_tops << [@frame, at.top])
+
+    def draw_text(text, at, _style)
+      @text_tops << [@frame, at.top]
+      (@texts ||= []) << [@frame, text]
+    end
 
     def checkbox_clicked?(_rect, _checked)
       return false if @clicked || @frame != @click_on
@@ -89,6 +104,23 @@ class AppTest < Minitest::Test
   end
 
   def test_window_that_does_not_open_ends_the_run
-    assert_equal 1, run_app(FakeScreen.new(opens: false)).calls.size
+    assert_equal 1, run_app(FakeScreen.new(broken: :window)).calls.size
+  end
+
+  def test_font_that_does_not_load_is_a_notice
+    screen = run_app(FakeScreen.new(broken: :font))
+
+    assert_match(/\ACould /, screen.texts_on(0).first)
+  end
+
+  # The clock is stubbed: 0 ms at start, then 600 ms later per frame, so
+  # every frame is due to poll.
+  def test_an_external_edit_shows_up_on_the_next_poll
+    screen = FakeScreen.new(frames: 3)
+    screen.on_frame_end = ->(frame) { File.write(@path, "# Domingo\n") if frame.zero? }
+    times = [0, 600, 1200, 1800].each
+    Shipinel::Clock.stub(:now_ms, -> { times.next }) { run_app(screen) }
+
+    assert_equal [%w[Semana Reunião], ["Domingo"]], [screen.texts_on(0), screen.texts_on(1)]
   end
 end

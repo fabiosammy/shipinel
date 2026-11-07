@@ -26,7 +26,8 @@ class LayoutSnapshot
   #: () -> void
   def run
     blocks = Shipinel::Markdown::Parser.parse(SOURCE)
-    page = Shipinel::Layout.new(Shipinel::TextMeasure.new, Shipinel::Styles.new(20.0), 300.0).arrange(blocks)
+    layout = Shipinel::Layout.new(Shipinel::TextMeasure.new, Shipinel::Styles.new(20.0), 300.0)
+    page = layout.arrange(blocks, ["Cannot save semana.md: Permission denied"])
     puts "#{page.size} commands, height #{page.height.round(1)}"
     page.size.times { |position| puts describe(page.at(position)) }
   end

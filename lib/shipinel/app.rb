@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
-# Runs the window: opens it, loads the fonts, then each frame lays out the
-# document, applies the mouse wheel, draws, and toggles a clicked task in
-# the file.
+# Runs the window: opens it, loads the fonts, then each frame re-reads the
+# file when it is time, lays the document out, draws it, and toggles a
+# clicked task in the file.
 
 require_relative "document_file"
 require_relative "document_view"
 require_relative "font_locator"
-require_relative "layout"
+require_relative "page"
 require_relative "painter"
+require_relative "poller"
 require_relative "screen"
-require_relative "scroll"
 require_relative "styles"
 require_relative "theme"
 
@@ -23,16 +23,16 @@ module Shipinel
     HEIGHT = 640
 
     # @rbs @screen: Screen
-    # @rbs @styles: Styles
     # @rbs @document: DocumentView
-    # @rbs @scroll: Scroll
+    # @rbs @page: Page
+    # @rbs @poller: Poller
 
     #: (Screen screen, String path, Styles styles) -> void
     def initialize(screen, path, styles)
       @screen = screen
-      @styles = styles
       @document = DocumentView.new(DocumentFile.new(path))
-      @scroll = Scroll.new
+      @page = Page.new(styles)
+      @poller = Poller.new(Clock.now_ms)
     end
 
     #: (FontPaths fonts) -> void
@@ -49,33 +49,34 @@ module Shipinel
 
     #: (FontPaths fonts) -> void
     def prepare(fonts)
-      pixels = @styles.font_pixels
-      @screen.load_font(Theme::FontSlot::BODY, fonts.body, pixels)
-      @screen.load_font(Theme::FontSlot::BOLD, fonts.bold, pixels)
-      @screen.load_font(Theme::FontSlot::MONO, fonts.mono, pixels)
+      load_fonts(fonts)
+      @page.font_failed(fonts.body) unless @screen.font_loaded?(Theme::FontSlot::BODY)
       @screen.style_checkboxes(Theme::Checkbox::BORDER, Theme::Checkbox::HOVER, Theme::Checkbox::CHECK)
     end
 
-    # One frame. Laid out every frame: the window may have been resized, and
-    # at 10 frames a second a page of text costs next to nothing.
-    #: () -> void
-    def tick
-      page = arrange
-      @scroll.apply(@screen.wheel_move, page.height, @screen.area.height)
-      click = draw(page)
-      @document.toggle(click) if click
-      nil
+    # Glyphs are rendered at the largest size on the page (Styles).
+    #: (FontPaths fonts) -> void
+    def load_fonts(fonts)
+      pixels = @page.styles.font_pixels
+      @screen.load_font(Theme::FontSlot::BODY, fonts.body, pixels)
+      @screen.load_font(Theme::FontSlot::BOLD, fonts.bold, pixels)
+      @screen.load_font(Theme::FontSlot::MONO, fonts.mono, pixels)
     end
 
-    #: () -> DrawList
-    def arrange
-      Layout.new(@screen.text_measure, @styles, @screen.area.width).arrange(@document.blocks)
+    # One frame, ten times a second. Laid out every frame: the window may
+    # have been resized, and a page of text costs next to nothing.
+    #: () -> void
+    def tick
+      @document.reload if @poller.due?(Clock.now_ms)
+      click = draw(@page.lay_out(@screen, @document))
+      @document.toggle(click) if click
+      nil
     end
 
     #: (DrawList page) -> TaskClick?
     def draw(page)
       @screen.begin_frame(Theme::Surface::BACKGROUND)
-      click = Painter.paint(@screen, page, @scroll.offset)
+      click = Painter.paint(@screen, page, @page.offset)
       @screen.end_frame
       click
     end

@@ -51,3 +51,16 @@ bundle install
 bundle exec rake check
 spin build && build/bin/shipinel test/fixtures/semana.md
 ```
+
+## Trying the window without touching your desktop
+
+A virtual X server keeps synthetic input away from the real display
+(`apt install xvfb`):
+
+```sh
+Xvfb :99 -screen 0 1024x768x24 -nolisten tcp &
+DISPLAY=:99 build/bin/shipinel test/fixtures/semana.md
+```
+
+Never drive the real display with XTest or similar: synthetic clicks go to
+whatever window is on top there.
