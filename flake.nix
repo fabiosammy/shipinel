@@ -20,6 +20,10 @@
         # The Makefile generates lib/spinel_rt_responds_generated.h with a
         # Ruby script (tools/gen_respond_to_tables.rb).
         nativeBuildInputs = [ pkgs.ruby ];
+        # The compiler links -lcrypt (common.mk), which nixpkgs keeps out of
+        # glibc. Compiled programs only link it when they use String#crypt,
+        # which Shipinel does not.
+        buildInputs = [ pkgs.libxcrypt ];
         buildFlags = [ "all" "tools" ];
         installFlags = [ "PREFIX=$(out)" ];
         # `spinel diff` runs spinel-diff from beside the compiler binary, but
