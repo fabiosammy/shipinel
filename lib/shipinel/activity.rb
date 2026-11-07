@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
 # Whether the user is busy with the window: scrolling, clicking, dragging
-# or moving the pointer over it. Input is read 60 times a second, so even a
-# quick click is seen, but a frame is only drawn while the user is busy
-# (and half a second after), when the page changed, or every 2 s in case
-# the window system lost the picture (an X11 desktop without a compositor
-# does not keep it). Idle frames cost a sleep and an input poll.
+# or moving the pointer over it. Busy frames, and half a second of them
+# after the last input, are drawn 60 times a second. Otherwise a frame is
+# only drawn when the page changed or the window system asks for it, and
+# an idle frame sleeps until input arrives (ui_skip_frame).
 
 require_relative "geometry"
 require_relative "mouse_state"
@@ -15,8 +14,6 @@ module Shipinel
   class Activity
     # Frames after the last input that are still drawn: half a second.
     LINGER = 30
-    # Idle frames between redraws of an unchanged page: 2 s.
-    REFRESH = 120
 
     # @rbs @at: Point
     # @rbs @quiet: Integer
@@ -36,10 +33,10 @@ module Shipinel
       @at = at
     end
 
-    # Busy frames are always drawn; idle ones every REFRESH frames.
+    # Busy frames are always drawn.
     #: () -> bool
     def due?
-      @quiet < LINGER || ((@quiet - LINGER) % REFRESH).zero?
+      @quiet < LINGER
     end
   end
 end

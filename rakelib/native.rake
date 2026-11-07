@@ -7,10 +7,11 @@ require_relative "sources"
 
 C_STRICT_FLAGS = %w[-std=c11 -Wall -Wextra -Wpedantic -Wconversion -Werror].freeze
 
-# raylib and raygui headers come from pkg-config, as system headers, so that
-# warnings inside raygui's implementation do not fail -Werror (docs/raylib-notes.md).
+# raylib, raygui and GLFW headers come from pkg-config, as system headers, so
+# that warnings inside raygui's implementation do not fail -Werror
+# (docs/raylib-notes.md).
 def raylib_include_flags
-  Shellwords.split(`pkg-config --cflags-only-I raylib`).map { |flag| flag.sub(/\A-I/, "-isystem") }
+  Shellwords.split(`pkg-config --cflags-only-I raylib glfw3`).map { |flag| flag.sub(/\A-I/, "-isystem") }
 end
 
 desc "Run every native code gate on ext/"

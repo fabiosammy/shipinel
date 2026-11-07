@@ -36,7 +36,7 @@ module Shipinel
     end
 
     # Whether this frame is drawn even if the page did not change: while
-    # the user scrolls or points, and as the idle refresh (Activity).
+    # the user scrolls or points (Activity).
     #: () -> bool
     def due?
       @activity.due?

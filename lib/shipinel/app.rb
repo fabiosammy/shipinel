@@ -72,10 +72,11 @@ module Shipinel
       frame ? draw(frame) : skip
     end
 
-    # Keeps the window responsive without drawing: waits, reads input.
+    # Keeps the window responsive without drawing: waits for input. When
+    # the window system lost the picture, the next frame is drawn in full.
     #: () -> DrawCommand?
     def skip
-      @screen.skip_frame
+      @page.redraw if @screen.skip_frame
       nil
     end
 

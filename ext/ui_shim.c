@@ -12,7 +12,15 @@
 
 #include <errno.h>
 #include <raylib.h>
+#include <stdbool.h>
+#include <threads.h>
 #include <time.h>
+
+/* GLFW is the window layer raylib is built on; the shim calls it only to
+ * wake an idle wait and to hear when the window must be drawn again
+ * (docs/raylib-notes.md). No GL headers: raylib loads OpenGL itself. */
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 
 /* raygui is header-only: this is the one translation unit that holds its
  * implementation. Included as a system header (docs/raylib-notes.md). */
@@ -25,9 +33,11 @@ enum {
     CHECKBOX_CHECK_PADDING = 3,
     MIN_WINDOW_WIDTH = 200,
     MIN_WINDOW_HEIGHT = 120,
-    /* Input is read this often, so a quick click is never missed; idle
-     * frames only sleep and poll (ui_skip_frame). */
+    /* Drawn frames are paced at this rate while the user scrolls or
+     * points; idle frames wait for input instead (ui_skip_frame). */
     FRAME_RATE = 60,
+    /* How often the waker ends an idle wait, so the file is still polled. */
+    WAKES_PER_SECOND = 2,
     RED_SHIFT = 24,
     GREEN_SHIFT = 16,
     BLUE_SHIFT = 8,
@@ -70,6 +80,16 @@ static int extra_count = 0;
 static const long FRAME_NANOSECONDS = NANOSECONDS / FRAME_RATE;
 static struct timespec next_frame;
 
+/* The waker thread posts an empty GLFW event every half second while the
+ * window is open; it stops when waker_running turns false under the lock. */
+static thrd_t waker;
+static mtx_t waker_lock;
+static cnd_t waker_stop;
+static bool waker_running = false;
+/* Set by GLFW when the window system needs the window drawn again (an X11
+ * window uncovered without a compositor); read by ui_skip_frame. */
+static bool redraw_requested = false;
+
 static Color color_from(uint32_t rgba) {
     Color color = {
         (unsigned char)((rgba >> RED_SHIFT) & CHANNEL_MASK),
@@ -110,6 +130,64 @@ static void release_font(int slot) {
     }
 }
 
+static void on_window_refresh(GLFWwindow *window) {
+    (void)window;
+    redraw_requested = true;
+}
+
+/* Sleeps in half-second steps until told to stop, posting an empty event
+ * after each: glfwPostEmptyEvent is the one GLFW call any thread may make,
+ * and it ends the main thread's glfwWaitEvents. */
+static int wake_loop(void *unused) {
+    (void)unused;
+    mtx_lock(&waker_lock);
+    while (waker_running) {
+        struct timespec until;
+        timespec_get(&until, TIME_UTC);
+        until.tv_nsec += NANOSECONDS / WAKES_PER_SECOND;
+        if (until.tv_nsec >= NANOSECONDS) {
+            until.tv_sec += 1;
+            until.tv_nsec -= NANOSECONDS;
+        }
+        if (cnd_timedwait(&waker_stop, &waker_lock, &until) == thrd_timedout) {
+            glfwPostEmptyEvent();
+        }
+    }
+    mtx_unlock(&waker_lock);
+    return 0;
+}
+
+/* Without the waker an idle wait could last forever, so ui_skip_frame
+ * falls back to sleeping and polling when it cannot start. */
+static void start_waker(void) {
+    if (mtx_init(&waker_lock, mtx_plain) != thrd_success) {
+        return;
+    }
+    if (cnd_init(&waker_stop) != thrd_success) {
+        mtx_destroy(&waker_lock);
+        return;
+    }
+    waker_running = true;
+    if (thrd_create(&waker, wake_loop, NULL) != thrd_success) {
+        waker_running = false;
+        cnd_destroy(&waker_stop);
+        mtx_destroy(&waker_lock);
+    }
+}
+
+static void stop_waker(void) {
+    if (!waker_running) {
+        return;
+    }
+    mtx_lock(&waker_lock);
+    waker_running = false;
+    cnd_signal(&waker_stop);
+    mtx_unlock(&waker_lock);
+    thrd_join(waker, NULL);
+    cnd_destroy(&waker_stop);
+    mtx_destroy(&waker_lock);
+}
+
 void ui_open_window(int width, int height, const char *title) {
     /* No MSAA: everything drawn is text or an axis-aligned rectangle, and
      * multisampling made each frame several times dearer to render. */
@@ -128,6 +206,10 @@ void ui_open_window(int width, int height, const char *title) {
     for (int slot = 0; slot < FONT_SLOTS; slot++) {
         fonts[slot] = GetFontDefault();
     }
+    if (IsWindowReady()) {
+        glfwSetWindowRefreshCallback((GLFWwindow *)GetWindowHandle(), on_window_refresh);
+        start_waker();
+    }
 }
 
 int ui_window_ready(void) {
@@ -138,7 +220,10 @@ int ui_window_should_close(void) {
     return WindowShouldClose() ? 1 : 0;
 }
 
+/* The waker stops first: it must not post to GLFW once CloseWindow has
+ * shut GLFW down. */
 void ui_close_window(void) {
+    stop_waker();
     for (int slot = 0; slot < FONT_SLOTS; slot++) {
         release_font(slot);
     }
@@ -186,10 +271,24 @@ void ui_end_frame(void) {
 }
 
 /* A frame that draws nothing: no BeginDrawing, no buffer swap, so the
- * window keeps the last frame shown; input is still read. */
-void ui_skip_frame(void) {
-    wait_for_next_frame();
-    PollInputEvents();
+ * window keeps the last frame shown. It sleeps until input arrives or the
+ * waker posts its event (raylib's event waiting makes PollInputEvents call
+ * glfwWaitEvents after saving the previous input state, so a click that
+ * wakes it is still seen as pressed). Pacing then restarts from now.
+ * Returns 1 when the window system asked for the window to be drawn. */
+int ui_skip_frame(void) {
+    if (waker_running) {
+        EnableEventWaiting();
+        PollInputEvents();
+        DisableEventWaiting();
+        clock_gettime(CLOCK_MONOTONIC, &next_frame);
+    } else {
+        wait_for_next_frame();
+        PollInputEvents();
+    }
+    const bool redraw = redraw_requested;
+    redraw_requested = false;
+    return redraw ? 1 : 0;
 }
 
 void ui_set_extra_codepoints(const int64_t *codepoints, int count) {

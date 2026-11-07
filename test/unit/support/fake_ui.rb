@@ -15,7 +15,7 @@ module Shipinel
     def self.ui_screen_height = record(:height, answer: 640)
     def self.ui_begin_frame(*) = record(:begin_frame, *)
     def self.ui_end_frame = record(:end_frame)
-    def self.ui_skip_frame = record(:skip_frame)
+    def self.ui_skip_frame = record(:skip_frame, answer: false)
     def self.ui_set_extra_codepoints(*) = record(:extra_codepoints, *)
     def self.ui_load_font(*) = record(:load_font, *)
     def self.ui_font_loaded(*) = record(:font_loaded, *, answer: false)

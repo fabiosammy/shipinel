@@ -25,9 +25,10 @@ int ui_screen_height(void);
 
 void ui_begin_frame(uint32_t background_rgba);
 void ui_end_frame(void);
-/* Waits for the frame like ui_end_frame and reads input, without drawing:
- * the window keeps showing the last frame. */
-void ui_skip_frame(void);
+/* An idle frame: waits for input (or the half-second wake for the file
+ * poll) and reads it, without drawing: the window keeps showing the last
+ * frame. Returns 1 when the window system asked for a redraw. */
+int ui_skip_frame(void);
 
 /* Characters to load into every font after the base set (ASCII, Latin-1
  * Supplement, Latin Extended-A, dashes, quotes, bullet, ellipsis): the

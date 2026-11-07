@@ -9,6 +9,8 @@ module Shipinel
   # See the file comment.
   module UI
     ffi_lib "raylib"
+    # The shim calls GLFW directly to wait for input while idle.
+    ffi_lib "glfw"
 
     ffi_func :ui_open_window, %i[int int str], :void
     ffi_func :ui_window_ready, [], :bool
@@ -18,7 +20,7 @@ module Shipinel
     ffi_func :ui_screen_height, [], :int
     ffi_func :ui_begin_frame, %i[uint32], :void
     ffi_func :ui_end_frame, [], :void
-    ffi_func :ui_skip_frame, [], :void
+    ffi_func :ui_skip_frame, [], :bool
     ffi_func :ui_set_extra_codepoints, %i[int_array int], :void
     ffi_func :ui_load_font, %i[int str int], :void
     ffi_func :ui_font_loaded, %i[int], :bool

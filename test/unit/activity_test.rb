@@ -29,9 +29,7 @@ class ActivityTest < Minitest::Test
     assert due_after?(mouse(2.0))
   end
 
-  def test_idle_page_is_drawn_again_every_two_seconds
-    redrawn = (31..272).select { |frames| due_after?(*still(frames)) }
-
-    assert_equal [31, 151, 271], redrawn
+  def test_idle_frames_are_never_due
+    assert_equal [false, false], [due_after?(*still(31)), due_after?(*still(500))]
   end
 end

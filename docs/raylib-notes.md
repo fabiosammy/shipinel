@@ -103,20 +103,28 @@ RLAPI void SetExitKey(int key);                                   // raylib.h:12
   target FPS raylib never waits; `ui_end_frame` sleeps until the frame is
   due with POSIX `clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, ...)`,
   then calls `EndDrawing`, which polls input right after the sleep.
-- Frames are paced at 60 per second, but an idle frame showing an
-  unchanged page is not drawn: `ui_skip_frame` sleeps and calls
-  `PollInputEvents` (raylib.h:1103) without `BeginDrawing` or a buffer
-  swap, so the window keeps its last picture. `Activity` draws while the
-  user is busy and half a second after, when the layout changed, and every
-  2 s in case the window system dropped the picture (X11 without a
-  compositor).
-- Why 60 even when idle: raylib's `MouseButtonCallback`
+- Frames the user is busy with (scrolling, clicking, moving the pointer,
+  and half a second after) are drawn and paced at 60 per second. Any other
+  frame is drawn only when the page changed (a new layout) or the window
+  system asks for it. An idle frame (`ui_skip_frame`) draws nothing and
+  waits for input: it turns on raylib's event waiting for one
+  `PollInputEvents`, which then calls `glfwWaitEvents` after saving the
+  previous input state, so the click that wakes it still reads as pressed.
+  A waker thread (C11 `threads.h`) posts `glfwPostEmptyEvent` every half
+  second so the file poll still runs; it is the one GLFW call any thread
+  may make, and it is stopped and joined before `CloseWindow`. If the
+  thread cannot start, idle frames fall back to sleeping 1/60 s and
+  polling.
+- The window system's redraw request comes from GLFW's window refresh
+  callback (raylib sets none), on the `GLFWwindow` raylib's
+  `GetWindowHandle` returns: an uncovered X11 window without a compositor.
+- Why not just poll 60 times a second: raylib's `MouseButtonCallback`
   (rcore_desktop_glfw.c) only stores the button's latest state, so a press
-  and a release that arrive between two polls are both lost. At 10 polls a
-  second, quick clicks (30 ms, checked in Xvfb) were missed every time; at
-  60 they register. A click shorter than one frame (~16 ms) can still be
-  lost; touchpad taps are not, since libinput holds the release back to
-  detect tap-and-drag.
+  and release between two polls are both lost (quick clicks at 10 polls a
+  second were missed every time), and the 64 wakeups a second kept the CPU
+  out of its deep sleep states. Waiting wakes on the press itself: 10 ms
+  clicks register in Xvfb, and an idle window wakes 4 times a second in
+  all, 2 of them the waker's.
 - No `FLAG_MSAA_4X_HINT`: the page is text and axis-aligned rectangles,
   which multisampling does not improve, and it made every frame several
   times dearer to render.
@@ -134,6 +142,26 @@ RLAPI void SetMouseCursor(int cursor);                        // raylib.h:1239
 
 `GetMouseX` / `GetMouseY` return `int`, so the shim does not need
 `GetMousePosition` (which returns a `Vector2` by value).
+
+## Event waiting (raylib and GLFW)
+
+```c
+RLAPI void *GetWindowHandle(void);                                // raylib.h:1016
+RLAPI void EnableEventWaiting(void);                              // raylib.h:1035
+RLAPI void DisableEventWaiting(void);                             // raylib.h:1036
+RLAPI void PollInputEvents(void);                                 // raylib.h:1103
+typedef void (* GLFWwindowrefreshfun)(GLFWwindow* window);                                      // glfw3.h:1680
+GLFWAPI GLFWwindowrefreshfun glfwSetWindowRefreshCallback(GLFWwindow* window, GLFWwindowrefreshfun callback); // glfw3.h:4346
+GLFWAPI void glfwPostEmptyEvent(void);                                                            // glfw3.h:4661
+```
+
+Line numbers are from the sandbox's GLFW 3.5.1 header (built from raylib's
+bundled copy); nixpkgs ships 3.4, which has the same three declarations.
+On the desktop platform `GetWindowHandle` returns raylib's `GLFWwindow *`
+(rcore_desktop_glfw.c). The shim includes `<GLFW/glfw3.h>` with
+`GLFW_INCLUDE_NONE`, so no GL header comes with it, and `ui.rb` links it
+with `ffi_lib "glfw"`; spin.toml and the native checks get its include
+path from `pkg-config glfw3`.
 
 ## Drawing
 
@@ -226,7 +254,7 @@ What Ruby can call, all scalars and strings (Spinel FFI types in
 | Function | Wraps |
 |---|---|
 | `void ui_open_window(int, int, const char *)` | `SetConfigFlags(RESIZABLE)`, `SetTraceLogLevel(LOG_ERROR)` (Wayland logs expected "window position" warnings), `InitWindow`, `SetWindowMinSize(200, 120)`, `SetExitKey(KEY_NULL)`, starts frame pacing (60 per second) |
-| `void ui_skip_frame(void)` | waits for the frame like `ui_end_frame`, then `PollInputEvents` only: nothing drawn, no swap |
+| `int ui_skip_frame(void)` | `EnableEventWaiting`, `PollInputEvents`, `DisableEventWaiting` (or, without the waker, the `ui_end_frame` sleep and `PollInputEvents`): nothing drawn, no swap; 1 when the GLFW refresh callback asked for a redraw |
 | `int ui_window_ready(void)` | `IsWindowReady` |
 | `int ui_window_should_close(void)` | `WindowShouldClose` |
 | `void ui_close_window(void)` | `UnloadFont` for each loaded slot, `CloseWindow` |
@@ -279,7 +307,9 @@ time here and GPU time on a desktop), with the 98-line week runbook: idle
 CPU went from 24.5 % to 6.4 % of one core after the layout cache, drawing
 only what the window shows, dropping MSAA and replacing raylib's spinning
 frame wait. Skipping the drawing of unchanged idle frames then brought it
-to 0.65 % while polling input 60 times a second. Before, each frame spent about 6.4 ms laying out and drawing
+to 0.65 % while polling input 60 times a second; building nothing on an
+idle frame to 0.53 %; and waiting for input instead of polling to 0.03 %,
+with 4 wakeups a second instead of 64. Before, each frame spent about 6.4 ms laying out and drawing
 (1,564 width measurements and 1,548 text draws) and raylib spun for the
 last 5 ms of every 100 ms frame.
 

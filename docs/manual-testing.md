@@ -51,9 +51,11 @@ cp test/fixtures/semana.md /tmp/semana.md
 13. **Idle CPU.** `top -p $(pgrep -f result/bin/shipinel)` shows a few
     percent at most while nothing changes, on a long file too. Scrolling
     and dragging the scrollbar move smoothly (60 FPS), and the CPU drops
-    back about half a second after the pointer stops. A quick click (and a
-    touchpad tap) on a checkbox of an idle window still toggles it, and an
-    external edit made while idle still shows within about a second.
+    back about half a second after the pointer stops; `top` then shows
+    0.0–0.1 %. A quick click (and a touchpad tap) on a checkbox of an idle
+    window still toggles it, an external edit made while idle still shows
+    within about a second, and closing the window quits at once. On X11
+    without a compositor, a window uncovered by another one is redrawn.
 14. **Fonts.** `--font /nonexistent.ttf` exits with
     `--font /nonexistent.ttf: no such file`. `--font` with a real TTF and
     `--font-size 28` changes the text accordingly.

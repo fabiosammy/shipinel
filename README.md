@@ -159,11 +159,12 @@ env -u WAYLAND_DISPLAY shipinel ~/notes/week.md
 
 ## Behaviour
 
-- Input is read 60 times a second, but the window is only drawn while you
-  scroll, click or move the pointer over it (and half a second after),
-  when the page changes, and every 2 s as a refresh; an idle window costs
-  well under 1 % of a core. The page is laid out again only when the file,
-  the window size or the fonts change, and only what the window shows is
+- The window is drawn 60 times a second while you scroll, click or move
+  the pointer over it (and half a second after), and otherwise only when
+  the page changes or the window system asks for it. An idle window sleeps
+  until input arrives, waking twice a second to check the file: it costs
+  next to no CPU. The page is laid out again only when the file, the
+  window size or the fonts change, and only what the window shows is
   drawn.
 - The file is re-read about every 500 ms by comparing its content, which
   also catches editors that save by renaming.

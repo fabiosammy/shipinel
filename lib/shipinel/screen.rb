@@ -56,9 +56,10 @@ module Shipinel
       UI.ui_begin_frame(background)
     end
 
-    # Waits until the frame is due, then reads input without drawing: the
-    # window keeps showing the last frame.
-    #: () -> void
+    # Waits for input (or the half-second wake for the file poll) without
+    # drawing: the window keeps showing the last frame. True when the
+    # window system asked for the window to be drawn again.
+    #: () -> bool
     def skip_frame
       UI.ui_skip_frame
     end

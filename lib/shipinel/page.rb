@@ -53,6 +53,12 @@ module Shipinel
       @cache.clear
     end
 
+    # Draws the next frame even if nothing changed.
+    #: () -> void
+    def redraw
+      @cache.clear
+    end
+
     # The frame to draw, or nil when nothing is to be drawn.
     #: (Screen screen, DocumentView document) -> Frame?
     def update(screen, document)

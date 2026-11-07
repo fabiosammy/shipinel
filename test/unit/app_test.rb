@@ -37,10 +37,15 @@ class AppTest < Minitest::Test
     def begin_frame(_color) = @pointed = false
     def texts_on(frame) = @texts.select { |text_frame, _text| text_frame == frame }.map(&:last)
 
+    # The window system asks for a redraw on skipped frame `redraw_on`:
+    # that frame's number is returned (truthy), any other gives nil.
     def skip_frame
       @calls << [:skip]
       end_frame
+      [@redraw_on].compact.delete(@frame - 1)
     end
+
+    attr_writer :redraw_on
 
     def end_frame
       @calls << [:end_frame]
@@ -153,7 +158,15 @@ class AppTest < Minitest::Test
     screen = run_app(FakeScreen.new(frames: 40))
     drawn = screen.calls.count { |call| call.first == :end_frame } - screen.calls.count { |call| call.first == :skip }
 
-    assert_equal [31, ["Semana", "Reunião", "0 of 1 task done · 0%"]], [drawn, screen.texts_on(30)]
-    assert_empty screen.texts_on(31)
+    assert_equal [30, ["Semana", "Reunião", "0 of 1 task done · 0%"]], [drawn, screen.texts_on(29)]
+    assert_empty screen.texts_on(30)
+  end
+
+  def test_a_redraw_the_window_system_asks_for_is_drawn
+    screen = FakeScreen.new(frames: 40)
+    screen.redraw_on = 34
+    run_app(screen)
+
+    assert_equal [[], %w[Semana Reunião]], [screen.texts_on(34), screen.texts_on(35).first(2)]
   end
 end
