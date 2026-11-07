@@ -136,9 +136,14 @@ RLAPI Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float s
   **U+0020..U+007E, U+00A0..U+00FF (Latin-1 Supplement), U+0100..U+017F
   (Latin Extended-A)** plus `…` U+2026 and `–` U+2013, and passes it in. That
   covers "Reunião", "ação" and "é".
-- `IsFontValid` (6.x name; 5.0 called it `IsFontReady`) is checked after
-  loading. On failure the shim falls back to `GetFontDefault()` and reports it,
-  so the app can show a warning instead of crashing.
+- `IsFontValid` (6.x name; 5.0 called it `IsFontReady`) is **not enough** to
+  detect a failed load: `LoadFontFromMemory` (rtext.c) logs "Font is not
+  supported ... reverted to default font" and returns `GetFontDefault()`,
+  which is valid. The shim also compares `texture.id` with the default
+  font's. It accepts only the extensions `.ttf` and `.otf`
+  (case-insensitive), so a `.ttc` collection, which fontconfig on NixOS may
+  rank first, falls back; `Fontconfig` therefore takes the first `.ttf` /
+  `.otf` from `fc-match -s`, preferring static fonts (`variable=false`).
 - `DrawTextEx` / `MeasureTextEx` take UTF-8 `const char *`, which is what
   Spinel's `:str` passes.
 - `MeasureTextEx` returns a `Vector2`; the shim exposes only its `x`
@@ -197,7 +202,7 @@ What Ruby can call, all scalars and strings (Spinel FFI types in
 
 | Function | Wraps |
 |---|---|
-| `void ui_open_window(int, int, const char *)` | `SetConfigFlags(RESIZABLE \| MSAA_4X)`, `SetTraceLogLevel(LOG_WARNING)`, `InitWindow`, `SetWindowMinSize(200, 120)`, `SetTargetFPS(10)`, `SetExitKey(KEY_NULL)` |
+| `void ui_open_window(int, int, const char *)` | `SetConfigFlags(RESIZABLE \| MSAA_4X)`, `SetTraceLogLevel(LOG_ERROR)` (Wayland logs expected "window position" warnings), `InitWindow`, `SetWindowMinSize(200, 120)`, `SetTargetFPS(10)`, `SetExitKey(KEY_NULL)` |
 | `int ui_window_ready(void)` | `IsWindowReady` |
 | `int ui_window_should_close(void)` | `WindowShouldClose` |
 | `void ui_close_window(void)` | `UnloadFont` for each loaded slot, `CloseWindow` |

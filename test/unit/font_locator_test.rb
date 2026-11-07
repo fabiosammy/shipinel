@@ -37,4 +37,14 @@ class FontLocatorTest < Minitest::Test
 
     assert_match(/\.(ttf|otf|ttc|pcf\.gz)\z/, Shipinel::Fontconfig.new.file_for("sans"))
   end
+
+  def test_first_loadable_skips_collections_and_bitmap_fonts
+    listing = "/n/NotoSans-Regular.ttc\n/b/fixed.pcf.gz\n/d/DejaVuSans.TTF\n/s/Source.otf\n"
+
+    assert_equal "/d/DejaVuSans.TTF", Shipinel::Fontconfig.first_loadable(listing)
+  end
+
+  def test_first_loadable_is_empty_when_nothing_fits
+    assert_equal "", Shipinel::Fontconfig.first_loadable("/n/NotoSans-Regular.ttc\n")
+  end
 end

@@ -80,7 +80,10 @@ static void release_font(int slot) {
 
 void ui_open_window(int width, int height, const char *title) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT);
-    SetTraceLogLevel(LOG_WARNING);
+    /* Errors only: on Wayland, InitWindow's attempt to centre the window logs
+     * GLFW "window position" warnings that are expected there (the compositor
+     * places windows), and font problems are shown in the window instead. */
+    SetTraceLogLevel(LOG_ERROR);
     InitWindow(width, height, title);
     SetWindowMinSize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
     SetTargetFPS(TARGET_FPS);
@@ -129,7 +132,9 @@ void ui_load_font(int slot, const char *path, int pixel_size) {
     const int target = checked_slot(slot);
     const Font loaded = LoadFontEx(path, pixel_size, codepoints, count);
     release_font(target);
-    if (!IsFontValid(loaded)) {
+    /* raylib does not fail on an unreadable font: it returns its built-in
+     * one, which is valid. Telling them apart takes the texture id. */
+    if (!IsFontValid(loaded) || loaded.texture.id == GetFontDefault().texture.id) {
         fonts[target] = GetFontDefault();
         return;
     }

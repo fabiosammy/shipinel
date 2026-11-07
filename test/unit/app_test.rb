@@ -107,10 +107,10 @@ class AppTest < Minitest::Test
     assert_equal 1, run_app(FakeScreen.new(broken: :window)).calls.size
   end
 
-  def test_font_that_does_not_load_is_a_notice
-    screen = run_app(FakeScreen.new(broken: :font))
+  def test_each_font_that_does_not_load_is_a_notice
+    notices = run_app(FakeScreen.new(broken: :font)).texts_on(0).select { |text| text.start_with?("\"/") }
 
-    assert_match(/\ACould /, screen.texts_on(0).first)
+    assert_equal ["\"/s.ttf\"", "\"/b.ttf\"", "\"/m.ttf\""], notices.map(&:strip)
   end
 
   # The clock is stubbed: 0 ms at start, then 600 ms later per frame, so

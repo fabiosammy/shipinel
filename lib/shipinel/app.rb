@@ -50,8 +50,16 @@ module Shipinel
     #: (FontPaths fonts) -> void
     def prepare(fonts)
       load_fonts(fonts)
-      @page.font_failed(fonts.body) unless @screen.font_loaded?(Theme::FontSlot::BODY)
+      report_failed_fonts(fonts)
       @screen.style_checkboxes(Theme::Checkbox::BORDER, Theme::Checkbox::HOVER, Theme::Checkbox::CHECK)
+    end
+
+    # Each slot that fell back to raylib's built-in font gets a notice.
+    #: (FontPaths fonts) -> void
+    def report_failed_fonts(fonts)
+      @page.font_failed(fonts.body) unless @screen.font_loaded?(Theme::FontSlot::BODY)
+      @page.font_failed(fonts.bold) unless @screen.font_loaded?(Theme::FontSlot::BOLD)
+      @page.font_failed(fonts.mono) unless @screen.font_loaded?(Theme::FontSlot::MONO)
     end
 
     # Glyphs are rendered at the largest size on the page (Styles).

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# How the document is presented: its styles, where it is scrolled to, and a
-# warning about the font if it could not be loaded. Each frame it lays the
+# How the document is presented: its styles, where it is scrolled to, and
+# warnings about fonts that could not be loaded. Each frame it lays the
 # document out for the window's current size and applies the mouse wheel.
 
 require_relative "document_view"
@@ -17,13 +17,13 @@ module Shipinel
     attr_reader :styles #: Styles
 
     # @rbs @scroll: Scroll
-    # @rbs @font_notice: String
+    # @rbs @font_notices: Array[String]
 
     #: (Styles styles) -> void
     def initialize(styles)
       @styles = styles
       @scroll = Scroll.new
-      @font_notice = ""
+      @font_notices = [""]
     end
 
     #: () -> Float
@@ -33,7 +33,9 @@ module Shipinel
 
     #: (String path) -> void
     def font_failed(path)
-      @font_notice = "Could not load the font \"#{path}\": accented letters will not show. Try --font PATH."
+      @font_notices << "Could not load the font \"#{path}\" (raylib reads .ttf and .otf files): " \
+                       "accented letters will not show in it. Try --font PATH."
+      nil
     end
 
     #: (Screen screen, DocumentView document) -> DrawList
@@ -48,7 +50,7 @@ module Shipinel
 
     #: (DocumentView document) -> Array[String]
     def notices(document)
-      ([@font_notice] + document.notices).reject(&:empty?).uniq
+      (@font_notices + document.notices).reject(&:empty?).uniq
     end
   end
 end

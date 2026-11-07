@@ -11,3 +11,5 @@ detectors:
       # the window and font state. Holding state here would duplicate it.
       - "Shipinel::Screen"
       - "Shipinel::TextMeasure"
+      # The same for the fc-match process: FontLocator takes a fake in tests.
+      - "Shipinel::Fontconfig"
