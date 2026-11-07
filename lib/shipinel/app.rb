@@ -58,7 +58,7 @@ module Shipinel
 
     # One frame, 60 a second. The layout is reused until the file or the
     # window size changes, and an idle frame showing the same page is not
-    # drawn again (Activity).
+    # built or drawn again (Activity).
     #: () -> void
     def tick
       poll if @poller.due?(Clock.now_ms)
@@ -67,9 +67,9 @@ module Shipinel
       nil
     end
 
-    #: (Frame frame) -> DrawCommand?
+    #: (Frame? frame) -> DrawCommand?
     def show(frame)
-      frame.pace.redraw? ? draw(frame) : skip
+      frame ? draw(frame) : skip
     end
 
     # Keeps the window responsive without drawing: waits, reads input.
@@ -80,10 +80,18 @@ module Shipinel
     end
 
     # Picks up external edits, and loads glyphs for any new characters.
+    # The characters are only collected when the file changed: a reload
+    # parses into new blocks.
     #: () -> void
     def poll
+      before = @document.blocks
       @document.reload
-      @page.refresh_fonts(@document.shown_text)
+      @page.refresh_fonts(@document.shown_text) if changed_since?(before)
+    end
+
+    #: (Markdown::BlockList blocks) -> bool
+    def changed_since?(blocks)
+      !@document.blocks.equal?(blocks)
     end
 
     #: (Frame frame) -> DrawCommand?
@@ -100,7 +108,8 @@ module Shipinel
       when Checkbox then @document.toggle(command.click)
       when LinkArea then @document.follow(command.url)
       end
-      nil
+      # A problem notice may bring characters the fonts lack.
+      @page.refresh_fonts(@document.shown_text)
     end
   end
 end

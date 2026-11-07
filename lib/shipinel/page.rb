@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
 # How the document is presented: its styles, where it is scrolled to, and
-# the fonts (with their warnings). Each frame it applies the wheel and the
-# scrollbar, reuses the document's layout unless something it depends on
-# changed, and builds the overlay: progress header and scrollbar.
+# the fonts (with their warnings). Each frame it reads the mouse; a frame
+# that is due or shows a changed page applies the wheel and the scrollbar,
+# reuses the document's layout unless something it depends on changed, and
+# builds the overlay: progress header and scrollbar. Any other frame does
+# nothing more.
 
 require_relative "content_cache"
 require_relative "document_view"
@@ -51,24 +53,39 @@ module Shipinel
       @cache.clear
     end
 
-    # The document scrolls in the window area below the header.
-    #: (Screen screen, DocumentView document) -> Frame
+    # The frame to draw, or nil when nothing is to be drawn.
+    #: (Screen screen, DocumentView document) -> Frame?
     def update(screen, document)
-      window = screen.area
-      header = ProgressHeader.new(document.blocks.task_progress, @styles, window.width)
-      area = window.below(header.height)
-      content = content(area, document)
-      framed(content, header, scroll(screen.mouse, content.height, area))
+      mouse = screen.mouse
+      key = LayoutKey.new(document.blocks, document.action_problem, screen.area)
+      return unless wanted?(mouse, key)
+
+      build(mouse, key, document)
     end
 
     private
 
-    #: (Rect area, DocumentView document) -> DrawList
-    def content(area, document)
-      key = LayoutKey.new(document.blocks, area, notices(document))
+    #: (MouseState mouse, LayoutKey key) -> bool
+    def wanted?(mouse, key)
+      @scroll.note(mouse)
+      @scroll.due? || !@cache.holds?(key)
+    end
+
+    # The document scrolls in the window area below the header.
+    #: (MouseState mouse, LayoutKey key, DocumentView document) -> Frame
+    def build(mouse, key, document)
+      window = key.area
+      header = ProgressHeader.new(key.blocks.task_progress, @styles, window.width)
+      area = window.below(header.height)
+      content = content(key, area.width, document)
+      Frame.of(content, header, scroll(mouse, content.height, area))
+    end
+
+    #: (LayoutKey key, Float width, DocumentView document) -> DrawList
+    def content(key, width, document)
       return @cache.list if @cache.holds?(key)
 
-      @cache.keep(key, Layout.new(@fonts, @styles, area.width).arrange(key.blocks, key.notices))
+      @cache.keep(key, Layout.new(@fonts, @styles, width).arrange(key.blocks, notices(document)))
     end
 
     # Applies this frame's input; returns the bar where the page ended up.
@@ -76,14 +93,6 @@ module Shipinel
     def scroll(mouse, page_height, area)
       bar = Scrollbar.new(page_height, area, @scroll.offset)
       bar.moved_to(@scroll.apply(mouse, bar))
-    end
-
-    #: (DrawList content, ProgressHeader header, Scrollbar bar) -> Frame
-    def framed(content, header, bar)
-      overlay = DrawList.new
-      header.add_to(overlay)
-      bar.add_to(overlay)
-      Frame.new(content, overlay, Viewport.new(@scroll.offset, bar.area), @scroll.pace(@cache.take_change))
     end
 
     #: (DocumentView document) -> Array[String]

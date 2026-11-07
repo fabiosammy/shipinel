@@ -29,11 +29,17 @@ module Shipinel
       @activity = Activity.new
     end
 
-    # Drawn while the user scrolls or points; an idle, unchanged page is
-    # not drawn again (Activity).
-    #: (bool changed) -> Pace
-    def pace(changed)
-      @activity.pace(changed)
+    # Called once a frame, drawn or not, with that frame's mouse.
+    #: (MouseState mouse) -> void
+    def note(mouse)
+      @activity.note(mouse)
+    end
+
+    # Whether this frame is drawn even if the page did not change: while
+    # the user scrolls or points, and as the idle refresh (Activity).
+    #: () -> bool
+    def due?
+      @activity.due?
     end
 
     # Keeps the page between its top and where its end reaches the bottom
@@ -41,7 +47,6 @@ module Shipinel
     # the new offset.
     #: (MouseState mouse, Scrollbar bar) -> Float
     def apply(mouse, bar)
-      @activity.note(mouse)
       @offset = bar.in_range(@offset - (mouse.wheel * STEP))
       drag(mouse, bar) if bar.needed?
       @offset

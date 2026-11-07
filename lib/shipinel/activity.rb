@@ -36,39 +36,10 @@ module Shipinel
       @at = at
     end
 
-    # How this frame runs; `changed` says whether the page changed since
-    # the last frame drawn.
-    #: (bool changed) -> Pace
-    def pace(changed)
-      Pace.new(due?, changed)
-    end
-
-    private
-
     # Busy frames are always drawn; idle ones every REFRESH frames.
     #: () -> bool
     def due?
       @quiet < LINGER || ((@quiet - LINGER) % REFRESH).zero?
-    end
-  end
-
-  # Whether a frame is drawn at all: an unchanged idle page is left on
-  # screen as it is.
-  class Pace
-    # @rbs @due: bool
-    # @rbs @changed: bool
-
-    # `due`: busy, or time for the idle refresh; `changed`: the page is not
-    # the one on screen.
-    #: (bool due, bool changed) -> void
-    def initialize(due, changed)
-      @due = due
-      @changed = changed
-    end
-
-    #: () -> bool
-    def redraw?
-      @due || @changed
     end
   end
 end

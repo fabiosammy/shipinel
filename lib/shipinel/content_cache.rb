@@ -10,32 +10,40 @@ require_relative "geometry"
 require_relative "markdown/block"
 
 module Shipinel
-  # What a layout depends on: the blocks, the window area and the notices.
-  # The blocks are compared by identity: DocumentView parses into a new
-  # BlockList whenever the file changes. The rest is compared as `text`.
-  # The height is part of it although the layout ignores it: a new size has
-  # to be drawn.
+  # What a layout depends on, cheap to build and compare every frame: the
+  # blocks (by identity: DocumentView parses into a new BlockList whenever
+  # the file changes), the problem from the last click (shown as a notice),
+  # and the window size. The height is part of it although the layout
+  # ignores it: a new size has to be drawn. Font notices change only when
+  # the fonts are loaded, which clears the cache.
   class LayoutKey
     attr_reader :blocks #: Markdown::BlockList
-    attr_reader :notices #: Array[String]
-    attr_reader :text #: String
+    attr_reader :problem #: String
+    attr_reader :area #: Rect
 
-    #: (Markdown::BlockList blocks, Rect area, Array[String] notices) -> void
-    def initialize(blocks, area, notices)
+    #: (Markdown::BlockList blocks, String problem, Rect area) -> void
+    def initialize(blocks, problem, area)
       @blocks = blocks
-      @notices = notices
-      @text = "#{area.width}x#{area.height} #{notices.join("\n")}"
+      @problem = problem
+      @area = area
     end
 
     # One that no layout matches: its blocks belong to no document.
     #: () -> LayoutKey
     def self.none
-      LayoutKey.new(Markdown::BlockList.new, Rect.new(0.0, 0.0, 0.0, 0.0), [])
+      LayoutKey.new(Markdown::BlockList.new, "", Rect.new(0.0, 0.0, 0.0, 0.0))
     end
 
     #: (LayoutKey other) -> bool
     def same_as?(other)
-      @blocks.equal?(other.blocks) && @text == other.text
+      @blocks.equal?(other.blocks) && @problem == other.problem && same_size?(other.area)
+    end
+
+    private
+
+    #: (Rect other) -> bool
+    def same_size?(other)
+      @area.width == other.width && @area.height == other.height
     end
   end
 
@@ -44,21 +52,11 @@ module Shipinel
     attr_reader :list #: DrawList
 
     # @rbs @key: LayoutKey
-    # @rbs @changed: bool
 
     #: () -> void
     def initialize
       @list = DrawList.new
       @key = LayoutKey.none
-      @changed = false
-    end
-
-    # Whether a new layout was kept since the last call.
-    #: () -> bool
-    def take_change
-      changed = @changed
-      @changed = false
-      changed
     end
 
     #: (LayoutKey key) -> bool
@@ -69,7 +67,6 @@ module Shipinel
     #: (LayoutKey key, DrawList list) -> DrawList
     def keep(key, list)
       @key = key
-      @changed = true
       @list = list
     end
 

@@ -61,6 +61,12 @@ module Shipinel
       point.top < thumb.top ? -1.0 : 1.0
     end
 
+    # How the page sits in the window at this bar's offset.
+    #: () -> Viewport
+    def viewport
+      Viewport.new(@offset, @area)
+    end
+
     # The same bar, for the page scrolled to `offset`.
     #: (Float offset) -> Scrollbar
     def moved_to(offset)

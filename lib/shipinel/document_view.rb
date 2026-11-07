@@ -14,10 +14,11 @@ module Shipinel
   # See the file comment.
   class DocumentView
     attr_reader :blocks #: Markdown::BlockList
+    # Why the last click could not be saved or opened ("" when it worked).
+    attr_reader :action_problem #: String
 
     # @rbs @file: DocumentFile
     # @rbs @snapshot: Snapshot
-    # @rbs @action_problem: String
 
     #: (DocumentFile file) -> void
     def initialize(file)

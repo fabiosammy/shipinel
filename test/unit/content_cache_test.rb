@@ -65,4 +65,14 @@ class ContentCacheTest < Minitest::Test
 
     assert_operator measured_after_frame, :>, first
   end
+
+  # The pointer never moves here: the first frames are busy (it appeared),
+  # then idle frames are not built until the file changes.
+  def test_idle_frames_are_not_built_until_the_page_changes
+    frames = Array.new(40) { @page.update(@screen, @document) }
+    File.write(@path, "# Domingo\n")
+    @document.reload
+
+    assert_equal [false, true, false], [frames.first.nil?, frames.last.nil?, @page.update(@screen, @document).nil?]
+  end
 end
