@@ -72,12 +72,16 @@ cp test/fixtures/semana.md /tmp/semana.md
     bar at the top that stays put while scrolling; ticking a box updates
     both at once, and the bar turns green when every task is checked.
     Checkboxes scrolled under the strip cannot be clicked. A file without
-    tasks shows no strip.
+    tasks shows only the section line.
 17. **Sections and memory.** Scroll into a section: the strip names it
     (the file name above the first heading). Zoom: you stay in that
     section. Close and reopen: same section, size and header state, and
     the same window size (on X11 also the position). Add lines above that
     section while it is closed: it still reopens there.
+18. **Config.** With `file=` in `~/.config/shipinel/config`, `shipinel`
+    with no path opens that plan; a path on the command line wins. Without
+    either, the usage message names the config file. A bad value (`tray=maybe`)
+    prints one line on stderr and the window still opens.
 
 ## Per desktop
 

@@ -37,8 +37,9 @@ class CliOptionsTest < Minitest::Test
     assert_equal 72, parse("a.md", "--font-size", "72").font_size
   end
 
-  def test_missing_path
-    assert_match(/missing PATH\.md/, usage_error)
+  # The config's `file` is used then (Config#plan).
+  def test_no_path_is_allowed
+    assert_equal "", parse.path
   end
 
   def test_second_path

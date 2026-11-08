@@ -5,29 +5,17 @@
 # per plan, named after its full path. A missing or unreadable file, or a
 # value that does not fit, falls back to the defaults.
 
+require_relative "key_values"
 require_relative "saved_state"
 
 module Shipinel
   # Reads a SavedState back from its text, falling back field by field.
   class StateReader
-    # @rbs @fields: Hash[String, String]
+    # @rbs @fields: KeyValues
 
     #: (String text) -> void
     def initialize(text)
-      @fields = {}
-      text.each_line { |line| take(line.chomp) }
-    end
-
-    # "size=22" -> "size".
-    #: (String line) -> String
-    def self.key_of(line)
-      line.split("=", 2).first.to_s
-    end
-
-    # "size=22" -> "22".
-    #: (String line) -> String
-    def self.value_of(line)
-      line.split("=", 2).last.to_s
+      @fields = KeyValues.new(text)
     end
 
     # `start` gives the --font-size and the defaults for a new plan.
@@ -38,17 +26,9 @@ module Shipinel
 
     private
 
-    # A line without "=" is skipped. (Not String#partition: that name pulls
-    # in Spinel's widening Enumerable#partition, docs/spinel-notes.md.)
-    #: (String line) -> void
-    def take(line)
-      @fields[StateReader.key_of(line)] = StateReader.value_of(line) if line.include?("=")
-      nil
-    end
-
     #: (String key) -> String
     def field(key)
-      @fields.fetch(key, "")
+      @fields[key]
     end
 
     #: () -> ScrollSpot

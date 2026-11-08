@@ -8,7 +8,8 @@ module Shipinel
   class UsageError < StandardError
   end
 
-  # What the user asked for on the command line.
+  # What the user asked for on the command line. `path` is "" when none
+  # was given (the config's `file` is used then, Config#plan).
   class Options
     attr_reader :path #: String
     attr_reader :font_path #: String?
@@ -24,10 +25,10 @@ module Shipinel
     end
   end
 
-  # Reads `PATH.md [--font PATH] [--font-size N] [--emoji-font PATH]`, in
+  # Reads `[PATH.md] [--font PATH] [--font-size N] [--emoji-font PATH]`, in
   # any order. A flag given twice keeps its last value.
   class CliOptions
-    USAGE = "usage: shipinel PATH.md [--font PATH] [--font-size N] [--emoji-font PATH]"
+    USAGE = "usage: shipinel [PATH.md] [--font PATH] [--font-size N] [--emoji-font PATH]"
     DEFAULT_FONT_SIZE = 20
     MIN_FONT_SIZE = 8
     MAX_FONT_SIZE = 72
@@ -48,18 +49,10 @@ module Shipinel
     #: () -> Options
     def parse
       take(@args.shift.to_s) until @args.empty?
-      Options.new(path, @values["--font"], font_size, @values["--emoji-font"])
+      Options.new(@path.to_s, @values["--font"], font_size, @values["--emoji-font"])
     end
 
     private
-
-    #: () -> String
-    def path
-      found = @path
-      raise UsageError, "missing PATH.md\n#{USAGE}" unless found
-
-      found
-    end
 
     #: (String arg) -> void
     def take(arg)

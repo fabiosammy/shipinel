@@ -31,17 +31,38 @@ Quality gate: `bundle exec rake check` (or `nix flake check`).
 ## Command line
 
 ```
-shipinel PATH.md [--font PATH] [--font-size N] [--emoji-font PATH]
+shipinel [PATH.md] [--font PATH] [--font-size N] [--emoji-font PATH]
 ```
 
 | Option | Meaning |
 |---|---|
-| `PATH.md` | The file to show. If it does not exist yet, the window says so and shows it as soon as it appears. |
+| `PATH.md` | The file to show. If it does not exist yet, the window says so and shows it as soon as it appears. Without it, the config's `file` is opened. |
 | `--font PATH` | A TTF/OTF font for the text (also used for bold and italic). Default: what `fc-match sans` returns, with `fc-match sans:bold` for bold and `fc-match sans:italic` for italic; if no italic face is installed, fontconfig returns the upright one and italics look upright. Code always uses `fc-match monospace`. |
 | `--font-size N` | Body text size in pixels, 8 to 72. Default 20. Headings are larger, code slightly smaller. |
 | `--emoji-font PATH` | A **monochrome** TTF/OTF for emoji and other symbols the text font lacks. Default: `fc-match 'emoji:color=false'`; the Nix package passes Noto Emoji. Colour emoji fonts (Noto Color Emoji) are bitmaps raylib cannot draw. |
 
 Wrong arguments print a usage message and exit with status 2.
+
+## Config
+
+Optional: `~/.config/shipinel/config` (or `$XDG_CONFIG_HOME/shipinel/config`),
+one `key=value` per line, `#` starts a comment line. Everything has a
+default; a value that does not fit keeps it and is reported on stderr.
+
+```ini
+# The plan to open when shipinel is run without a path (~ is your home).
+file=~/notes/week.md
+# A daily notification with the number of open tasks, at this time (HH:MM);
+# leave empty for none.
+notify_daily=17:30
+# A notification when ticking a box cannot be saved (default on).
+notify_save_failed=on
+# A tray icon (default off); with it, closing can hide the window there.
+tray=on
+close_to_tray=off
+```
+
+Yes/no settings take `on`/`off`, `yes`/`no`, `true`/`false` or `1`/`0`.
 
 ## Supported Markdown
 
