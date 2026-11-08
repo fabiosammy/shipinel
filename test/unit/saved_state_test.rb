@@ -18,14 +18,15 @@ class SavedStateTest < Minitest::Test
 
   def state(placed:)
     place = Shipinel::WindowPlace.new(Shipinel::Rect.new(30.0, 40.0, 500.0, 700.0), placed)
-    Shipinel::SavedState.new(Shipinel::ScrollSpot.new("goal-1", 12.5, 300.0), Shipinel::View.new(24, 20, false), place)
+    Shipinel::SavedState.new(Shipinel::ScrollSpot.new("goal-1", 12.5, 300.0), Shipinel::View.new(24, 20, false), place,
+                             "2026-11-08")
   end
 
-  def read(text) = Shipinel::StateReader.new(text).state(START, DEFAULT_PLACE)
+  def read(text) = Shipinel::StateReader.new(text).state(Shipinel::SavedState.fresh(START, DEFAULT_PLACE))
 
   def test_text_lists_every_field
-    assert_equal "section=goal-1\nwithin=12.5\noffset=300.0\nsize=24\nheader=0\nwidth=500\nheight=700\nx=30\ny=40\n",
-                 state(placed: true).to_text
+    assert_equal "section=goal-1\nwithin=12.5\noffset=300.0\nsize=24\nheader=0\nwidth=500\nheight=700\nx=30\ny=40\n" \
+                 "nudged=2026-11-08\n", state(placed: true).to_text
   end
 
   def test_no_position_where_the_window_system_places_windows
@@ -85,13 +86,25 @@ class SavedStateTest < Minitest::Test
     assert_equal "", file.read
   end
 
+  def test_reads_back_the_last_nudge
+    assert_equal ["2026-11-08", ""], [read(state(placed: false).to_text).nudged, read("").nudged]
+  end
+
+  def session(file)
+    reminder = Shipinel::Reminder.new(Shipinel::NotifySettings.new("", false), Shipinel::Notifier.new("false"), "")
+    Shipinel::Session.new(file, read(""), reminder)
+  end
+
+  def save(session, state) = session.save(state.spot, state.view, state.place)
+
+  # The session's reminder never nudged, so the saved text has "nudged=".
   def test_session_writes_only_when_the_state_changed
     file = Shipinel::StateFile.new(File.join(@dir, "state"))
-    session = Shipinel::Session.new(file, read(""), 0)
-    session.save(read(""))
+    keeper = session(file)
+    save(keeper, read(""))
     unchanged = File.exist?(file.path)
-    session.save(state(placed: false))
+    save(keeper, state(placed: false))
 
-    assert_equal [false, state(placed: false).to_text], [unchanged, file.read]
+    assert_equal [false, state(placed: false).to_text.sub("nudged=2026-11-08", "nudged=")], [unchanged, file.read]
   end
 end

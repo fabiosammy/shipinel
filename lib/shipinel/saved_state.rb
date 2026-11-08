@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 # What Shipinel remembers about one plan between runs: where the page was
-# scrolled to, the text size and header, and the window's size (and
-# position where it is known), as the key=value lines StateFile keeps.
+# scrolled to, the text size and header, the window's size (and position
+# where it is known), and the day of the last daily nudge, as the key=value
+# lines StateFile keeps.
 
 require_relative "scroll_spot"
 require_relative "view"
@@ -14,17 +15,26 @@ module Shipinel
     attr_reader :spot #: ScrollSpot
     attr_reader :view #: View
     attr_reader :place #: WindowPlace
+    # The date of the last daily nudge, "" for never (Reminder).
+    attr_reader :nudged #: String
 
-    #: (ScrollSpot spot, View view, WindowPlace place) -> void
-    def initialize(spot, view, place)
+    #: (ScrollSpot spot, View view, WindowPlace place, String nudged) -> void
+    def initialize(spot, view, place, nudged)
       @spot = spot
       @view = view
       @place = place
+      @nudged = nudged
+    end
+
+    # What a plan never shown before starts with.
+    #: (View view, WindowPlace place) -> SavedState
+    def self.fresh(view, place)
+      SavedState.new(ScrollSpot.none, view, place, "")
     end
 
     #: () -> String
     def to_text
-      "#{spot_lines}#{view_lines}#{@place.to_text}"
+      "#{spot_lines}#{view_lines}#{@place.to_text}nudged=#{@nudged}\n"
     end
 
     private

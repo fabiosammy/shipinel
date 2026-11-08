@@ -84,10 +84,13 @@ class AppTest < Minitest::Test
     FileUtils.remove_entry(@dir)
   end
 
+  # No notifications: the tests never run notify-send.
+  CONFIG = Shipinel::Config.new("notify_save_failed=off\n")
+
   PATHS_FAILING = ["/s.ttf", "/b.ttf", "/i.ttf", "/m.ttf", "/e.ttf"].freeze
 
   def run_app(screen)
-    Shipinel::App.new(screen, @path, Shipinel::View.starting_at(20), PATHS).run
+    Shipinel::App.new(screen, Shipinel::Launch.new(@path, Shipinel::View.starting_at(20), PATHS, CONFIG)).run
     screen
   end
 
@@ -186,6 +189,7 @@ class AppTest < Minitest::Test
   def test_remembers_where_it_was_on_closing
     run_app(FakeScreen.new(frames: 1))
 
-    assert_match(/\Asection=\nwithin=0.0\noffset=0.0\nsize=20\nheader=1\nwidth=440\nheight=640\n\z/, state_file.read)
+    assert_match(/\Asection=\nwithin=0.0\noffset=0.0\nsize=20\nheader=1\nwidth=440\nheight=640\nnudged=\n\z/,
+                 state_file.read)
   end
 end

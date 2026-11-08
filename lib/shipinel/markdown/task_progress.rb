@@ -56,6 +56,19 @@ module Shipinel
         "#{@done} of #{@total} #{noun} done · #{percent}%"
       end
 
+      # For the daily nudge: "2 tasks still open".
+      #: () -> String
+      def open_label
+        left = @total - @done
+        "#{left} #{left == 1 ? 'task' : 'tasks'} still open"
+      end
+
+      # For the daily nudge: "week.md · 33% done".
+      #: (String name) -> String
+      def done_line(name)
+        "#{name} · #{percent}% done"
+      end
+
       private
 
       #: () -> String

@@ -209,6 +209,10 @@ Keys repeat while held. Escape does nothing.
   shows how many are checked ("12 of 40 tasks done · 30%") and a bar
   filled by that share, which turns green when every task is done. Tasks
   inside code fences do not count. `h` hides the strip.
+- Notifications (see Config) go through `notify-send`, which the Nix
+  package brings: once a day at `notify_daily`, how many tasks are still
+  open (sent once that day, also when the window opens later; nothing when
+  all are done), and when ticking a box cannot be saved.
 - Each plan reopens where it was left: the same section (found by its
   heading, so edits above it do not move you), the same text size and
   header, and the window's size. On X11 the window's position comes back

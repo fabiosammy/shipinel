@@ -9,6 +9,7 @@ require_relative "document_view"
 require_relative "draw_list"
 require_relative "font_locator"
 require_relative "font_set"
+require_relative "launch"
 require_relative "font_shim"
 require_relative "frame"
 require_relative "page"
@@ -32,13 +33,13 @@ module Shipinel
     # @rbs @session: Session
     # @rbs @page: Page
 
-    # `view` is the --font-size; a plan shown before opens as it was left.
-    #: (Screen screen, String path, View view, FontPaths fonts) -> void
-    def initialize(screen, path, view, fonts)
+    # A plan shown before opens as it was left; a new one at --font-size.
+    #: (Screen screen, Launch launch) -> void
+    def initialize(screen, launch)
       @screen = screen
-      @document = DocumentView.new(DocumentFile.new(path))
-      @session = Session.for(path, view, WindowPlace.sized(WIDTH, HEIGHT))
-      @page = Page.new(@session.saved.view, FontSet.new(screen.font_shim, fonts))
+      @document = DocumentView.new(DocumentFile.new(launch.path))
+      @session = launch.session(WindowPlace.sized(WIDTH, HEIGHT))
+      @page = Page.new(@session.saved.view, FontSet.new(screen.font_shim, launch.fonts))
     end
 
     #: () -> void
@@ -70,7 +71,7 @@ module Shipinel
     # half a second.
     #: () -> void
     def remember
-      @session.save(SavedState.new(@page.spot, @page.view, @screen.placement))
+      @session.save(@page.spot, @page.view, @screen.placement)
     end
 
     # One frame, 60 a second. The layout is reused until the file or the
@@ -101,6 +102,7 @@ module Shipinel
     def chores
       poll
       remember
+      @session.remind(@document.blocks.task_progress, @document.name)
     end
 
     # Picks up external edits, and loads glyphs for any new characters.
@@ -129,7 +131,7 @@ module Shipinel
     #: (DrawCommand command) -> void
     def act(command)
       case command
-      when Checkbox then @document.toggle(command.click)
+      when Checkbox then @session.save_failed(@document.toggle(command.click).problem)
       when LinkArea then @document.follow(command.url)
       end
       # A problem notice may bring characters the fonts lack.

@@ -18,10 +18,11 @@ module Shipinel
       @fields = KeyValues.new(text)
     end
 
-    # `start` gives the --font-size and the defaults for a new plan.
-    #: (View start, WindowPlace default_place) -> SavedState
-    def state(start, default_place)
-      SavedState.new(spot, view(start), place(default_place))
+    # `defaults` is what a new plan starts with; its view carries the
+    # --font-size.
+    #: (SavedState defaults) -> SavedState
+    def state(defaults)
+      SavedState.new(spot, view(defaults.view), place(defaults.place), field("nudged"))
     end
 
     private

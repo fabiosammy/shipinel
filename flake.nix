@@ -71,8 +71,8 @@
             export HOME=$TMPDIR
             spin build
           '';
-          # At run time the app asks `fc-match` for its default fonts and
-          # opens links with `xdg-open`. Emoji need a monochrome font
+          # At run time the app asks `fc-match` for its default fonts,
+          # opens links with `xdg-open` and notifies with `notify-send`. Emoji need a monochrome font
           # (raylib cannot draw colour emoji), so Noto Emoji ships with it;
           # a later --emoji-font on the command line still wins.
           installPhase = ''
@@ -81,7 +81,7 @@
             emoji=$1
             test -f "$emoji"
             wrapProgram $out/bin/shipinel \
-              --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.fontconfig pkgs.xdg-utils ]} \
+              --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.fontconfig pkgs.xdg-utils pkgs.libnotify ]} \
               --add-flags "--emoji-font $emoji"
           '';
         };

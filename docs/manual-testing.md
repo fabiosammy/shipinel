@@ -82,6 +82,11 @@ cp test/fixtures/semana.md /tmp/semana.md
     with no path opens that plan; a path on the command line wins. Without
     either, the usage message names the config file. A bad value (`tray=maybe`)
     prints one line on stderr and the window still opens.
+19. **Notifications.** With `notify_daily` a minute in the past, the
+    desktop shows "N tasks still open" once; closing and reopening the
+    window the same day shows nothing new. With the plan in a read-only
+    folder, ticking a box shows "Shipinel could not save" with the reason.
+    Without `notify-send` on PATH, each one prints a line on stderr instead.
 
 ## Per desktop
 
