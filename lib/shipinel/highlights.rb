@@ -52,11 +52,18 @@ module Shipinel
       @changes.within?(first, last)
     end
 
+    # Whether lines removed outside were just before this block.
+    #: (Integer first, Integer last) -> bool
+    def removed_before?(first, last)
+      @changes.removed_within?(first, last)
+    end
+
     # Same dates and the same marks: the page laid out for one fits the
     # other.
     #: (Highlights other) -> bool
     def same_as?(other)
-      today == other.today && @changes.lines == other.changes.lines
+      other_changes = other.changes
+      today == other.today && @changes.lines == other_changes.lines && @changes.removed == other_changes.removed
     end
   end
 end

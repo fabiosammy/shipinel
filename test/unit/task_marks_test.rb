@@ -75,6 +75,15 @@ class TaskMarksTest < Minitest::Test
     assert_equal [Shipinel::Theme::Accent::TODAY, Shipinel::Theme::Ink::HEADING], colors
   end
 
+  # "- [ ] gone" was removed: the task now after it gets one notch over its
+  # first line, 9 px wide and 3 px high.
+  def test_removed_lines_leave_a_notch_over_the_next_block
+    changes = Shipinel::LineChanges.between("- [ ] a\n- [ ] gone\n- [ ] b\n", "- [ ] a\n- [ ] b\n", 0)
+    rects = marks(page("- [ ] a\n- [ ] b\n", highlights: Shipinel::Highlights.new(Shipinel::Day.none, changes)))
+
+    assert_equal([[5.0, 43.0, 9.0, 3.0]], rects.map { |rect| [rect.left, rect.top, rect.width, rect.height] })
+  end
+
   def test_nothing_changed_nothing_marked
     assert_empty marks(page("# a\n\ntext\n"))
   end

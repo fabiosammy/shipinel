@@ -106,7 +106,8 @@ cp test/fixtures/semana.md /tmp/semana.md
 23. **Changed lines.** Edit two lines in your editor and save: within a
     second a teal mark appears in the left margin beside each of their
     lines (a wrapped task gets one per line), and it is gone ten seconds
-    later. Ticking a box in Shipinel marks nothing.
+    later. Delete a task: a short notch appears over the task that now
+    follows it. Ticking a box in Shipinel marks nothing.
 24. **Undo.** Tick a box, press `u`: it is open again in the window and in
     the file. A second `u` does nothing. Tick, edit that line in your
     editor, press `u`: the file keeps your edit.
