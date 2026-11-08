@@ -57,6 +57,12 @@ module Shipinel
         "#{@done} of #{@total} #{noun} done · #{percent}%"
       end
 
+      # A section's count in the header: "3 of 8", or "" without tasks.
+      #: () -> String
+      def count_text
+        tasks? ? "#{@done} of #{@total}" : ""
+      end
+
       # The tray icon's tooltip.
       #: () -> String
       def tray_label

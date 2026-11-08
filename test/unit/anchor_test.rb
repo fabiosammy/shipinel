@@ -36,13 +36,13 @@ class AnchorTest < Minitest::Test
     list = anchors
 
     assert_equal(["plan.md", "Semana", "Semana", "Goal 1 — Drata"],
-                 [10.0, 16.0, 70.0, 300.0].map { |offset| list.title_above(offset, "plan.md") })
+                 [10.0, 16.0, 70.0, 300.0].map { |offset| list.section_at(offset, "plan.md").title })
   end
 
   def test_spots_survive_a_heading_moving
     spot = Shipinel::ScrollSpot.at(100.0, anchors)
     moved = Shipinel::AnchorList.new
-    moved.add(Shipinel::Anchor.new("Goal 1 — Drata", 500.0))
+    moved.add(Shipinel::Anchor.new("Goal 1 — Drata", 500.0), 2)
 
     assert_equal ["goal-1-drata", 22.8, 522.8], [spot.slug, spot.within.round(1), spot.offset_in(moved).round(1)]
   end
@@ -63,5 +63,24 @@ class AnchorTest < Minitest::Test
     spot = Shipinel::ScrollSpot.new("goal-1", 10.0, 100.0).scaled(1.1)
 
     assert_equal [11.0, 110.0], [spot.within.round(1), spot.offset.round(1)]
+  end
+
+  # Goal 1 has a subsection; Goal 2 closes both. The level 1 heading
+  # counts every task below it.
+  def test_each_section_counts_the_tasks_under_it_and_its_subsections
+    source = "# Week\n## Goal 1\n- [x] a\n### Gate\n- [ ] b\n## Goal 2\n- [x] c\n- [x] d\n"
+    page = Shipinel::Layout.new(fake_font_set, Shipinel::Styles.new(20.0), 400.0)
+                           .arrange(Shipinel::Markdown::Parser.parse(source), [])
+    list = page.anchors
+
+    assert_equal(["Week 3 of 4", "Goal 1 1 of 2", "Gate 0 of 1", "Goal 2 2 of 2"],
+                 (0..3).map { |position| "#{list.at(position).title} #{list.at(position).progress.count_text}" })
+  end
+
+  def test_the_section_line_has_the_count_or_the_file_name
+    above = anchors.section_at(4.0, "plan.md")
+    inside = anchors.section_at(300.0, "plan.md")
+
+    assert_equal [["plan.md", ""], ["Goal 1 — Drata", ""]], [[above.title, above.tasks], [inside.title, inside.tasks]]
   end
 end

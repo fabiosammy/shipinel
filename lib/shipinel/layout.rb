@@ -9,6 +9,7 @@
 require_relative "draw_list"
 require_relative "flow"
 require_relative "list_layout"
+require_relative "quote_layout"
 require_relative "markdown/block"
 require_relative "font_set"
 require_relative "styles"
@@ -52,6 +53,8 @@ module Shipinel
       @flow.gap(block_gap / 2) if code != @in_code && !@flow.at_top?
       @in_code = code
       place_kind(block)
+      # Every block is counted under the open headings (only tasks count).
+      @flow.anchors.add_block(block)
     end
 
     # Headings and list items carry more than their text. Each branch reads
@@ -82,7 +85,7 @@ module Shipinel
     #: (String text, Integer level) -> void
     def place_heading(text, level)
       @flow.gap(block_gap) unless @flow.at_top?
-      @flow.mark(text)
+      @flow.anchors.mark(text, @flow.top, level)
       @flow.text(text, 0.0, @styles.heading(level))
       @flow.gap(block_gap / 2)
     end
@@ -94,19 +97,10 @@ module Shipinel
       @flow.gap(block_gap)
     end
 
-    # Indented, with a bar down its left side as tall as its text.
     #: (String text) -> void
     def place_quote(text)
-      top = @flow.top
-      @flow.text(text, @styles.size, @styles.quote)
-      add_quote_bar(top)
+      QuoteLayout.new(@flow).place(text)
       @flow.gap(block_gap)
-    end
-
-    # From `top` down to where the quote's text ended.
-    #: (Float top) -> void
-    def add_quote_bar(top)
-      @flow.add(Box.new(Rect.new(Theme::Spacing::MARGIN, top, 3.0, @flow.top - top), Theme::Surface::RULE))
     end
 
     #: (String cells, Integer columns, Integer header_rows) -> void

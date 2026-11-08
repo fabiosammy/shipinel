@@ -66,10 +66,10 @@ module Shipinel
       gap(style.line_height)
     end
 
-    # A heading starts here: an anchor with its title as plain text.
-    #: (String text) -> void
-    def mark(text)
-      @list.anchors.add(Anchor.new(Markdown::Inline.parse(text).plain, @top))
+    # Where the page's headings start, and their task counts.
+    #: () -> AnchorList
+    def anchors
+      @list.anchors
     end
 
     # Centered on the line that the item's text starts on.

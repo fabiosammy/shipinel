@@ -94,6 +94,11 @@ cp test/fixtures/semana.md /tmp/semana.md
     hides the window and the icon stays. On Hyprland with waybar's tray the
     same; on GNOME without the AppIndicator extension, stderr says there is
     no tray and the close button quits.
+21. **Pace and sections.** On a Wednesday around noon the tick sits in the
+    middle of the bar; with less than 30% of the tasks checked the bar is
+    amber, otherwise blue (green when all are done). Scroll into a section
+    with tasks: the section line ends with "· N of M", counting its
+    subsections; a long title is cut with "…" before the count.
 
 ## Per desktop
 

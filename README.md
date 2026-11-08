@@ -205,11 +205,16 @@ Keys repeat while held. Escape does nothing.
   drawn.
 - The file is re-read about every 500 ms by comparing its content, which
   also catches editors that save by renaming.
-- A strip pinned to the top of the window names the section you are in:
-  the last heading scrolled to or past the top, or the file's name above
-  the first one (cut with "…" when long). When the file has tasks, it also
-  shows how many are checked ("12 of 40 tasks done · 30%") and a bar
-  filled by that share, which turns green when every task is done. Tasks
+- A strip pinned to the top of the window names the section you are in,
+  with its own count ("Goal 1 — Drata · 3 of 8", counting its
+  subsections): the last heading scrolled to or past the top, or the
+  file's name above the first one (cut with "…" when long). When the file
+  has tasks, it also shows how many are checked ("12 of 40 tasks done ·
+  30%") and a bar filled by that share, which turns green when every task
+  is done.
+- The bar has a tick where the work week is, as if the tasks were spread
+  evenly from Monday 00:00 to Friday 24:00 (at the weekend, the end). More
+  than a workday's share behind it (20% of the tasks), the bar turns amber. Tasks
   inside code fences do not count. `h` hides the strip.
 - Notifications (see Config) go through `notify-send`, which the Nix
   package brings: once a day at `notify_daily`, how many tasks are still

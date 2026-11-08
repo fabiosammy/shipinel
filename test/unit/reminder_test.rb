@@ -26,7 +26,7 @@ class ReminderTest < Minitest::Test
   end
 
   def progress(source) = Shipinel::Markdown::Parser.parse(source).task_progress
-  def at(time, date = "2026-11-08") = Shipinel::WallTime.new(date, time)
+  def at(time, date = "2026-11-08") = Shipinel::WallTime.new(date, time, 0.5)
 
   OPEN = "- [x] a\n- [ ] b\n- [ ] c\n"
 
@@ -86,5 +86,6 @@ class ReminderTest < Minitest::Test
     now = Shipinel::WallTime.now
 
     assert_match(/\A\d{4}-\d\d-\d\d \d\d:\d\d\z/, "#{now.date} #{now.time}")
+    assert_includes 0.0..1.0, now.week_share
   end
 end

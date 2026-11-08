@@ -39,6 +39,14 @@ module Shipinel
       COMPLETE = 0x98C379FF
     end
 
+    # The week's pace on the progress bar (WeekProgress).
+    module Pace
+      # The tick where the week is.
+      MARK = 0xDCDFE4FF
+      # The bar when more than a workday behind.
+      BEHIND = 0xE5A04BFF
+    end
+
     # Task checkboxes.
     module Checkbox
       BORDER = 0x6B7280FF

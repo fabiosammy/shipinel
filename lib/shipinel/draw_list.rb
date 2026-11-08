@@ -104,11 +104,11 @@ module Shipinel
       @commands[position]
     end
 
-    # The title of the heading the page is scrolled into at `offset`, or
-    # `fallback` above the first heading.
-    #: (Float offset, String fallback) -> String
+    # The heading the page is scrolled into at `offset`, with its count,
+    # or `fallback` above the first heading.
+    #: (Float offset, String fallback) -> SectionLine
     def section_at(offset, fallback)
-      @anchors.title_above(offset, fallback)
+      @anchors.section_at(offset, fallback)
     end
 
     #: (Float height) -> DrawList

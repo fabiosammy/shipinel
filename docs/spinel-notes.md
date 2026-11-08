@@ -346,6 +346,12 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
    - `Comparable#between?` (and `clamp`) pulls `builtins/comparable.rb` in,
      which reports six widen warnings. **Rule:** `x >= lo && x <= hi`
      (`Style/ComparableBetween` is off for this reason, docs/exceptions.md).
+   - Method and attribute names count too: a method of our own named
+     `tally` (2026-11-08) or an `attr_reader :count` pulled in the widening
+     Enumerable builtins (35 warnings) although nothing called Enumerable.
+     **Rule:** never name a method or attribute after an Enumerable method
+     (`count`, `find`, `index`, `detect`, `tally`, `partition`, `take`, ...);
+     AnchorList has `add_block`, SectionLine `tasks`.
    - `String#partition` resolves to the widening `Enumerable#partition`
      builtin (checked with a probe, 2026-11-08). **Rule:** split key=value
      lines with `split("=", 2)` (StateReader).

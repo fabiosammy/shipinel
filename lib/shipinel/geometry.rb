@@ -44,6 +44,19 @@ module Shipinel
       Rect.new(@left, @top - distance, @width, @height)
     end
 
+    # The left `share` (0.0 to 1.0) of this rectangle: a filled bar.
+    #: (Float share) -> Rect
+    def left_part(share)
+      Rect.new(@left, @top, @width * share, @height)
+    end
+
+    # A tick `width` wide across this rectangle at `share` of its width,
+    # reaching `reach` above and below it.
+    #: (Float share, Float width, Float reach) -> Rect
+    def tick_at(share, width, reach)
+      Rect.new(@left + (@width * share) - (width / 2), @top - reach, width, @height + (reach * 2))
+    end
+
     # What is left below the first `height` pixels.
     #: (Float height) -> Rect
     def below(height)

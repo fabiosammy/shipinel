@@ -9,26 +9,9 @@
 require_relative "config"
 require_relative "markdown/task_progress"
 require_relative "notifier"
+require_relative "wall_time"
 
 module Shipinel
-  # The local date and time of day: "2026-11-08", "17:30".
-  class WallTime
-    attr_reader :date #: String
-    attr_reader :time #: String
-
-    #: (String date, String time) -> void
-    def initialize(date, time)
-      @date = date
-      @time = time
-    end
-
-    #: () -> WallTime
-    def self.now
-      now = Time.now
-      WallTime.new(now.strftime("%Y-%m-%d"), now.strftime("%H:%M"))
-    end
-  end
-
   # See the file comment.
   class Reminder
     # The date of the last daily nudge ("" for never).
