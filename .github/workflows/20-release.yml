@@ -3,8 +3,9 @@ name: 20 · Release
 # Step 20: run by hand from the Actions tab, on main, once "10 · Validate"
 # passed there with the new version in flake.nix, spin.toml and version.rb
 # (CONTRIBUTING.md, Releases). Runs every gate again, builds the package,
-# and creates the GitHub Release v<version> with generated notes and how to
-# install that version with Nix.
+# and creates the GitHub Release v<version>, with notes listing the commits
+# since the previous tag by type (`rake release_notes`) and how to install
+# that version.
 
 on:
   workflow_dispatch:
@@ -21,7 +22,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
+      # The whole history and the tags, for the notes' "since the last tag".
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: cachix/install-nix-action@v31
 
@@ -57,17 +61,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: v${{ steps.version.outputs.version }}
         run: |
-          cat > install.md <<NOTES
-          Install or update with [Nix](https://nixos.org):
-
-          \`\`\`sh
-          nix profile install github:${GITHUB_REPOSITORY}/${TAG}
-          \`\`\`
-
-          or run it once: \`nix run github:${GITHUB_REPOSITORY}/${TAG} -- ~/notes/week.md\`.
-          NOTES
+          nix develop --command rake --silent "release_notes[$TAG]" > notes.md
           gh release create "$TAG" \
             --target "$GITHUB_SHA" \
             --title "$TAG" \
-            --notes-file install.md \
-            --generate-notes
+            --notes-file notes.md

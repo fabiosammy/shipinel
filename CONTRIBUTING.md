@@ -99,8 +99,11 @@ Maintainers release from `main`, with [semantic versions](https://semver.org):
    `lib/shipinel/version.rb`. `rake check` fails when they differ.
 2. Merge it once **10 · Validate** passes.
 3. In the Actions tab, run **20 · Release** on `main`. It runs every gate
-   again, builds the package, and creates the GitHub Release `v0.2.0` with
-   notes generated from the merged pull requests and the Nix install lines.
+   again, builds the package, and creates the GitHub Release `v0.2.0`. Its
+   notes list every commit since the previous tag under Features, Fixes,
+   Performance and Other (breaking changes first), which is why the titles
+   follow Conventional Commits; preview them with
+   `bundle exec rake release_notes[v0.2.0]`.
 
 A version is released once; the workflow refuses a tag that exists.
 
