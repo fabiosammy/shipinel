@@ -6,7 +6,7 @@
 # GitHub workflows and issue forms. `rake version` prints the version for
 # the "20 · Release" workflow, and `rake release_notes` its notes;
 # `rake check_version` fails when they differ; `rake yaml_checks` lints the
-# YAML (.yamllint).
+# YAML (.yamllint) and `rake shell_checks` the shell scripts.
 
 require_relative "support/release_notes"
 
@@ -73,6 +73,11 @@ end
 # inputs, and runs shellcheck on every `run:` script. The files are named:
 # it only finds them by itself in a Git checkout, and `nix flake check`
 # builds from a copy without .git.
+desc "Lint the shell scripts (the Linux bundle's build, the window test) with shellcheck"
+task :shell_checks do
+  sh "shellcheck", *Dir["packaging/**/*.sh", "test/**/*.sh"]
+end
+
 desc "Lint the YAML with yamllint (.yamllint) and the workflows with actionlint"
 task :yaml_checks do
   sh "yamllint", "--strict", "."

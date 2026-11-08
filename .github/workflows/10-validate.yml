@@ -59,3 +59,8 @@ jobs:
         run: |
           ./result/bin/shipinel --version
           test "$(./result/bin/shipinel --version)" = "shipinel $(nix develop --command rake --silent version)"
+
+  # The bundle for people without Nix, built and window-tested on Ubuntu
+  # 22.04 (12 · Linux bundle), next to the Nix gate.
+  linux-bundle:
+    uses: ./.github/workflows/12-linux-bundle.yml

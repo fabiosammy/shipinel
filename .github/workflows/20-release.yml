@@ -2,10 +2,11 @@ name: 20 · Release
 
 # Step 20: run by hand from the Actions tab, on main, once "10 · Validate"
 # passed there with the new version in flake.nix, spin.toml and version.rb
-# (CONTRIBUTING.md, Releases). Runs every gate again, builds the package,
-# and creates the GitHub Release v<version>, with notes listing the commits
-# since the previous tag by type (`rake release_notes`) and how to install
-# that version.
+# (CONTRIBUTING.md, Releases). Runs every gate again, builds the package
+# and the Linux bundle for people without Nix (12 · Linux bundle), and
+# creates the GitHub Release v<version> with the bundle attached, and notes
+# listing the commits since the previous tag by type (`rake
+# release_notes`) and how to install that version.
 
 on:
   workflow_dispatch:
@@ -18,8 +19,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
+  # The bundle for people without Nix (12 · Linux bundle): a release is
+  # only created when it builds and passes the window test.
+  linux-bundle:
     if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/12-linux-bundle.yml
+
+  release:
+    needs: linux-bundle
     runs-on: ubuntu-latest
     steps:
       # The whole history and the tags, for the notes' "since the last tag".
@@ -56,6 +63,11 @@ jobs:
       - name: Build the package
         run: nix build --print-build-logs
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: linux-bundle
+          path: bundle
+
       - name: Create the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -65,4 +77,5 @@ jobs:
           gh release create "$TAG" \
             --target "$GITHUB_SHA" \
             --title "$TAG" \
-            --notes-file notes.md
+            --notes-file notes.md \
+            bundle/*

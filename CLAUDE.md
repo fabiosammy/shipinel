@@ -162,7 +162,8 @@ zero offenses before a change is done:
 - Version: `flake.nix`, `spin.toml` and `lib/shipinel/version.rb` agree
   (`rake check_version`).
 - YAML: workflows and issue forms pass `yamllint --strict` (`.yamllint`);
-  workflows pass actionlint (with shellcheck).
+  workflows pass actionlint (with shellcheck); the shell scripts
+  (`packaging/`, `test/window/`) pass shellcheck.
 - RuboCop (+ rubocop-performance, -rake, -minitest, rubocop_spinel), Reek,
   Flog (≤ 20 per method), Flay, RubyCritic (every file A or B), Steep with
   inline RBS, Minitest with SimpleCov (≥ 95% of `lib/` lines).
@@ -177,8 +178,10 @@ few narrow exceptions are in `docs/exceptions.md` and `.reek.yml`, each with
 its reason; a new one needs a structural reason and my OK. If a threshold
 seems wrong, stop and ask.
 
-CI runs the same: `10 · Validate` (flake check, build, binary start) and
-`11 · PR title` on every pull request; `20 · Release` by hand; `30 · Update
+CI runs the same: `10 · Validate` (flake check, build, binary start, and
+`12 · Linux bundle`: `packaging/linux/build.sh` on Ubuntu 22.04 plus the
+window test `test/window/run.sh` in Xvfb) and `11 · PR title` on every pull
+request; `20 · Release` by hand (attaches the bundle); `30 · Update
 flake` opens the weekly flake.lock pull request (and starts 10 on it, since
 the workflow token's pull requests start no workflows). `main` is protected:
 10 and 11 must pass, squash merges only; I (admin) may still push directly.
@@ -228,7 +231,7 @@ before telling me a change is ready to push.
 ## 7. Nix
 
 - `flake.nix`: `devShells.default` (Ruby tooling, Spinel, raylib, GLFW,
-  systemdLibs, raygui, clang tools, cppcheck, yamllint, actionlint, ...),
+  systemdLibs, raygui, clang tools, cppcheck, yamllint, actionlint, shellcheck, ...),
   `packages.default` (the binary, wrapped with fontconfig, xdg-utils and
   libnotify on PATH and Noto Emoji as `--emoji-font`; `meta` with MIT), and
   `checks.default` (`rake check` under a UTF-8 locale).

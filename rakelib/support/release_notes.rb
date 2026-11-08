@@ -32,6 +32,10 @@ module ReleaseNotes
       ```
 
       or run it once: `nix run github:#{repo}/#{tag} -- ~/notes/week.md`.
+
+      Without Nix (x86_64, glibc 2.35 or newer: Ubuntu 22.04, Debian 12,
+      Fedora 36 and later): download `shipinel-#{tag.delete_prefix('v')}-linux-x86_64.tar.gz`
+      below and follow the `INSTALL.md` inside.
     TEXT
   end
 

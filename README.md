@@ -46,15 +46,20 @@
 
 ## Getting started
 
-1. Build it with [Nix](https://nixos.org):
+1. Install it with [Nix](https://nixos.org):
 
    ```sh
-   nix build                       # → ./result/bin/shipinel
-   ./result/bin/shipinel docs/example-week.md
+   nix profile install github:fabiosammy/shipinel   # or a release: …/shipinel/v0.1.0
+   shipinel docs/example-week.md
    ```
 
    `nix run github:fabiosammy/shipinel -- ~/notes/week.md` runs it without
-   cloning. Without Nix, see [Development setup](#development-setup).
+   installing. **Without Nix** (x86_64 Linux with glibc 2.35 or newer:
+   Ubuntu 22.04, Debian 12, Fedora 36 and later), download
+   `shipinel-<version>-linux-x86_64.tar.gz` from the
+   [latest release](https://github.com/fabiosammy/shipinel/releases/latest)
+   and follow the `INSTALL.md` inside
+   ([packaging/linux/INSTALL.md](packaging/linux/INSTALL.md)).
 2. Point it at your plan: `shipinel ~/notes/week.md`, or set `file=` in the
    [config](#config) and run `shipinel` alone.
 3. Keep it in view with a [window rule](#window-rules): position, size, on top
@@ -139,7 +144,8 @@ shipinel --version
 | `--emoji-font PATH` | A **monochrome** TTF/OTF for emoji and other symbols the text font lacks. Default: `fc-match 'emoji:color=false'`; the Nix package passes Noto Emoji. Colour emoji fonts (Noto Color Emoji) are bitmaps raylib cannot draw. |
 
 `--version` prints the version (`shipinel 0.1.0`) and exits. Wrong arguments
-print a usage message and exit with status 2.
+print a usage message and exit with status 2; when no window can be opened
+(no display, or no OpenGL driver) Shipinel says so and exits with status 1.
 
 ### Window rules
 
@@ -301,9 +307,9 @@ tarball.
   warning treated as an error, and `spinel diff` prints the same under
   CRuby and Spinel.
 - **Release and CI**: `flake.nix`, `spin.toml` and `lib/shipinel/version.rb` have the
-  same version, and
-  the workflows and issue forms pass yamllint, and the workflows pass
-  actionlint (with shellcheck on every script).
+  same version; the workflows and issue forms pass yamllint; the workflows
+  pass actionlint, and every shell script (in the workflows, `packaging/`
+  and `test/window/`) passes shellcheck.
 
 Thresholds are never relaxed; the few narrow exceptions are listed, with
 their reasons, in [docs/exceptions.md](docs/exceptions.md). The window itself
@@ -312,7 +318,12 @@ is checked by hand: [docs/manual-testing.md](docs/manual-testing.md).
 Every pull request runs [10 · Validate](.github/workflows/10-validate.yml)
 (all of the above through `nix flake check`, the Nix build, and a start of
 the built binary) and [11 · PR title](.github/workflows/11-pr-title.yml).
-Releases are made by [20 · Release](.github/workflows/20-release.yml), and
+[12 · Linux bundle](.github/workflows/12-linux-bundle.yml) builds the
+bundle for people without Nix on Ubuntu 22.04 and runs the window test on
+it ([test/window/run.sh](test/window/run.sh): a real window in Xvfb, a
+click, `u`, the saved state). Releases are made by
+[20 · Release](.github/workflows/20-release.yml), with that bundle
+attached, and
 [30 · Update flake](.github/workflows/30-update-flake.yml) opens a pull
 request with the newest nixpkgs every Monday.
 

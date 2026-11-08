@@ -48,6 +48,21 @@ comes wrapped with shellcheck:
 `nix build --inputs-from . nixpkgs#actionlint -o ~/.cache/actionlint` and
 link `~/.cache/actionlint/bin/actionlint` into `~/.local/bin`.
 
+shellcheck (for `rake shell_checks`) comes from apt (`apt install
+shellcheck`) or the same way as actionlint (`nixpkgs#shellcheck`).
+
+## The Linux bundle and the window test
+
+`packaging/linux/build.sh WORK_DIR` builds the bundle for people without
+Nix from scratch (Spinel, GLFW, raylib, then Shipinel) into
+`WORK_DIR/shipinel-<version>-linux-x86_64.tar.gz`; it also needs `patchelf`.
+CI builds it on Ubuntu 22.04, the oldest glibc it supports.
+
+`test/window/run.sh PATH/TO/shipinel` opens that binary in its own Xvfb
+(`apt install xvfb xdotool libgl1-mesa-dri`), clicks a task, presses `u`
+and `h`, and checks the file and the saved state. It picks a display
+number with no socket and no lock, so it never takes a desktop's display.
+
 The sandbox's clang-tidy (LLVM 14) is older than the flake's, which knows
 more checks: run `nix flake check` before pushing, as CI does.
 

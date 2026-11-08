@@ -58,6 +58,7 @@
         pkgs.bundix
         pkgs.yamllint
         pkgs.actionlint
+        pkgs.shellcheck
       ];
     in
     {
