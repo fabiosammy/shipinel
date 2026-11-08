@@ -70,4 +70,10 @@ class CliOptionsTest < Minitest::Test
   def test_a_flag_given_twice_keeps_the_last_value
     assert_equal "/second.ttf", parse("--font", "/first.ttf", "a.md", "--font", "/second.ttf").font_path
   end
+
+  def test_version_is_asked_anywhere_on_the_line
+    assert Shipinel::CliOptions.version?(["--version"])
+    assert Shipinel::CliOptions.version?(["plan.md", "--version"])
+    refute Shipinel::CliOptions.version?(["plan.md"])
+  end
 end

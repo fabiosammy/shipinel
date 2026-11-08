@@ -1,7 +1,7 @@
 name: 20 · Release
 
 # Step 20: run by hand from the Actions tab, on main, once "10 · Validate"
-# passed there with the new version in flake.nix and spin.toml
+# passed there with the new version in flake.nix, spin.toml and version.rb
 # (CONTRIBUTING.md, Releases). Runs every gate again, builds the package,
 # and creates the GitHub Release v<version> with generated notes and how to
 # install that version with Nix.
@@ -30,8 +30,8 @@ jobs:
           primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.lock', 'gemset.nix') }}
           restore-prefixes-first-match: nix-${{ runner.os }}-
 
-      # One number in flake.nix and spin.toml; `rake check` fails when they
-      # differ, and the gate below runs it.
+      # One number in flake.nix, spin.toml and lib/shipinel/version.rb;
+      # `rake check` fails when they differ, and the gate below runs it.
       - name: Read the version
         id: version
         run: echo "version=$(nix develop --command rake --silent version)" >> "$GITHUB_OUTPUT"
@@ -42,7 +42,7 @@ jobs:
           TAG: v${{ steps.version.outputs.version }}
         run: |
           if git ls-remote --exit-code --tags origin "refs/tags/$TAG"; then
-            echo "::error::$TAG is already released. Bump the version in flake.nix and spin.toml first."
+            echo "::error::$TAG is already released. Bump the version first (CONTRIBUTING.md, Releases)."
             exit 1
           fi
 

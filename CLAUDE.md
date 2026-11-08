@@ -19,7 +19,8 @@ contribution process. This file is how you (Claude) work on the project.
 ### What it does
 
 - `shipinel [PATH.md] [--font PATH] [--font-size N] [--emoji-font PATH]`;
-  without a path, the config's `file` is opened.
+  without a path, the config's `file` is opened. `--version` prints the
+  version.
 - One window titled exactly `shipinel` (KWin / Hyprland / GNOME rules match
   it, so the title must never change).
 - Renders the file read-only, except task checkboxes: a click flips `[ ]` ↔
@@ -148,7 +149,8 @@ apart from the thin native layer.
 `bundle exec rake check` (and `nix flake check`, which runs it) must pass with
 zero offenses before a change is done:
 
-- Version: `flake.nix` and `spin.toml` agree (`rake check_version`).
+- Version: `flake.nix`, `spin.toml` and `lib/shipinel/version.rb` agree
+  (`rake check_version`).
 - YAML: workflows and issue forms pass `yamllint --strict` (`.yamllint`);
   workflows pass actionlint (with shellcheck).
 - RuboCop (+ rubocop-performance, -rake, -minitest, rubocop_spinel), Reek,
@@ -253,8 +255,9 @@ Keep in step with every change:
 4. Do not push unless I ask in that message; I usually push from my host.
 5. Pull requests follow `.github/pull_request_template.md` and are
    squash-merged, so the title is the commit.
-6. Releases: bump the version in `flake.nix` and `spin.toml` in a
-   `chore(release): x.y.z` PR, merge, run `20 · Release` (CONTRIBUTING.md).
+6. Releases: bump the version in `flake.nix`, `spin.toml` and
+   `lib/shipinel/version.rb` in a `chore(release): x.y.z` PR, merge, run
+   `20 · Release` (CONTRIBUTING.md).
 7. If Spinel cannot compile something, do not hack around it: probe, record
    it in `docs/spinel-notes.md`, pick the simplest supported construct.
 

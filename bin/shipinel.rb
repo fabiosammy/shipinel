@@ -12,6 +12,12 @@ require_relative "../lib/shipinel/launch"
 require_relative "../lib/shipinel/screen"
 require_relative "../lib/shipinel/view"
 require_relative "../lib/shipinel/ui"
+require_relative "../lib/shipinel/version"
+
+if Shipinel::CliOptions.version?(ARGV)
+  puts "shipinel #{Shipinel::VERSION}"
+  exit 0
+end
 
 begin
   options = Shipinel::CliOptions.new(ARGV).parse

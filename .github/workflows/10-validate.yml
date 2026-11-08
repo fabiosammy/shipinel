@@ -54,3 +54,8 @@ jobs:
           cat stderr.txt
           test "$status" -eq 2
           grep -q "font-size must be" stderr.txt
+
+      - name: The built binary knows its version
+        run: |
+          ./result/bin/shipinel --version
+          test "$(./result/bin/shipinel --version)" = "shipinel $(nix develop --command rake --silent version)"

@@ -117,6 +117,7 @@ install -D -m 644 docs/config.example ~/.config/shipinel/config
 
 ```
 shipinel [PATH.md] [--font PATH] [--font-size N] [--emoji-font PATH]
+shipinel --version
 ```
 
 | Option | Meaning |
@@ -126,7 +127,8 @@ shipinel [PATH.md] [--font PATH] [--font-size N] [--emoji-font PATH]
 | `--font-size N` | Body text size in pixels, 8 to 72. Default 20. Headings are larger, code slightly smaller. |
 | `--emoji-font PATH` | A **monochrome** TTF/OTF for emoji and other symbols the text font lacks. Default: `fc-match 'emoji:color=false'`; the Nix package passes Noto Emoji. Colour emoji fonts (Noto Color Emoji) are bitmaps raylib cannot draw. |
 
-Wrong arguments print a usage message and exit with status 2.
+`--version` prints the version (`shipinel 0.1.0`) and exits. Wrong arguments
+print a usage message and exit with status 2.
 
 ### Window rules
 
@@ -276,7 +278,8 @@ tarball.
 - **Spinel**: the app and the snapshot programs compile with every widening
   warning treated as an error, and `spinel diff` prints the same under
   CRuby and Spinel.
-- **Release and CI**: `flake.nix` and `spin.toml` have the same version, and
+- **Release and CI**: `flake.nix`, `spin.toml` and `lib/shipinel/version.rb` have the
+  same version, and
   the workflows and issue forms pass yamllint, and the workflows pass
   actionlint (with shellcheck on every script).
 

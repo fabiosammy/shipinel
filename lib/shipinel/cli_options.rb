@@ -28,7 +28,7 @@ module Shipinel
   # Reads `[PATH.md] [--font PATH] [--font-size N] [--emoji-font PATH]`, in
   # any order. A flag given twice keeps its last value.
   class CliOptions
-    USAGE = "usage: shipinel [PATH.md] [--font PATH] [--font-size N] [--emoji-font PATH]"
+    USAGE = "usage: shipinel [PATH.md] [--font PATH] [--font-size N] [--emoji-font PATH] | --version"
     DEFAULT_FONT_SIZE = 20
     MIN_FONT_SIZE = 8
     MAX_FONT_SIZE = 72
@@ -44,6 +44,12 @@ module Shipinel
       @args = argv.dup
       @path = nil
       @values = {}
+    end
+
+    # `--version` anywhere prints the version instead of opening a window.
+    #: (Array[String] argv) -> bool
+    def self.version?(argv)
+      argv.include?("--version")
     end
 
     #: () -> Options
