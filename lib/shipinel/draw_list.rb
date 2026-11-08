@@ -4,6 +4,7 @@
 # page (not yet scrolled). A checkbox keeps its task's line index, so a
 # click maps back to that source line.
 
+require_relative "anchor"
 require_relative "geometry"
 require_relative "task_toggler"
 require_relative "theme"
@@ -72,9 +73,11 @@ module Shipinel
     end
   end
 
-  # The commands of one laid-out page, in drawing order, and its height.
+  # The commands of one laid-out page, in drawing order, its height, and
+  # where its headings start.
   class DrawList
     attr_reader :height #: Float
+    attr_reader :anchors #: AnchorList
 
     # @rbs @commands: Array[DrawCommand]
 
@@ -82,6 +85,7 @@ module Shipinel
     def initialize
       @commands = []
       @height = 0.0
+      @anchors = AnchorList.new
     end
 
     #: (DrawCommand command) -> void
@@ -98,6 +102,13 @@ module Shipinel
     #: (Integer position) -> DrawCommand
     def at(position)
       @commands[position]
+    end
+
+    # The title of the heading the page is scrolled into at `offset`, or
+    # `fallback` above the first heading.
+    #: (Float offset, String fallback) -> String
+    def section_at(offset, fallback)
+      @anchors.title_above(offset, fallback)
     end
 
     #: (Float height) -> DrawList

@@ -11,15 +11,19 @@ require_relative "font_shim"
 require_relative "geometry"
 require_relative "input"
 require_relative "theme"
+require_relative "window_place"
 
 module Shipinel
   # See the file comment.
   class Screen
+    # At the place's size, and its position where that is known (X11).
     # Checkboxes are styled from the theme right away: raygui keeps the
     # style for every box drawn after.
-    #: (Integer width, Integer height, String title) -> void
-    def open(width, height, title)
-      UI.ui_open_window(width, height, title)
+    #: (WindowPlace place, String title) -> void
+    def open(place, title)
+      rect = place.rect
+      UI.ui_open_window(rect.width.round, rect.height.round, title)
+      UI.ui_move_window(rect.left.round, rect.top.round) if place.placed?
       UI.ui_style_checkbox(Theme::Checkbox::BORDER, Theme::Checkbox::HOVER, Theme::Checkbox::CHECK)
     end
 
@@ -39,10 +43,12 @@ module Shipinel
       UI.ui_close_window
     end
 
-    # The window's drawing area, which the user may resize at any time.
-    #: () -> Rect
-    def area
-      Rect.new(0.0, 0.0, UI.ui_screen_width.to_f, UI.ui_screen_height.to_f)
+    # Where the window is and its size, which the user may change at any
+    # time; the position only where it can be known (X11).
+    #: () -> WindowPlace
+    def placement
+      size = Rect.new(UI.ui_window_x.to_f, UI.ui_window_y.to_f, UI.ui_screen_width.to_f, UI.ui_screen_height.to_f)
+      WindowPlace.new(size, UI.ui_window_placeable)
     end
 
     # The fonts this window draws with.

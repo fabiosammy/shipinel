@@ -16,6 +16,10 @@ module Shipinel
     ffi_func :ui_window_ready, [], :bool
     ffi_func :ui_window_should_close, [], :bool
     ffi_func :ui_close_window, [], :void
+    ffi_func :ui_window_placeable, [], :bool
+    ffi_func :ui_window_x, [], :int
+    ffi_func :ui_window_y, [], :int
+    ffi_func :ui_move_window, %i[int int], :void
     ffi_func :ui_screen_width, [], :int
     ffi_func :ui_screen_height, [], :int
     ffi_func :ui_begin_frame, %i[uint32], :void

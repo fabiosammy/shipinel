@@ -27,11 +27,11 @@ class AppTest < Minitest::Test
       @text_tops = []
     end
 
-    def open(width, height, title) = @calls << [:open, width, height, title]
+    def open(place, title) = @calls << [:open, place.rect.width, place.rect.height, title]
     def ready? = @broken != :window
     def closing? = @frame >= @frames
     def close = @calls << [:close]
-    def area = Shipinel::Rect.new(0.0, 0.0, 440.0, 640.0)
+    def placement = Shipinel::WindowPlace.sized(440, 640)
     def input = Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, @wheel, Shipinel::KeyPress.new(0))
     def font_shim = (@font_shim ||= FakeShim.new(failing: @broken == :font ? PATHS_FAILING : []))
     def begin_frame(_color) = @pointed = false
@@ -113,13 +113,14 @@ class AppTest < Minitest::Test
   end
 
   # The wheel is read before drawing, so even the first frame moves by a
-  # step. Lines are 39 apart from 16 down: one step (48) puts the first at
-  # -32, out of sight and not drawn, so the first drawn is the second, at 7.
+  # step. Lines are 39 apart from 16 down, below a header line 38.95 tall:
+  # one step (48) hides the first line under the header (not drawn), so
+  # the first drawn is the second, at 7 + 38.95.
   def test_wheel_scrolls_the_page
     File.write(@path, "linha\n\n" * 20)
     tops = run_app(FakeScreen.new(wheel: -1.0)).text_tops
 
-    assert_equal [[0, 7.0], [1, -2.0]], [tops.first, tops.find { |frame, _top| frame == 1 }]
+    assert_equal [[0, 45.95], [1, 36.95]], [tops.first, tops.find { |frame, _top| frame == 1 }]
   end
 
   def test_window_that_does_not_open_ends_the_run
@@ -140,7 +141,8 @@ class AppTest < Minitest::Test
     times = [0, 600, 1200, 1800].each
     Shipinel::Clock.stub(:now_ms, -> { times.next }) { run_app(screen) }
 
-    assert_equal [["Semana", "Reunião", "0 of 1 task done · 0%"], ["Domingo"]], [screen.texts_on(0), screen.texts_on(1)]
+    assert_equal [["Semana", "Reunião", "0 of 1 task done · 0%", "semana.md"], ["Domingo", "semana.md"]],
+                 [screen.texts_on(0), screen.texts_on(1)]
   end
 
   # A link to a place in the same file opens nothing, so no browser starts.
@@ -149,7 +151,7 @@ class AppTest < Minitest::Test
     screen = run_app(FakeScreen.new(click_on: 0))
 
     assert_equal "[topo](#topo)\n", File.read(@path)
-    assert_equal ["topo"], screen.texts_on(1)
+    assert_equal ["topo", "semana.md"], screen.texts_on(1)
   end
 
   # Busy for half a second (30 frames) after the pointer first shows up,
@@ -158,7 +160,7 @@ class AppTest < Minitest::Test
     screen = run_app(FakeScreen.new(frames: 40))
     drawn = screen.calls.count { |call| call.first == :end_frame } - screen.calls.count { |call| call.first == :skip }
 
-    assert_equal [30, ["Semana", "Reunião", "0 of 1 task done · 0%"]], [drawn, screen.texts_on(29)]
+    assert_equal [30, ["Semana", "Reunião", "0 of 1 task done · 0%", "semana.md"]], [drawn, screen.texts_on(29)]
     assert_empty screen.texts_on(30)
   end
 
@@ -168,5 +170,22 @@ class AppTest < Minitest::Test
     run_app(screen)
 
     assert_equal [[], %w[Semana Reunião]], [screen.texts_on(34), screen.texts_on(35).first(2)]
+  end
+
+  def state_file = Shipinel::StateFile.for(@path)
+
+  # Size 24, scrolled 30 pixels into "Semana", in a 500 x 700 window: the
+  # window opens at that size and glyphs load at 1.6 x 24 = 38 pixels.
+  def test_opens_where_it_was_left
+    state_file.write("section=semana\nwithin=30\noffset=30\nsize=24\nheader=1\nwidth=500\nheight=700\n")
+    screen = run_app(FakeScreen.new(frames: 1))
+
+    assert_equal [[:open, 500.0, 700.0, "shipinel"], 38], [screen.calls.first, screen.font_shim.calls[1].last]
+  end
+
+  def test_remembers_where_it_was_on_closing
+    run_app(FakeScreen.new(frames: 1))
+
+    assert_match(/\Asection=\nwithin=0.0\noffset=0.0\nsize=20\nheader=1\nwidth=440\nheight=640\n\z/, state_file.read)
   end
 end

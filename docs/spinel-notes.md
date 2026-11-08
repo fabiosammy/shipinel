@@ -346,6 +346,15 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
    - `Comparable#between?` (and `clamp`) pulls `builtins/comparable.rb` in,
      which reports six widen warnings. **Rule:** `x >= lo && x <= hi`
      (`Style/ComparableBetween` is off for this reason, docs/exceptions.md).
+   - `String#partition` resolves to the widening `Enumerable#partition`
+     builtin (checked with a probe, 2026-11-08). **Rule:** split key=value
+     lines with `split("=", 2)` (StateReader).
+   - An inline RBS signature with an optional (`?T name`), rest or
+     trailing parameter is not applied, and Spinel warns. **Rule:** no
+     default arguments on typed methods; pass the value (Header's title).
+   - `ENV.fetch`, `Dir.exist?`, `Dir.mkdir`, `File.expand_path` and
+     `String#split` / `each_line` compile without widening (probe for the
+     state file, 2026-11-08).
 8. **Install layout bug in 2026.10.25:** `spinel diff` execs
    `<dir of the real spinel binary>/spinel-diff`, i.e. `$PREFIX/lib/spinel/`,
    but `make install` puts the tool only in `$PREFIX/bin/`. Fix after install:

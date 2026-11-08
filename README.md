@@ -182,10 +182,19 @@ Keys repeat while held. Escape does nothing.
   drawn.
 - The file is re-read about every 500 ms by comparing its content, which
   also catches editors that save by renaming.
-- When the file has tasks, a strip pinned to the top of the window shows
-  how many are checked ("12 of 40 tasks done · 30%") and a bar filled by
-  that share, which turns green when every task is done. Tasks inside code
-  fences do not count. A file without tasks has no strip.
+- A strip pinned to the top of the window names the section you are in:
+  the last heading scrolled to or past the top, or the file's name above
+  the first one (cut with "…" when long). When the file has tasks, it also
+  shows how many are checked ("12 of 40 tasks done · 30%") and a bar
+  filled by that share, which turns green when every task is done. Tasks
+  inside code fences do not count. `h` hides the strip.
+- Each plan reopens where it was left: the same section (found by its
+  heading, so edits above it do not move you), the same text size and
+  header, and the window's size. On X11 the window's position comes back
+  too; on Wayland only the compositor places windows, so use the window
+  rules below. The state is a small text file per plan in
+  `~/.local/state/shipinel/` (or `$XDG_STATE_HOME/shipinel/`), saved
+  within half a second of a change; deleting it starts fresh.
 - A page taller than the window gets a scrollbar on the right: the wheel
   scrolls, the thumb can be dragged, and a click on the track moves one
   window up or down. The scroll position survives reloads.

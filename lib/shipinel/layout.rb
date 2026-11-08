@@ -38,7 +38,7 @@ module Shipinel
     # Notices (a missing file, a failed save, a font problem) go first.
     #: (Markdown::BlockList blocks, Array[String] notices) -> DrawList
     def arrange(blocks, notices)
-      notices.each { |notice| place_notice(notice) }
+      notices.each { |notice| place_text(notice, @styles.problem) }
       blocks.size.times { |position| place(blocks.at(position)) }
       @flow.finish
     end
@@ -71,7 +71,7 @@ module Shipinel
     #: (Markdown::Block block, String text) -> void
     def place_plain(block, text)
       case block
-      when Markdown::Paragraph then place_paragraph(text)
+      when Markdown::Paragraph then place_text(text, @styles.body)
       when Markdown::CodeLine then @flow.code_line(text)
       when Markdown::Table then place_table(text, block.columns, block.header_rows)
       when Markdown::Quote then place_quote(text)
@@ -82,19 +82,15 @@ module Shipinel
     #: (String text, Integer level) -> void
     def place_heading(text, level)
       @flow.gap(block_gap) unless @flow.at_top?
+      @flow.mark(text)
       @flow.text(text, 0.0, @styles.heading(level))
       @flow.gap(block_gap / 2)
     end
 
-    #: (String text) -> void
-    def place_notice(text)
-      @flow.text(text, 0.0, @styles.problem)
-      @flow.gap(block_gap)
-    end
-
-    #: (String text) -> void
-    def place_paragraph(text)
-      @flow.text(text, 0.0, @styles.body)
+    # A notice or a paragraph: wrapped text and a gap.
+    #: (String text, TextStyle style) -> void
+    def place_text(text, style)
+      @flow.text(text, 0.0, style)
       @flow.gap(block_gap)
     end
 

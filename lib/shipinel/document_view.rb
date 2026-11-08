@@ -55,6 +55,12 @@ module Shipinel
       nil
     end
 
+    # The file's name, shown in the header above the first heading.
+    #: () -> String
+    def name
+      File.basename(@file.path)
+    end
+
     # Everything the window may draw, for choosing which glyphs to load.
     #: () -> String
     def shown_text

@@ -20,6 +20,12 @@ int ui_window_ready(void);
 int ui_window_should_close(void);
 /* Unloads every font, then closes the window. */
 void ui_close_window(void);
+/* 1 where the window's position can be read and set (X11), 0 on Wayland. */
+int ui_window_placeable(void);
+int ui_window_x(void);
+int ui_window_y(void);
+/* Does nothing on Wayland. */
+void ui_move_window(int left, int top);
 int ui_screen_width(void);
 int ui_screen_height(void);
 

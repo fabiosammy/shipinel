@@ -15,8 +15,9 @@ module Shipinel
     ZOOM_STEP = 2
 
     attr_reader :size #: Integer
+    # The --font-size the window started with, which 0 goes back to.
+    attr_reader :start_size #: Integer
 
-    # @rbs @start_size: Integer
     # @rbs @header: bool
 
     #: (Integer size, Integer start_size, bool header) -> void

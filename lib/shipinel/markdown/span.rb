@@ -41,6 +41,15 @@ module Shipinel
         @spans.size
       end
 
+      # The text without its markup: "**Goal 1** — [Drata](x)" gives
+      # "Goal 1 — Drata".
+      #: () -> String
+      def plain
+        text = ""
+        @spans.each { |span| text = "#{text}#{span.text}" }
+        text
+      end
+
       #: (Integer position) -> Span
       def at(position)
         @spans[position]

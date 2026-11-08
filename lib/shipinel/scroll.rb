@@ -8,6 +8,7 @@
 
 require_relative "activity"
 require_relative "input"
+require_relative "scroll_spot"
 require_relative "scrollbar"
 
 module Shipinel
@@ -22,12 +23,23 @@ module Shipinel
     # How far below the thumb's top it was grabbed, while it is dragged.
     # @rbs @grab: Float
     # @rbs @activity: Activity
+    # A place to go to once the page is laid out (ScrollSpot.none: none).
+    # @rbs @aim: ScrollSpot
 
     #: () -> void
     def initialize
       @offset = 0.0
       @grab = NOT_DRAGGING
       @activity = Activity.new
+      @aim = ScrollSpot.none
+    end
+
+    # Goes to `spot` on the next frame that lays the page out: where the
+    # window was last time, or the same section after a zoom.
+    #: (ScrollSpot spot) -> void
+    def aim(spot)
+      @aim = spot
+      nil
     end
 
     # Called once a frame, drawn or not, with that frame's input.
@@ -46,14 +58,24 @@ module Shipinel
     # Keeps the page between its top and where its end reaches the bottom
     # of the window. A page shorter than the window never moves. Returns
     # the new offset.
-    #: (Input input, Scrollbar bar) -> Float
-    def apply(input, bar)
+    #: (Input input, Scrollbar bar, AnchorList anchors) -> Float
+    def apply(input, bar, anchors)
+      arrive(anchors)
       @offset = bar.in_range(input.keys.scrolled(@offset, bar) - (input.wheel * STEP))
       drag(input, bar) if bar.needed?
       @offset
     end
 
     private
+
+    #: (AnchorList anchors) -> void
+    def arrive(anchors)
+      spot = @aim
+      return unless spot.aimed?
+
+      @offset = spot.offset_in(anchors)
+      @aim = ScrollSpot.none
+    end
 
     #: (Input input, Scrollbar bar) -> void
     def drag(input, bar)

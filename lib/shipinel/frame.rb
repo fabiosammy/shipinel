@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 # What one frame shows: the laid-out document (drawn scrolled, only where
-# the window shows it), the overlay that stays put (progress header and
+# the window shows it), the overlay that stays put (header and
 # scrollbar), and how the document sits in the window.
 
 require_relative "draw_list"
 require_relative "geometry"
-require_relative "progress_header"
+require_relative "header"
 require_relative "scrollbar"
 
 module Shipinel
@@ -18,7 +18,7 @@ module Shipinel
 
     # The frame for a page whose scrollbar is where this frame's input left
     # it: the header and the bar make the overlay.
-    #: (DrawList content, ProgressHeader header, Scrollbar bar) -> Frame
+    #: (DrawList content, Header header, Scrollbar bar) -> Frame
     def self.of(content, header, bar)
       overlay = DrawList.new
       header.add_to(overlay)

@@ -232,6 +232,26 @@ void ui_close_window(void) {
     CloseWindow();
 }
 
+/* Only X11 lets a program know and set its window's position; on Wayland
+ * the compositor alone places windows (and GLFW reports an error). */
+int ui_window_placeable(void) {
+    return glfwGetPlatform() == GLFW_PLATFORM_WAYLAND ? 0 : 1;
+}
+
+int ui_window_x(void) {
+    return (int)GetWindowPosition().x;
+}
+
+int ui_window_y(void) {
+    return (int)GetWindowPosition().y;
+}
+
+void ui_move_window(int left, int top) {
+    if (ui_window_placeable()) {
+        SetWindowPosition(left, top);
+    }
+}
+
 int ui_screen_width(void) {
     return GetScreenWidth();
 }

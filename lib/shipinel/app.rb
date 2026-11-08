@@ -14,6 +14,7 @@ require_relative "frame"
 require_relative "page"
 require_relative "painter"
 require_relative "poller"
+require_relative "session"
 require_relative "screen"
 require_relative "view"
 require_relative "theme"
@@ -28,32 +29,48 @@ module Shipinel
 
     # @rbs @screen: Screen
     # @rbs @document: DocumentView
+    # @rbs @session: Session
     # @rbs @page: Page
-    # @rbs @poller: Poller
 
+    # `view` is the --font-size; a plan shown before opens as it was left.
     #: (Screen screen, String path, View view, FontPaths fonts) -> void
     def initialize(screen, path, view, fonts)
       @screen = screen
       @document = DocumentView.new(DocumentFile.new(path))
-      @page = Page.new(view, FontSet.new(screen.font_shim, fonts))
-      @poller = Poller.new(Clock.now_ms)
+      @session = Session.for(path, view, WindowPlace.sized(WIDTH, HEIGHT))
+      @page = Page.new(@session.saved.view, FontSet.new(screen.font_shim, fonts))
     end
 
     #: () -> void
     def run
-      @screen.open(WIDTH, HEIGHT, TITLE)
+      @screen.open(@session.saved.place, TITLE)
       return unless @screen.ready?
 
       prepare
       tick until @screen.closing?
-      @screen.close
+      finish
     end
 
     private
 
+    # Fonts for the document's characters, and back to where it was left.
     #: () -> void
     def prepare
       @page.load_fonts(@document.shown_text)
+      @page.aim(@session.saved.spot)
+    end
+
+    #: () -> void
+    def finish
+      remember
+      @screen.close
+    end
+
+    # Saved whenever it changed (Session), so a killed window loses at most
+    # half a second.
+    #: () -> void
+    def remember
+      @session.save(SavedState.new(@page.spot, @page.view, @screen.placement))
     end
 
     # One frame, 60 a second. The layout is reused until the file or the
@@ -61,7 +78,7 @@ module Shipinel
     # built or drawn again (Activity).
     #: () -> void
     def tick
-      poll if @poller.due?(Clock.now_ms)
+      chores if @session.due?(Clock.now_ms)
       clicked = show(@page.update(@screen, @document))
       act(clicked) if clicked
       nil
@@ -78,6 +95,12 @@ module Shipinel
     def skip
       @page.redraw if @screen.skip_frame
       nil
+    end
+
+    #: () -> void
+    def chores
+      poll
+      remember
     end
 
     # Picks up external edits, and loads glyphs for any new characters.

@@ -157,14 +157,25 @@ with Shift.
 ## Event waiting (raylib and GLFW)
 
 ```c
+RLAPI void SetWindowPosition(int x, int y);                       // raylib.h:1009
 RLAPI void *GetWindowHandle(void);                                // raylib.h:1016
+RLAPI Vector2 GetWindowPosition(void);                            // raylib.h:1029
 RLAPI void EnableEventWaiting(void);                              // raylib.h:1035
 RLAPI void DisableEventWaiting(void);                             // raylib.h:1036
 RLAPI void PollInputEvents(void);                                 // raylib.h:1103
 typedef void (* GLFWwindowrefreshfun)(GLFWwindow* window);                                      // glfw3.h:1680
 GLFWAPI GLFWwindowrefreshfun glfwSetWindowRefreshCallback(GLFWwindow* window, GLFWwindowrefreshfun callback); // glfw3.h:4346
 GLFWAPI void glfwPostEmptyEvent(void);                                                            // glfw3.h:4661
+GLFWAPI int glfwGetPlatform(void);                                                                // glfw3.h:2529
+#define GLFW_PLATFORM_WAYLAND       0x00060003                                                    // glfw3.h:1342
 ```
+
+Window position: `ui_window_placeable` is `glfwGetPlatform() !=
+GLFW_PLATFORM_WAYLAND`. On Wayland a client cannot learn or set its
+position (the compositor places windows) and `glfwSetWindowPos` only
+reports an error, so the shim neither reads nor sets it there, and the
+saved state keeps only the size. `GetWindowPosition` returns a `Vector2` by
+value, which the shim splits into `ui_window_x` / `ui_window_y`.
 
 Line numbers are from the sandbox's GLFW 3.5.1 header (built from raylib's
 bundled copy); nixpkgs ships 3.4, which has the same three declarations.
@@ -278,6 +289,8 @@ What Ruby can call, all scalars and strings (Spinel FFI types in
 | `void ui_draw_rect(float, float, float, float, uint32_t)` | `DrawRectangleRec` |
 | `float ui_wheel_move(void)` | `GetMouseWheelMove` |
 | `int ui_mouse_x(void)`, `int ui_mouse_y(void)` | `GetMouseX`, `GetMouseY`: the scrollbar's pointer position |
+| `int ui_window_placeable(void)`, `int ui_window_x(void)`, `int ui_window_y(void)` | not Wayland; `GetWindowPosition().x` / `.y` |
+| `void ui_move_window(int, int)` | `SetWindowPosition`, only where placeable |
 | `int ui_keys_pressed(const int64_t *, int)` | bit n when `IsKeyPressed` or `IsKeyPressedRepeat` for keys[n] (Ruby `:int_array`, up to 30 keys) |
 | `int ui_mouse_buttons(void)` | bit 1 `IsMouseButtonDown(LEFT)`, bit 2 `IsMouseButtonPressed(LEFT)`: dragging the thumb, paging on the track |
 | `void ui_style_checkbox(uint32_t, uint32_t, uint32_t)` | `GuiSetStyle(CHECKBOX, ...)`: border normal; border focused and pressed; check mark (TEXT_COLOR_*) in all states; `BORDER_WIDTH` 2, `CHECK_PADDING` 3 |

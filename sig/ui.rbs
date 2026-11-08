@@ -6,6 +6,10 @@ module Shipinel
     def self.ui_window_ready: () -> bool
     def self.ui_window_should_close: () -> bool
     def self.ui_close_window: () -> void
+    def self.ui_window_placeable: () -> bool
+    def self.ui_window_x: () -> Integer
+    def self.ui_window_y: () -> Integer
+    def self.ui_move_window: (Integer left, Integer top) -> void
     def self.ui_screen_width: () -> Integer
     def self.ui_screen_height: () -> Integer
     def self.ui_begin_frame: (Integer background_rgba) -> void

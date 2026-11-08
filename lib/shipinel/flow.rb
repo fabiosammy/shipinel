@@ -66,6 +66,12 @@ module Shipinel
       gap(style.line_height)
     end
 
+    # A heading starts here: an anchor with its title as plain text.
+    #: (String text) -> void
+    def mark(text)
+      @list.anchors.add(Anchor.new(Markdown::Inline.parse(text).plain, @top))
+    end
+
     # Centered on the line that the item's text starts on.
     #: (Float indent, TaskClick click) -> void
     def checkbox(indent, click)

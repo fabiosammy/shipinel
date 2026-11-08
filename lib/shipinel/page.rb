@@ -8,56 +8,62 @@
 # builds the overlay: progress header and scrollbar. Any other frame does
 # nothing more.
 
-require_relative "content_cache"
 require_relative "document_view"
 require_relative "draw_list"
-require_relative "font_set"
 require_relative "frame"
-require_relative "layout"
-require_relative "progress_header"
+require_relative "header"
+require_relative "scroll_spot"
 require_relative "screen"
 require_relative "scroll"
 require_relative "scrollbar"
+require_relative "typesetter"
 require_relative "view"
 
 module Shipinel
   # See the file comment.
   class Page
-    # @rbs @view: View
-    # @rbs @fonts: FontSet
+    # What the user changed with the keys: text size and header.
+    attr_reader :view #: View
+
     # @rbs @scroll: Scroll
-    # @rbs @cache: ContentCache
+    # @rbs @typesetter: Typesetter
 
     #: (View view, FontSet fonts) -> void
     def initialize(view, fonts)
       @view = view
-      @fonts = fonts
       @scroll = Scroll.new
-      @cache = ContentCache.new
+      @typesetter = Typesetter.new(fonts)
     end
 
     # Glyphs are rendered at the largest size on the page (Styles), with
     # every character the document uses.
     #: (String text) -> void
     def load_fonts(text)
-      @fonts.load(FontSet.codepoints_in(text), font_pixels)
-      @cache.clear
+      @typesetter.load(text, @view.styles.font_pixels)
     end
 
     # Loads the fonts again only when the text uses new characters.
     #: (String text) -> void
     def refresh_fonts(text)
-      codepoints = FontSet.codepoints_in(text)
-      return if @fonts.covers?(codepoints)
-
-      @fonts.load(codepoints, font_pixels)
-      @cache.clear
+      @typesetter.refresh(text, @view.styles.font_pixels)
     end
 
     # Draws the next frame even if nothing changed.
     #: () -> void
     def redraw
-      @cache.clear
+      @typesetter.forget
+    end
+
+    # Where the page is scrolled to, as a section and how far into it.
+    #: () -> ScrollSpot
+    def spot
+      ScrollSpot.at(@scroll.offset, @typesetter.last.anchors)
+    end
+
+    # Goes to `spot` once the page is laid out (the place saved last time).
+    #: (ScrollSpot spot) -> void
+    def aim(spot)
+      @scroll.aim(spot)
     end
 
     # The frame to draw, or nil when nothing is to be drawn.
@@ -65,7 +71,7 @@ module Shipinel
     def update(screen, document)
       input = screen.input
       adjust(input.keys)
-      key = LayoutKey.new(document.blocks, document.action_problem, screen.area)
+      key = LayoutKey.new(document.blocks, document.action_problem, screen.placement.area)
       return unless wanted?(input, key)
 
       build(input, key, document)
@@ -73,70 +79,45 @@ module Shipinel
 
     private
 
-    # Glyphs are rendered at the largest size on the page (Styles).
-    #: () -> Integer
-    def font_pixels
-      @view.styles.font_pixels
-    end
-
-    # Zooming loads the fonts again at the new size; the header key only
-    # changes what the next frame builds (a key press makes it due).
+    # Zooming loads the fonts again at the new size and stays in the same
+    # section; the header key only changes what the next frame builds (a
+    # key press makes it due).
     #: (KeyPress keys) -> void
     def adjust(keys)
       return unless keys.pressed?
 
-      view = @view.after(keys)
-      resized = !view.same_size?(@view)
-      @view = view
-      zoom if resized
+      before = @view
+      @view = before.after(keys)
+      zoom(@view.size.to_f / before.size) unless @view.same_size?(before)
     end
 
-    #: () -> void
-    def zoom
-      @fonts.reload(font_pixels)
-      @cache.clear
+    #: (Float ratio) -> void
+    def zoom(ratio)
+      @scroll.aim(spot.scaled(ratio))
+      @typesetter.resize(@view.styles.font_pixels)
     end
 
     #: (Input input, LayoutKey key) -> bool
     def wanted?(input, key)
       @scroll.note(input)
-      @scroll.due? || !@cache.holds?(key)
+      @scroll.due? || !@typesetter.holds?(key)
     end
 
-    # The document scrolls in the window area below the header.
+    # The document scrolls in the window area below the header, which names
+    # the section the page ended up in.
     #: (Input input, LayoutKey key, DocumentView document) -> Frame
     def build(input, key, document)
-      window = key.area
-      header = header_for(key.blocks, window.width)
-      area = window.below(header.height)
-      content = content(key, area.width, document)
-      Frame.of(content, header, scroll(input, content.height, area))
-    end
-
-    # A hidden header is one with no tasks to show: it takes no room.
-    #: (Markdown::BlockList blocks, Float width) -> ProgressHeader
-    def header_for(blocks, width)
-      progress = @view.header? ? blocks.task_progress : Markdown::TaskProgress.new
-      ProgressHeader.new(progress, @view.styles, width)
-    end
-
-    #: (LayoutKey key, Float width, DocumentView document) -> DrawList
-    def content(key, width, document)
-      return @cache.list if @cache.holds?(key)
-
-      @cache.keep(key, Layout.new(@fonts, @view.styles, width).arrange(key.blocks, notices(document)))
+      header = Header.for(@view, key)
+      content = @typesetter.page_for(key, @view.styles, document)
+      bar = scroll(input, content, key.area.below(header.height))
+      Frame.of(content, header.titled(content.section_at(bar.offset, document.name), @typesetter.fonts), bar)
     end
 
     # Applies this frame's input; returns the bar where the page ended up.
-    #: (Input input, Float page_height, Rect area) -> Scrollbar
-    def scroll(input, page_height, area)
-      bar = Scrollbar.new(page_height, area, @scroll.offset)
-      bar.moved_to(@scroll.apply(input, bar))
-    end
-
-    #: (DocumentView document) -> Array[String]
-    def notices(document)
-      (@fonts.notices + document.notices).uniq
+    #: (Input input, DrawList content, Rect area) -> Scrollbar
+    def scroll(input, content, area)
+      bar = Scrollbar.new(content.height, area, @scroll.offset)
+      bar.moved_to(@scroll.apply(input, bar, content.anchors))
     end
   end
 end

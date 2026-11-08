@@ -24,13 +24,7 @@ class FakeShim
   def loaded?(slot) = !@failing.include?(@paths[slot])
   def draws?(codepoint, slot) = (codepoint > 0xFFFF) == (slot == Shipinel::Theme::FontSlot::SYMBOL)
 
-  # Counted, to show when the page is laid out again.
-  def text_width(text, style)
-    @measured = measured + 1
-    text.size * style.size * 0.5
-  end
-
-  def measured = @measured || 0
+  def text_width(text, style) = text.size * style.size * 0.5
 end
 
 PATHS = Shipinel::FontPaths.new(Shipinel::TextFaces.new("/s.ttf", "/b.ttf", "/i.ttf"), "/m.ttf", "/e.ttf")

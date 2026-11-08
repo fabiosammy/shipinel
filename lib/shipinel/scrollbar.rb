@@ -19,9 +19,10 @@ module Shipinel
 
     # The window area the page scrolls in.
     attr_reader :area #: Rect
+    # How far the page is scrolled.
+    attr_reader :offset #: Float
 
     # @rbs @page_height: Float
-    # @rbs @offset: Float
 
     #: (Float page_height, Rect area, Float offset) -> void
     def initialize(page_height, area, offset)

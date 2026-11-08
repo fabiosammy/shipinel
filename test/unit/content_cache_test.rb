@@ -14,7 +14,7 @@ class ContentCacheTest < Minitest::Test
     attr_accessor :width
 
     def initialize = @width = 400.0
-    def area = Shipinel::Rect.new(0.0, 0.0, @width, 300.0)
+    def placement = Shipinel::WindowPlace.new(Shipinel::Rect.new(0.0, 0.0, @width, 300.0), false)
     attr_writer :keys
 
     def input = Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, 0.0, Shipinel::KeyPress.new(@keys || 0))
@@ -34,38 +34,34 @@ class ContentCacheTest < Minitest::Test
     FileUtils.remove_entry(@dir)
   end
 
-  # Measured widths so far, after one more frame.
-  def measured_after_frame
-    @page.update(@screen, @document)
-    @shim.measured
-  end
+  # The laid-out page of the next frame (the first frames are busy, so
+  # each one is built).
+  def laid_out = @page.update(@screen, @document).content
 
   def test_same_document_and_width_reuse_the_layout
-    first = measured_after_frame
-
-    assert_equal first, measured_after_frame
+    assert_same laid_out, laid_out
   end
 
   def test_a_new_width_lays_out_again
-    first = measured_after_frame
+    first = laid_out
     @screen.width = 300.0
 
-    assert_operator measured_after_frame, :>, first
+    refute_same first, laid_out
   end
 
   def test_a_changed_file_lays_out_again
-    first = measured_after_frame
+    first = laid_out
     File.write(@path, "# Domingo\n")
     @document.reload
 
-    assert_operator measured_after_frame, :>, first
+    refute_same first, laid_out
   end
 
   def test_new_characters_reload_the_fonts_and_lay_out_again
-    first = measured_after_frame
+    first = laid_out
     @page.refresh_fonts("→")
 
-    assert_operator measured_after_frame, :>, first
+    refute_same first, laid_out
   end
 
   # The pointer never moves here: the first frames are busy (it appeared),

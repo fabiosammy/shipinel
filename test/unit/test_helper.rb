@@ -14,3 +14,8 @@ SimpleCov.start do
 end
 
 require "minitest/autorun"
+require "tmpdir"
+
+# State files (SavedState) go to a directory of the test run's own, never
+# to the real ~/.local/state.
+ENV["XDG_STATE_HOME"] = Dir.mktmpdir("shipinel-state")

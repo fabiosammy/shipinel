@@ -14,7 +14,7 @@ class ScreenTest < Minitest::Test
   end
 
   def test_window_lifecycle
-    @screen.open(440, 640, "shipinel")
+    @screen.open(Shipinel::WindowPlace.new(Shipinel::Rect.new(30.0, 40.0, 500.0, 700.0), true), "shipinel")
 
     assert_predicate @screen, :ready?
     refute_predicate @screen, :closing?
@@ -23,17 +23,27 @@ class ScreenTest < Minitest::Test
     style = [:style_checkbox, Shipinel::Theme::Checkbox::BORDER, Shipinel::Theme::Checkbox::HOVER,
              Shipinel::Theme::Checkbox::CHECK]
 
-    assert_equal [[:open, 440, 640, "shipinel"], style, [:ready], [:should_close], [:close]], Shipinel::UI.calls
+    assert_equal [[:open, 500, 700, "shipinel"], [:move, 30, 40], style, [:ready], [:should_close], [:close]],
+                 Shipinel::UI.calls
   end
 
-  def test_area_and_frames
-    area = @screen.area
+  def test_a_window_placed_by_the_window_system_is_not_moved
+    @screen.open(Shipinel::WindowPlace.sized(440, 640), "shipinel")
 
-    assert_equal [0.0, 0.0, 440.0, 640.0], [area.left, area.top, area.width, area.height]
+    assert_equal [:open, 440, 640, "shipinel"], Shipinel::UI.calls.first
+    refute(Shipinel::UI.calls.any? { |call| call.first == :move })
+  end
+
+  def test_placement_and_frames
+    place = @screen.placement
+    rect = place.rect
+
+    assert_equal [7.0, 9.0, 440.0, 640.0, true], [rect.left, rect.top, rect.width, rect.height, place.placed?]
+    Shipinel::UI.calls.clear
     @screen.begin_frame(0x000000FF)
     @screen.end_frame
 
-    assert_equal [[:width], [:height], [:begin_frame, 0x000000FF], [:end_frame]], Shipinel::UI.calls
+    assert_equal [[:begin_frame, 0x000000FF], [:end_frame]], Shipinel::UI.calls
   end
 
   def test_text_and_rectangles
