@@ -2,7 +2,7 @@
 
 require_relative "test_helper"
 require_relative "../../lib/shipinel/geometry"
-require_relative "../../lib/shipinel/mouse_state"
+require_relative "../../lib/shipinel/input"
 
 class GeometryTest < Minitest::Test
   def test_points_are_the_same_by_position
@@ -26,11 +26,13 @@ class GeometryTest < Minitest::Test
     assert_equal [50.0, 50.0, [false, true, true, false]], [view.shift, view.top, shown]
   end
 
-  def test_mouse_input
+  def test_input_is_active_with_a_button_the_wheel_or_a_key
     at = Shipinel::Point.new(0.0, 0.0)
 
-    inputs = [[0, 0.0], [1, 0.0], [0, 1.0]].map { |buttons, wheel| Shipinel::MouseState.new(at, buttons, wheel).input? }
+    inputs = [[0, 0.0, 0], [1, 0.0, 0], [0, 1.0, 0], [0, 0.0, 4]].map do |buttons, wheel, keys|
+      Shipinel::Input.new(at, buttons, wheel, Shipinel::KeyPress.new(keys)).active?
+    end
 
-    assert_equal [false, true, true], inputs
+    assert_equal [false, true, true, true], inputs
   end
 end

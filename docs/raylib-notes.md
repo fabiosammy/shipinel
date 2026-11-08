@@ -138,7 +138,18 @@ RLAPI int GetMouseX(void);                                    // raylib.h:1230
 RLAPI int GetMouseY(void);                                    // raylib.h:1231
 RLAPI float GetMouseWheelMove(void);                          // raylib.h:1237
 RLAPI void SetMouseCursor(int cursor);                        // raylib.h:1239
+RLAPI bool IsKeyPressed(int key);                             // raylib.h:1202
+RLAPI bool IsKeyPressedRepeat(int key);                       // raylib.h:1203
 ```
+
+Key codes are raylib's `KeyboardKey` values (raylib.h:590-696), copied
+into `Keyboard` in lib/shipinel/keyboard.rb: `KEY_J` 74, `KEY_K` 75,
+`KEY_H` 72, `KEY_DOWN` 264, `KEY_UP` 265, `KEY_PAGE_UP` 266,
+`KEY_PAGE_DOWN` 267, `KEY_HOME` 268, `KEY_END` 269, `KEY_EQUAL` 61,
+`KEY_MINUS` 45, `KEY_ZERO` 48, `KEY_KP_SUBTRACT` 333, `KEY_KP_ADD` 334.
+GLFW names keys by their place on a US keyboard, so on ABNT2 and other
+layouts the key right of `-` is still `KEY_EQUAL`, the one that types `+`
+with Shift.
 
 `GetMouseX` / `GetMouseY` return `int`, so the shim does not need
 `GetMousePosition` (which returns a `Vector2` by value).
@@ -267,6 +278,7 @@ What Ruby can call, all scalars and strings (Spinel FFI types in
 | `void ui_draw_rect(float, float, float, float, uint32_t)` | `DrawRectangleRec` |
 | `float ui_wheel_move(void)` | `GetMouseWheelMove` |
 | `int ui_mouse_x(void)`, `int ui_mouse_y(void)` | `GetMouseX`, `GetMouseY`: the scrollbar's pointer position |
+| `int ui_keys_pressed(const int64_t *, int)` | bit n when `IsKeyPressed` or `IsKeyPressedRepeat` for keys[n] (Ruby `:int_array`, up to 30 keys) |
 | `int ui_mouse_buttons(void)` | bit 1 `IsMouseButtonDown(LEFT)`, bit 2 `IsMouseButtonPressed(LEFT)`: dragging the thumb, paging on the track |
 | `void ui_style_checkbox(uint32_t, uint32_t, uint32_t)` | `GuiSetStyle(CHECKBOX, ...)`: border normal; border focused and pressed; check mark (TEXT_COLOR_*) in all states; `BORDER_WIDTH` 2, `CHECK_PADDING` 3 |
 

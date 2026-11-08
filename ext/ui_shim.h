@@ -55,6 +55,9 @@ int ui_mouse_y(void);
 /* The left button: bit 1 held down, bit 2 pressed this frame. */
 int ui_mouse_buttons(void);
 /* How far the mouse wheel moved this frame; positive is away from the user. */
+/* Bit n set when keys[n] (a raylib KeyboardKey) went down this frame or
+ * repeated while held; up to 30 keys. */
+int ui_keys_pressed(const int64_t *keys, int count);
 float ui_wheel_move(void);
 /* Colors of every checkbox: its border, its border under the mouse, and
  * the check mark. */

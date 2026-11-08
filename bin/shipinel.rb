@@ -7,14 +7,14 @@ require_relative "../lib/shipinel/app"
 require_relative "../lib/shipinel/cli_options"
 require_relative "../lib/shipinel/font_locator"
 require_relative "../lib/shipinel/screen"
-require_relative "../lib/shipinel/styles"
+require_relative "../lib/shipinel/view"
 require_relative "../lib/shipinel/ui"
 
 begin
   options = Shipinel::CliOptions.new(ARGV).parse
   fonts = Shipinel::FontLocator.new(Shipinel::Fontconfig.new).locate(options)
-  styles = Shipinel::Styles.new(options.font_size.to_f)
-  Shipinel::App.new(Shipinel::Screen.new, options.path, styles, fonts).run
+  view = Shipinel::View.starting_at(options.font_size)
+  Shipinel::App.new(Shipinel::Screen.new, options.path, view, fonts).run
 rescue Shipinel::UsageError => error
   warn error.message
   exit 2

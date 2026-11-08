@@ -9,7 +9,7 @@
 
 require_relative "font_shim"
 require_relative "geometry"
-require_relative "mouse_state"
+require_relative "input"
 require_relative "theme"
 
 module Shipinel
@@ -80,10 +80,12 @@ module Shipinel
       UI.ui_draw_rect(rect.left, rect.top, rect.width, rect.height, color)
     end
 
-    # The mouse this frame: where it is, its left button, and its wheel.
-    #: () -> MouseState
-    def mouse
-      MouseState.new(Point.new(UI.ui_mouse_x.to_f, UI.ui_mouse_y.to_f), UI.ui_mouse_buttons, UI.ui_wheel_move)
+    # This frame's input: the mouse and the watched keys.
+    #: () -> Input
+    def input
+      keys = Keyboard.watched
+      Input.new(Point.new(UI.ui_mouse_x.to_f, UI.ui_mouse_y.to_f), UI.ui_mouse_buttons, UI.ui_wheel_move,
+                KeyPress.new(UI.ui_keys_pressed(keys, keys.size)))
     end
 
     # A square checkbox filling `rect`. Clicks are read with pointer_on;

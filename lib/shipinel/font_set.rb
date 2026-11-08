@@ -44,6 +44,12 @@ module Shipinel
       remember(codepoints)
     end
 
+    # Loads every slot again at another size, with the same characters.
+    #: (Integer pixel_size) -> void
+    def reload(pixel_size)
+      load(@loaded, pixel_size)
+    end
+
     # Whether every one of these characters is loaded already.
     #: (Array[Integer] codepoints) -> bool
     def covers?(codepoints)

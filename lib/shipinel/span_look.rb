@@ -4,25 +4,36 @@
 # of it measured in that look, ready for LineWrap to place.
 
 require_relative "draw_list"
+require_relative "markdown/inline"
 require_relative "geometry"
 require_relative "theme"
 
 module Shipinel
-  # How one span is drawn: its style and, for a link, where it goes ("").
+  # How one span is drawn: its style, for a link where it goes (""), and
+  # whether a line strikes it through (~~text~~).
   class SpanLook
     attr_reader :style #: TextStyle
     attr_reader :url #: String
 
-    #: (TextStyle style, String url) -> void
-    def initialize(style, url)
+    # @rbs @struck: bool
+
+    #: (TextStyle style, String url, bool struck) -> void
+    def initialize(style, url, struck)
       @style = style
       @url = url
+      @struck = struck
+    end
+
+    # A span's look in `style`: its link, and its strike-through.
+    #: (Markdown::Span span, TextStyle style) -> SpanLook
+    def self.for(span, style)
+      SpanLook.new(style, span.url, span.style == :strike)
     end
 
     # The same look in the symbol font, for an emoji inside the span.
     #: () -> SpanLook
     def as_symbol
-      SpanLook.new(@style.with_font(Theme::FontSlot::SYMBOL), @url)
+      SpanLook.new(@style.with_font(Theme::FontSlot::SYMBOL), @url, @struck)
     end
 
     # What goes under a piece of text drawn in `line`: a code background,
@@ -34,6 +45,13 @@ module Shipinel
 
       flow.add(Box.new(line.underline(@style.line_height, @style.size), Theme::Accent::LINK))
       flow.add(LinkArea.new(line, @url))
+    end
+
+    # What goes over a piece of text: the strike-through line, in the text's
+    # own color.
+    #: (Rect line, Flow flow) -> void
+    def cross_out(line, flow)
+      flow.add(Box.new(line.strike(@style.line_height, @style.size), @style.color)) if @struck
     end
   end
 
@@ -63,6 +81,7 @@ module Shipinel
       @look.decorate(line, flow)
       style = @look.style
       flow.add(TextRun.new(@text, line.band(style.line_height), style))
+      @look.cross_out(line, flow)
     end
   end
 end

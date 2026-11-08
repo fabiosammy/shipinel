@@ -22,6 +22,7 @@ module Shipinel
     def self.ui_mouse_x: () -> Integer
     def self.ui_mouse_y: () -> Integer
     def self.ui_mouse_buttons: () -> Integer
+    def self.ui_keys_pressed: (Array[Integer] keys, Integer count) -> Integer
     def self.ui_style_checkbox: (Integer border_rgba, Integer hover_rgba, Integer check_rgba) -> void
     def self.ui_draw_checkbox: (Float left, Float top, Float size, bool checked) -> void
     def self.ui_pointer_on: (Float left, Float top, Float width, Float height) -> Integer

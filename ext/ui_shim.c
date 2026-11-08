@@ -49,6 +49,8 @@ enum {
     POINTER_AWAY = 0,
     POINTER_OVER = 1,
     POINTER_CLICKED = 2,
+    /* ui_keys_pressed answers in the bits of an int. */
+    MAX_WATCHED_KEYS = 30,
     /* ui_mouse_buttons' bits. */
     MOUSE_DOWN = 1,
     MOUSE_PRESSED = 2
@@ -379,6 +381,17 @@ int ui_mouse_y(void) {
 int ui_mouse_buttons(void) {
     return (IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? MOUSE_DOWN : 0) |
            (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ? MOUSE_PRESSED : 0);
+}
+
+int ui_keys_pressed(const int64_t *keys, int count) {
+    int pressed = 0;
+    for (int index = 0; index < count && index < MAX_WATCHED_KEYS; index++) {
+        const int key = (int)keys[index];
+        if (IsKeyPressed(key) || IsKeyPressedRepeat(key)) {
+            pressed |= 1 << index;
+        }
+    }
+    return pressed;
 }
 
 float ui_wheel_move(void) {

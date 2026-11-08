@@ -50,10 +50,16 @@ class ScreenTest < Minitest::Test
     assert_equal [[:skip_frame]], Shipinel::UI.calls
   end
 
-  def test_mouse
-    mouse = @screen.mouse
+  def test_input_mouse
+    input = @screen.input
 
-    assert_equal [12.0, 34.0, -1.0, true, true], [mouse.at.left, mouse.at.top, mouse.wheel, mouse.down?, mouse.pressed?]
+    assert_equal [12.0, 34.0, -1.0, true, true], [input.at.left, input.at.top, input.wheel, input.down?, input.pressed?]
+  end
+
+  def test_input_keys
+    keys = @screen.input.keys
+
+    assert_equal [true, [:keys, Shipinel::Keyboard.watched, 14]], [keys.pressed?, Shipinel::UI.calls.last]
   end
 
   def test_checkbox

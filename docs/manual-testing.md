@@ -48,6 +48,11 @@ cp test/fixtures/semana.md /tmp/semana.md
 11. **Resize.** Make the window narrow: the paragraph re-wraps; the window
     cannot be made smaller than 200 × 120.
 12. **Keys.** Escape does not close the window; the close button does.
+    `j`/`k` and the arrows scroll a line, Page Up/Down a window, Home/End
+    go to either end; holding a key repeats it. `+`/`-` (also with Ctrl,
+    and on the keypad) change the text size and `0` resets it; `h` hides
+    and shows the progress header. On a pt-BR (ABNT2) keyboard, `+` is the
+    key right of `-`. `~~text~~` shows struck through.
 13. **Idle CPU.** `top -p $(pgrep -f result/bin/shipinel)` shows a few
     percent at most while nothing changes, on a long file too. Scrolling
     and dragging the scrollbar move smoothly (60 FPS), and the CPU drops

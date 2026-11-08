@@ -32,6 +32,7 @@ module Shipinel
     ffi_func :ui_mouse_x, [], :int
     ffi_func :ui_mouse_y, [], :int
     ffi_func :ui_mouse_buttons, [], :int
+    ffi_func :ui_keys_pressed, %i[int_array int], :int
     ffi_func :ui_style_checkbox, %i[uint32 uint32 uint32], :void
     ffi_func :ui_draw_checkbox, %i[float float float bool], :void
     ffi_func :ui_pointer_on, %i[float float float float], :int

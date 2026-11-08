@@ -15,7 +15,9 @@ class ContentCacheTest < Minitest::Test
 
     def initialize = @width = 400.0
     def area = Shipinel::Rect.new(0.0, 0.0, @width, 300.0)
-    def mouse = Shipinel::MouseState.new(Shipinel::Point.new(0.0, 0.0), 0, 0.0)
+    attr_writer :keys
+
+    def input = Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, 0.0, Shipinel::KeyPress.new(@keys || 0))
   end
 
   def setup
@@ -24,7 +26,7 @@ class ContentCacheTest < Minitest::Test
     File.write(@path, "# Semana\n- [ ] Reunião\n")
     @document = Shipinel::DocumentView.new(Shipinel::DocumentFile.new(@path))
     @shim = FakeShim.new
-    @page = Shipinel::Page.new(Shipinel::Styles.new(20.0), Shipinel::FontSet.new(@shim, PATHS))
+    @page = Shipinel::Page.new(Shipinel::View.starting_at(20), Shipinel::FontSet.new(@shim, PATHS))
     @screen = FakeScreen.new
   end
 
@@ -74,5 +76,28 @@ class ContentCacheTest < Minitest::Test
     @document.reload
 
     assert_equal [false, true, false], [frames.first.nil?, frames.last.nil?, @page.update(@screen, @document).nil?]
+  end
+
+  def press(code) = 1 << Shipinel::Keyboard.watched.find_index(code)
+
+  # Glyphs are loaded at the level 1 heading size: 1.6 x 20, then 1.6 x 22.
+  def test_zoom_reloads_the_fonts_bigger_and_lays_out_again
+    @page.load_fonts("")
+    @page.update(@screen, @document)
+    @screen.keys = press(Shipinel::Keyboard::Zoom::EQUAL)
+    @page.update(@screen, @document)
+    sizes = @shim.calls.select { |call| call.first == :load }.map(&:last).uniq
+
+    assert_equal [32, 35], sizes
+  end
+
+  # The header shows "0 of 1 task done"; h hides it, so the page starts
+  # at the top of the window.
+  def test_h_hides_the_header
+    shown = @page.update(@screen, @document).view.top
+    @screen.keys = press(Shipinel::Keyboard::HEADER)
+    hidden = @page.update(@screen, @document).view.top
+
+    assert_equal [true, 0.0], [shown.positive?, hidden]
   end
 end

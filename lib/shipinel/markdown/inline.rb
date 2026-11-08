@@ -1,62 +1,22 @@
 # frozen_string_literal: true
 
 # Splits one line of block text into styled spans: **bold**, *italic*,
-# `code`, links and plain text. A marker without its closing partner stays as literal
-# text.
+# ~~strike~~, `code`, links and plain text. A marker without its closing
+# partner stays as literal text.
 
 require_relative "emphasis"
 require_relative "links"
+require_relative "span"
 
 module Shipinel
   module Markdown
-    # A run of text in one style: :plain, :bold, :italic, :code or :link. A link
-    # also has its url; every other span's url is "".
-    class Span
-      attr_reader :text #: String
-      attr_reader :style #: Symbol
-      attr_reader :url #: String
-
-      #: (String text, Symbol style, String url) -> void
-      def initialize(text, style, url)
-        @text = text
-        @style = style
-        @url = url
-      end
-    end
-
-    # The spans of one line, in order. Kept in an ivar and read by index so
-    # Spinel compiles it to a typed array (docs/spinel-notes.md).
-    class SpanList
-      # @rbs @spans: Array[Span]
-
-      #: () -> void
-      def initialize
-        @spans = []
-      end
-
-      #: (Span span) -> void
-      def add(span)
-        @spans << span
-        nil
-      end
-
-      #: () -> Integer
-      def size
-        @spans.size
-      end
-
-      #: (Integer position) -> Span
-      def at(position)
-        @spans[position]
-      end
-    end
-
     # See the file comment. Code is matched first, so "`**`" and a URL in
     # backticks stay code. Bold and link text are not scanned again: no
     # nesting, simple styling is enough.
     class Inline
       CODE = "`"
       BOLD = "**"
+      STRIKE = "~~"
       NOT_FOUND = -1
 
       # @rbs @text: String
@@ -90,6 +50,7 @@ module Shipinel
       def step
         if marker_at?(CODE, @position) then take(CODE, :code)
         elsif marker_at?(BOLD, @position) then take(BOLD, :bold)
+        elsif marker_at?(STRIKE, @position) then take(STRIKE, :strike)
         else take_italic_link_or_char
         end
         nil

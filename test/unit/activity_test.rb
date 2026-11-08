@@ -4,7 +4,9 @@ require_relative "test_helper"
 require_relative "../../lib/shipinel/activity"
 
 class ActivityTest < Minitest::Test
-  def mouse(left, buttons: 0, wheel: 0.0) = Shipinel::MouseState.new(Shipinel::Point.new(left, 5.0), buttons, wheel)
+  def mouse(left, buttons: 0, wheel: 0.0, keys: 0)
+    Shipinel::Input.new(Shipinel::Point.new(left, 5.0), buttons, wheel, Shipinel::KeyPress.new(keys))
+  end
 
   def due_after?(*mice)
     activity = Shipinel::Activity.new
@@ -15,9 +17,9 @@ class ActivityTest < Minitest::Test
   def still(frames, left = 1.0) = Array.new(frames) { mouse(left) }
 
   def test_wheel_button_or_movement_is_drawn
-    assert_equal [true, true, true], [due_after?(*still(40), mouse(1.0, wheel: -1.0)),
-                                      due_after?(*still(40), mouse(1.0, buttons: 1)),
-                                      due_after?(*still(40), mouse(2.0))]
+    inputs = [mouse(1.0, wheel: -1.0), mouse(1.0, buttons: 1), mouse(2.0), mouse(1.0, keys: 1)]
+
+    assert_equal([true, true, true, true], inputs.map { |input| due_after?(*still(40), input) })
   end
 
   def test_stops_drawing_half_a_second_after_the_last_input

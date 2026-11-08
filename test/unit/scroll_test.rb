@@ -16,7 +16,7 @@ class ScrollTest < Minitest::Test
   def bar(page_height = 1000.0) = Shipinel::Scrollbar.new(page_height, AREA, @scroll.offset)
 
   def mouse(top, buttons: 0, wheel: 0.0, left: TRACK_X)
-    Shipinel::MouseState.new(Shipinel::Point.new(left, top), buttons, wheel)
+    Shipinel::Input.new(Shipinel::Point.new(left, top), buttons, wheel, Shipinel::KeyPress.new(0))
   end
 
   def test_starts_at_the_top
@@ -82,5 +82,33 @@ class ScrollTest < Minitest::Test
     @scroll.apply(mouse(10.0, buttons: 3, left: 100.0), bar)
 
     assert_in_delta 0.0, @scroll.offset
+  end
+
+  # The pointer away from the bar, one key pressed.
+  def key(code)
+    pressed = Shipinel::KeyPress.new(1 << Shipinel::Keyboard.watched.find_index(code))
+    Shipinel::Input.new(Shipinel::Point.new(100.0, 0.0), 0, 0.0, pressed)
+  end
+
+  def test_line_keys_move_one_step
+    @scroll.apply(key(Shipinel::Keyboard::Lines::J), bar)
+    @scroll.apply(key(Shipinel::Keyboard::Lines::DOWN), bar)
+    @scroll.apply(key(Shipinel::Keyboard::Lines::K), bar)
+
+    assert_in_delta 48.0, @scroll.offset
+  end
+
+  def test_page_keys_move_a_window
+    @scroll.apply(key(Shipinel::Keyboard::Jumps::PAGE_DOWN), bar)
+
+    assert_in_delta 300.0, @scroll.offset
+  end
+
+  def test_home_and_end
+    @scroll.apply(key(Shipinel::Keyboard::Jumps::END_KEY), bar)
+    bottom = @scroll.offset
+    @scroll.apply(key(Shipinel::Keyboard::Jumps::HOME), bar)
+
+    assert_equal [700.0, 0.0], [bottom, @scroll.offset]
   end
 end

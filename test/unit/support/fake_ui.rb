@@ -27,6 +27,7 @@ module Shipinel
     def self.ui_mouse_x = record(:mouse_x, answer: 12)
     def self.ui_mouse_y = record(:mouse_y, answer: 34)
     def self.ui_mouse_buttons = record(:mouse_buttons, answer: 3)
+    def self.ui_keys_pressed(*) = record(:keys, *, answer: 0b1)
     def self.ui_style_checkbox(*) = record(:style_checkbox, *)
     def self.ui_draw_checkbox(*) = record(:checkbox, *)
     def self.ui_pointer_on(*) = record(:pointer_on, *, answer: @pointer || 2)

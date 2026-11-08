@@ -37,7 +37,7 @@ module Shipinel
 
     #: (Markdown::Span span) -> void
     def write(span)
-      look = SpanLook.new(style_for(span), span.url)
+      look = SpanLook.for(span, style_for(span))
       # WORD has no groups, so scan yields Strings; to_s says so to Steep.
       span.text.delete(INVISIBLE).scan(WORD).each { |word| place_word(word.to_s, look) }
       nil

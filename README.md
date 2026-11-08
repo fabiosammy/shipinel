@@ -54,6 +54,7 @@ Wrong arguments print a usage message and exit with status 2.
 | Indented items (2 or 4 spaces, or tabs) | Nested, indented by depth |
 | Consecutive text lines | One wrapped paragraph |
 | `**bold**`, `` `code` `` inside any text | Bold; monospace on a dark background |
+| `~~text~~` | Struck through, the line in the text's own color |
 | `*italic*`, `_italic_` | Italic. The markers must touch the text (`2 * 3 * 4` stays as written), and `_` only counts at word edges, so `snake_case` and `workspace_id` are left alone |
 | `> quoted` lines | Indented, italic and dimmed, with a bar on the left; consecutive lines join, a lone `>` starts a new quote. Markdown inside a quote other than inline styles is shown as written |
 | `[text](url)`, `<https://…>`, bare `https://…` URLs | An underlined link; the pointer turns into a hand over it, and a click opens it with `xdg-open` (a relative link opens the file next to the plan) |
@@ -156,6 +157,19 @@ mishandles it):
 ```sh
 env -u WAYLAND_DISPLAY shipinel ~/notes/week.md
 ```
+
+## Keys
+
+| Key | Does |
+|---|---|
+| `j` / `↓`, `k` / `↑` | Scroll a line down / up |
+| Page Down / Page Up | Scroll a window down / up |
+| Home / End | Go to the top / the end |
+| `+` (or `=`), `-`, keypad `+` / `-` | Bigger / smaller text, with or without Ctrl; from 8 to 72 pixels |
+| `0` | Back to the `--font-size` the window started with |
+| `h` | Hide or show the progress header |
+
+Keys repeat while held. Escape does nothing.
 
 ## Behaviour
 

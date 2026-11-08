@@ -32,7 +32,7 @@ class AppTest < Minitest::Test
     def closing? = @frame >= @frames
     def close = @calls << [:close]
     def area = Shipinel::Rect.new(0.0, 0.0, 440.0, 640.0)
-    def mouse = Shipinel::MouseState.new(Shipinel::Point.new(0.0, 0.0), 0, @wheel)
+    def input = Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, @wheel, Shipinel::KeyPress.new(0))
     def font_shim = (@font_shim ||= FakeShim.new(failing: @broken == :font ? PATHS_FAILING : []))
     def begin_frame(_color) = @pointed = false
     def texts_on(frame) = @texts.select { |text_frame, _text| text_frame == frame }.map(&:last)
@@ -87,7 +87,7 @@ class AppTest < Minitest::Test
   PATHS_FAILING = ["/s.ttf", "/b.ttf", "/i.ttf", "/m.ttf", "/e.ttf"].freeze
 
   def run_app(screen)
-    Shipinel::App.new(screen, @path, Shipinel::Styles.new(20.0), PATHS).run
+    Shipinel::App.new(screen, @path, Shipinel::View.starting_at(20), PATHS).run
     screen
   end
 

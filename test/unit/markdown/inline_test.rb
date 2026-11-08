@@ -57,4 +57,12 @@ class InlineTest < Minitest::Test
   def test_url_in_code_stays_code
     assert_equal ["code:https://x.test"], spans("`https://x.test`")
   end
+
+  def test_strike_through
+    assert_equal ["plain:feito: ", "strike:Reunião"], spans("feito: ~~Reunião~~")
+  end
+
+  def test_single_tilde_stays_text
+    assert_equal ["plain:~200 tests ~ hoje"], spans("~200 tests ~ hoje")
+  end
 end

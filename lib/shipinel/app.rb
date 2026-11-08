@@ -15,7 +15,7 @@ require_relative "page"
 require_relative "painter"
 require_relative "poller"
 require_relative "screen"
-require_relative "styles"
+require_relative "view"
 require_relative "theme"
 
 module Shipinel
@@ -31,11 +31,11 @@ module Shipinel
     # @rbs @page: Page
     # @rbs @poller: Poller
 
-    #: (Screen screen, String path, Styles styles, FontPaths fonts) -> void
-    def initialize(screen, path, styles, fonts)
+    #: (Screen screen, String path, View view, FontPaths fonts) -> void
+    def initialize(screen, path, view, fonts)
       @screen = screen
       @document = DocumentView.new(DocumentFile.new(path))
-      @page = Page.new(styles, FontSet.new(screen.font_shim, fonts))
+      @page = Page.new(view, FontSet.new(screen.font_shim, fonts))
       @poller = Poller.new(Clock.now_ms)
     end
 

@@ -82,6 +82,13 @@ module Shipinel
       Rect.new(@left, band(band_height).top + (text_size * 0.95), @width, 1.0)
     end
 
+    # A one-pixel line through the middle of lowercase letters of text drawn
+    # in `band(band_height)` at `text_size`.
+    #: (Float band_height, Float text_size) -> Rect
+    def strike(band_height, text_size)
+      Rect.new(@left, band(band_height).top + (text_size * 0.6), @width, 1.0)
+    end
+
     # A strip of this rectangle, `height` tall, centered vertically: where
     # smaller text sits on a line.
     #: (Float height) -> Rect
