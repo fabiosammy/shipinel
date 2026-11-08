@@ -126,8 +126,11 @@ class AppTest < Minitest::Test
     assert_equal [[0, 45.95], [1, 36.95]], [tops.first, tops.find { |frame, _top| frame == 1 }]
   end
 
-  def test_window_that_does_not_open_ends_the_run
-    assert_equal 1, run_app(FakeScreen.new(broken: :window)).calls.size
+  def test_window_that_does_not_open_ends_the_run_with_an_error
+    screen = FakeScreen.new(broken: :window)
+    error = assert_raises(Shipinel::WindowError) { run_app(screen) }
+
+    assert_equal [1, Shipinel::App::NO_WINDOW], [screen.calls.size, error.message]
   end
 
   def test_each_font_that_does_not_load_is_a_notice

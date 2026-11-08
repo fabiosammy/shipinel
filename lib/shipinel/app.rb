@@ -18,12 +18,17 @@ require_relative "screen"
 require_relative "theme"
 
 module Shipinel
+  # No window could be opened. The message is shown to the user.
+  class WindowError < StandardError
+  end
+
   # See the file comment.
   class App
     # KWin, Hyprland and GNOME rules match this exact title (README).
     TITLE = "shipinel"
     WIDTH = 440
     HEIGHT = 640
+    NO_WINDOW = "could not open a window: no display (DISPLAY or WAYLAND_DISPLAY), or no OpenGL driver"
 
     # @rbs @screen: Screen
     # @rbs @document: DocumentView
@@ -39,10 +44,11 @@ module Shipinel
       @page = Page.new(@session.saved.view, FontSet.new(screen.font_shim, launch.fonts))
     end
 
+    # Raises WindowError when no window could be opened.
     #: () -> void
     def run
       @screen.open(@session.saved.place, TITLE)
-      return unless @screen.ready?
+      raise WindowError, NO_WINDOW unless @screen.ready?
 
       prepare
       tick until ending?

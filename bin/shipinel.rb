@@ -30,4 +30,7 @@ begin
 rescue Shipinel::UsageError => error
   warn error.message
   exit 2
+rescue Shipinel::WindowError => error
+  warn "shipinel: #{error.message}"
+  exit 1
 end
