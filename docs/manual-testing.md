@@ -113,7 +113,7 @@ cp test/fixtures/semana.md /tmp/semana.md
 25. **Daily nudge with a task.** With `notify_daily` a minute ahead, the
     notification's second line is "Still open: …" with the first open task
     that is not waiting, without its Markdown.
-26. **Version.** `shipinel --version` prints `shipinel 0.1.0`.
+26. **Version.** `shipinel --version` prints `shipinel` and the version in `spin.toml`.
 27. **Today.** A plan with `## <today's weekday> — …` or a heading holding
     today's date: that heading is light blue. Close the window, set
     `day=` in its state file to yesterday, open it: it opens at that
