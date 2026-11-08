@@ -10,7 +10,7 @@ require_relative "../../lib/shipinel/markdown/parser"
 # in the margin. Size 20, so a line is 27 px high.
 class TaskMarksTest < Minitest::Test
   STYLES = Shipinel::Styles.new(20.0)
-  TODAY = "2026-11-08"
+  TODAY = Shipinel::Day.new("2026-11-08", 0)
 
   def page(source, highlights: Shipinel::Highlights.none, width: 400.0)
     Shipinel::Layout.new(fake_font_set(source), STYLES, width).marking(highlights)
@@ -56,7 +56,7 @@ class TaskMarksTest < Minitest::Test
   def changed_paragraph_marks
     after = "# a\n\nnew text that wraps around\n"
     changes = Shipinel::LineChanges.between("# a\n\nold\n", after, 0)
-    marks(page(after, highlights: Shipinel::Highlights.new("", changes), width: 200.0))
+    marks(page(after, highlights: Shipinel::Highlights.new(Shipinel::Day.none, changes), width: 200.0))
   end
 
   # One mark per text line of a changed block, in the left margin.
@@ -66,6 +66,13 @@ class TaskMarksTest < Minitest::Test
 
     assert_equal [[5.0, 3.0, 27.0]] * 2, sizes
     assert_operator rects.first.top, :<, rects.last.top
+  end
+
+  def test_todays_heading_is_in_the_accent_color
+    colors = runs(page("# Sunday 2026-11-08\n## Monday\n", highlights: Shipinel::Highlights.new(TODAY, Shipinel::LineChanges.none)))
+             .map { |run| run.style.color }.uniq
+
+    assert_equal [Shipinel::Theme::Accent::TODAY, Shipinel::Theme::Ink::HEADING], colors
   end
 
   def test_nothing_changed_nothing_marked

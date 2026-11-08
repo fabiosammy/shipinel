@@ -7,6 +7,7 @@
 
 require_relative "config"
 require_relative "desktop"
+require_relative "day"
 require_relative "poller"
 require_relative "state_file"
 
@@ -35,7 +36,7 @@ module Shipinel
     def self.for(plan_path, defaults, config)
       file = StateFile.for(plan_path)
       saved = StateReader.new(file.read).state(defaults)
-      reminder = Reminder.new(config.notify, Notifier.new(Notifier::COMMAND), saved.nudged)
+      reminder = Reminder.new(config.notify, Notifier.new(Notifier::COMMAND), saved.days.nudged)
       Session.new(file, saved, Desktop.new(reminder, TrayIcon.new(config.tray)))
     end
 
@@ -47,7 +48,7 @@ module Shipinel
     # Writes the state only when it differs from what was last written.
     #: (ScrollSpot spot, View view, WindowPlace place) -> void
     def save(spot, view, place)
-      state = SavedState.new(spot, view, place, @desktop.nudged)
+      state = SavedState.new(spot, view, place, StateDays.new(@desktop.nudged, Day.today.date))
       text = state.to_text
       return if text == @saved.to_text
 

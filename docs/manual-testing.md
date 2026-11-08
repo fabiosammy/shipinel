@@ -114,6 +114,10 @@ cp test/fixtures/semana.md /tmp/semana.md
     notification's second line is "Still open: …" with the first open task
     that is not waiting, without its Markdown.
 26. **Version.** `shipinel --version` prints `shipinel 0.1.0`.
+27. **Today.** A plan with `## <today's weekday> — …` or a heading holding
+    today's date: that heading is light blue. Close the window, set
+    `day=` in its state file to yesterday, open it: it opens at that
+    heading. Open it again: it stays where you left it.
 
 ## Per desktop
 
@@ -132,4 +136,5 @@ cp test/fixtures/semana.md /tmp/semana.md
 |---|---|---|---|---|
 | 2026-11-07 | Xvfb in the dev sandbox (no compositor) | X11, software GL | Items 1, 3, 4, 5 (CRLF file byte-identical after two toggles), 7 (save by rename), 8, 10 (wheel and a click after scrolling) pass | Driven with XTest inside Xvfb; not a real desktop |
 | 2026-11-07 | NixOS host, `nix build` result | Wayland | Item 2 passes (`wl_display#1.get_registry`: native Wayland client) | Remaining items not yet run |
+| 2026-11-08 | Xvfb in the dev sandbox (no compositor) | X11, software GL | Item 27 (heading color; a plan saved the day before opened at Sunday's heading, as far as the page end allowed) passes | |
 | 2026-11-08 | Xvfb in the dev sandbox (no compositor) | X11, software GL | Items 22 (no emoji font installed, so `⏳` drew as `?`), 23, and a tick marking nothing pass | Undo checked by unit tests and in Xvfb below |

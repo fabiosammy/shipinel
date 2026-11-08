@@ -26,6 +26,9 @@
 - **Where you are.** The header names the section you are in, with its own
   count ("Goal 1 — Billing CSV export · 3 of 7"), and the plan reopens where
   you left it, at the same size, even after it was edited above you.
+- **Today.** A heading about today (it holds today's date, or starts with
+  today's weekday: "Monday — …", "Segunda-feira") is drawn in an accent
+  color, and on a new day the plan opens there.
 - **What can be done now.** A task marked as waiting (`⏳` or "(waiting on
   …)") steps back in quieter italics, so the ones you can pick up stand out;
   a date that has passed in an open task (`due 2026-11-06`) turns amber.
@@ -213,6 +216,11 @@ rules by title (for example "Auto Move Windows" for the workspace part).
   second of a change; deleting it starts fresh. On X11 the window's position
   comes back too; on Wayland only the compositor places windows, so use a
   window rule.
+- **Today's heading** is the first heading holding today's date
+  (`2026-11-09`) or starting with today's weekday name as a word, in English
+  or Portuguese (`Monday`, `Segunda-feira`; not `Mondays`). The first time a
+  plan opens on a new day, and at midnight while it is open, the page goes
+  there; later the same day it reopens where you left it.
 - **Undo** (`u`) flips the last tick back once, with the same care as a
   click: if the line changed since, nothing is written. A tick that could
   not be saved has nothing to undo.

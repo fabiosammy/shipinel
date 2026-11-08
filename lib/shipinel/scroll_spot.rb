@@ -2,9 +2,11 @@
 
 # A place on the page that survives edits and restarts: the section (by its
 # heading's slug) and how far into it, with the plain offset for a page
-# without that heading.
+# without that heading. Also the place a new day opens at: today's heading.
 
 require_relative "anchor"
+require_relative "day"
+require_relative "markdown/block"
 
 module Shipinel
   # See the file comment.
@@ -34,6 +36,26 @@ module Shipinel
 
       anchor = anchors.at(position)
       ScrollSpot.new(anchor.slug, offset - anchor.top, offset)
+    end
+
+    # The top of the first heading about `day` (Day#heading?), or
+    # ScrollSpot.none when the plan has none.
+    #: (Markdown::BlockList blocks, Day day) -> ScrollSpot
+    def self.today(blocks, day)
+      position = 0
+      while position < blocks.size
+        title = ScrollSpot.title_of(blocks.at(position))
+        return ScrollSpot.new(Anchor.slug_of(title), 0.0, 0.0) if day.heading?(title)
+
+        position += 1
+      end
+      ScrollSpot.none
+    end
+
+    # A heading's plain title; "" for any other block.
+    #: (Markdown::Block block) -> String
+    def self.title_of(block)
+      block.is_a?(Markdown::Heading) ? Markdown::Inline.parse(block.text).plain : ""
     end
 
     #: () -> bool

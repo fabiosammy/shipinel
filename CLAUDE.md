@@ -35,6 +35,10 @@ contribution process. This file is how you (Claude) work on the project.
   (a tick where Monday 00:00 → Friday 24:00 is; amber when more than a
   workday behind; green when done), and the current section with its own
   count ("Goal 1 · 3 of 8"). `h` hides it.
+- Today: the first heading holding today's date or starting with today's
+  weekday (English/Portuguese, whole word) is in the accent color; a plan
+  saved on another day (`day=` in its state) opens there, and so does an
+  open window at midnight (Day, Highlighter).
 - Focus marks: an open task with `⏳` or "(waiting" is waiting (italic,
   quieter; still counted); a `YYYY-MM-DD` before today in an open task is
   amber; lines changed outside get a margin mark for 10 s (Highlights,
@@ -43,7 +47,7 @@ contribution process. This file is how you (Claude) work on the project.
   `u` (undo the last tick once, through the same safe toggle).
 - Scrollbar (wheel, drag, track click).
 - Reopens each plan where it was left (section by heading slug, zoom,
-  header, window size; position only on X11) from
+  header, window size; position only on X11; the day it was saved) from
   `~/.local/state/shipinel/`.
 - Config `~/.config/shipinel/config`: `file`, `notify_daily`,
   `notify_save_failed`, `tray`, `close_to_tray` (docs/config.example).
@@ -113,7 +117,7 @@ apart from the thin native layer.
 | `lib/shipinel/markdown/` | Parser: lines → blocks with source line index; inline spans |
 | `layout.rb`, `flow.rb`, `line_wrap.rb`, `*_layout.rb`, `anchor.rb` | Blocks → draw commands for a width; heading anchors with task counts |
 | `page.rb`, `typesetter.rb`, `content_cache.rb`, `header.rb`, `progress_bar.rb`, `painter.rb` | One frame: cached layout, header, scrollbar, drawing, clicks |
-| `highlights.rb`, `ChangeMarks` in `draw_list.rb` | Past dates and lines changed outside: kept per poll, marked while laying out |
+| `day.rb`, `line_changes.rb`, `highlights.rb`, `highlighter.rb`, `ChangeMarks` in `draw_list.rb` | Today's heading, past dates, lines changed outside: kept per poll, marked while laying out |
 | `app.rb`, `session.rb`, `desktop.rb`, `reminder.rb`, `tray_icon.rb` | Loop, file poll, saved state, notifications, tray |
 | `task_toggler.rb`, `document_file.rb` | Safe toggle, atomic write |
 | `config.rb`, `state_file.rb`, `key_values.rb` | Config and saved state (key=value) |

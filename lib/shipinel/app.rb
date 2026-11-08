@@ -55,7 +55,7 @@ module Shipinel
     # the tray icon.
     #: () -> void
     def prepare
-      @page.prepare(@document, @session.saved.spot)
+      @page.prepare(@document, @session.saved)
       @session.desktop.start("Shipinel · #{@document.name}")
     end
 

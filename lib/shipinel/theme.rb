@@ -34,6 +34,8 @@ module Shipinel
       OVERDUE = 0xE5A04BFF
       # The mark beside lines an outside edit just changed.
       CHANGED = 0x56B6C2FF
+      # Today's heading.
+      TODAY = 0x9FB4FFFF
     end
 
     # The progress header pinned to the top of the window.

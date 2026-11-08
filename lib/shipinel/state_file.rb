@@ -22,7 +22,7 @@ module Shipinel
     # --font-size.
     #: (SavedState defaults) -> SavedState
     def state(defaults)
-      SavedState.new(spot, view(defaults.view), place(defaults.place), field("nudged"))
+      SavedState.new(spot, view(defaults.view), place(defaults.place), StateDays.new(field("nudged"), field("day")))
     end
 
     private

@@ -75,9 +75,9 @@ module Shipinel
     end
   end
 
-  # The marks Highlights asks for while one page is laid out: past dates
-  # in open tasks, and a mark in the left margin beside every text line of
-  # a block changed outside.
+  # The marks Highlights asks for while one page is laid out: today's
+  # heading in the accent color, past dates in open tasks, and a mark in
+  # the left margin beside every text line of a block changed outside.
   class ChangeMarks
     # @rbs @highlights: Highlights
     # @rbs @changed: bool
@@ -90,6 +90,14 @@ module Shipinel
       @changed = false
       @open_task = false
       @marked_top = -1.0
+    end
+
+    # A heading's style: in the accent color when it is about today.
+    #: (String text, TextStyle style) -> TextStyle
+    def heading_style(text, style)
+      return style unless @highlights.day.heading?(Markdown::Inline.parse(text).plain)
+
+      style.with_color(Theme::Accent::TODAY)
     end
 
     # A word holding a past date, in an open task.
@@ -148,6 +156,18 @@ module Shipinel
     def point_out(highlights)
       @marks = ChangeMarks.new(highlights)
       nil
+    end
+
+    # A heading of `level` with this (markdown) text starts at `top`.
+    #: (String text, Float top, Integer level) -> void
+    def heading(text, top, level)
+      @anchors.mark(text, top, level)
+    end
+
+    # A heading's style, in the accent color when it is about today.
+    #: (String text, TextStyle style) -> TextStyle
+    def heading_style(text, style)
+      @marks.heading_style(text, style)
     end
 
     # The block that ends on source line `last` is placed next: what it

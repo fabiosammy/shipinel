@@ -20,12 +20,6 @@ module Shipinel
       @week_share = week_share
     end
 
-    # Today's local date, "2026-11-08".
-    #: () -> String
-    def self.today
-      Time.now.strftime("%Y-%m-%d")
-    end
-
     #: () -> WallTime
     def self.now
       now = Time.now

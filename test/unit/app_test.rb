@@ -191,7 +191,7 @@ class AppTest < Minitest::Test
   def test_remembers_where_it_was_on_closing
     run_app(FakeScreen.new(frames: 1))
 
-    assert_match(/\Asection=\nwithin=0.0\noffset=0.0\nsize=20\nheader=1\nwidth=440\nheight=640\nnudged=\n\z/,
-                 state_file.read)
+    assert_match(/\Asection=\nwithin=0.0\noffset=0.0\nsize=20\nheader=1\nwidth=440\nheight=640\n
+                  nudged=\nday=\d{4}-\d{2}-\d{2}\n\z/x, state_file.read)
   end
 end

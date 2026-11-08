@@ -5,6 +5,7 @@ require_relative "../../lib/shipinel/session"
 require "fileutils"
 
 class SavedStateTest < Minitest::Test
+  TODAY = Shipinel::Day.today.date
   START = Shipinel::View.starting_at(20)
   DEFAULT_PLACE = Shipinel::WindowPlace.sized(440, 640)
 
@@ -19,18 +20,22 @@ class SavedStateTest < Minitest::Test
   def state(placed:)
     place = Shipinel::WindowPlace.new(Shipinel::Rect.new(30.0, 40.0, 500.0, 700.0), placed)
     Shipinel::SavedState.new(Shipinel::ScrollSpot.new("goal-1", 12.5, 300.0), Shipinel::View.new(24, 20, false), place,
-                             "2026-11-08")
+                             Shipinel::StateDays.new("2026-11-08", "2026-11-09"))
   end
 
   def read(text) = Shipinel::StateReader.new(text).state(Shipinel::SavedState.fresh(START, DEFAULT_PLACE))
 
   def test_text_lists_every_field
     assert_equal "section=goal-1\nwithin=12.5\noffset=300.0\nsize=24\nheader=0\nwidth=500\nheight=700\nx=30\ny=40\n" \
-                 "nudged=2026-11-08\n", state(placed: true).to_text
+                 "nudged=2026-11-08\nday=2026-11-09\n", state(placed: true).to_text
   end
 
   def test_no_position_where_the_window_system_places_windows
     refute_includes state(placed: false).to_text, "x="
+  end
+
+  def test_reads_back_the_day_it_was_saved
+    assert_equal ["2026-11-09", ""], [read(state(placed: true).to_text).days.seen, read("").days.seen]
   end
 
   def test_reads_back_the_spot
@@ -87,18 +92,23 @@ class SavedStateTest < Minitest::Test
   end
 
   def test_reads_back_the_last_nudge
-    assert_equal ["2026-11-08", ""], [read(state(placed: false).to_text).nudged, read("").nudged]
+    assert_equal ["2026-11-08", ""], [read(state(placed: false).to_text).days.nudged, read("").days.nudged]
   end
 
   def session(file)
     reminder = Shipinel::Reminder.new(Shipinel::NotifySettings.new("", false), Shipinel::Notifier.new("false"), "")
     tray_icon = Shipinel::TrayIcon.new(Shipinel::TraySettings.new(false, false))
-    Shipinel::Session.new(file, read(""), Shipinel::Desktop.new(reminder, tray_icon))
+    Shipinel::Session.new(file, read("day=#{TODAY}\n"), Shipinel::Desktop.new(reminder, tray_icon))
   end
 
   def save(session, state) = session.save(state.spot, state.view, state.place)
 
-  # The session's reminder never nudged, so the saved text has "nudged=".
+  # The session's reminder never nudged, so the saved text has "nudged=";
+  # the session saves today as its day.
+  def expected_after_save
+    state(placed: false).to_text.sub("nudged=2026-11-08", "nudged=").sub("day=2026-11-09", "day=#{TODAY}")
+  end
+
   def test_session_writes_only_when_the_state_changed
     file = Shipinel::StateFile.new(File.join(@dir, "state"))
     keeper = session(file)
@@ -106,6 +116,6 @@ class SavedStateTest < Minitest::Test
     unchanged = File.exist?(file.path)
     save(keeper, state(placed: false))
 
-    assert_equal [false, state(placed: false).to_text.sub("nudged=2026-11-08", "nudged=")], [unchanged, file.read]
+    assert_equal [false, expected_after_save], [unchanged, file.read]
   end
 end

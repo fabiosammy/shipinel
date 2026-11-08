@@ -62,4 +62,30 @@ class PageTest < Minitest::Test
 
     assert_equal ["goal-2", 11.0, 22], [spot.slug, spot.within.round(1), @page.view.size]
   end
+
+  def today_plan
+    File.write(@path, "# Goal 1\n\n#{"linha\n\n" * 12}# Today #{Shipinel::Day.today.date}\n\n#{"mais\n\n" * 12}")
+    @document.reload
+  end
+
+  def saved(day)
+    Shipinel::SavedState.new(Shipinel::ScrollSpot.new("goal-1", 0.0, 0.0), Shipinel::View.starting_at(20),
+                             Shipinel::WindowPlace.sized(400, 300), Shipinel::StateDays.new("", day))
+  end
+
+  # Saved on another day: the page opens at today's heading.
+  def test_a_new_day_opens_at_todays_heading
+    today_plan
+    @page.prepare(@document, saved("2026-01-01"))
+
+    assert_match(/\AToday /, title(frame))
+  end
+
+  # Saved earlier today: where it was left.
+  def test_the_same_day_opens_where_it_was_left
+    today_plan
+    @page.prepare(@document, saved(Shipinel::Day.today.date))
+
+    assert_equal "Goal 1", title(frame)
+  end
 end

@@ -101,8 +101,9 @@ module Shipinel
     #: (String text, Integer level) -> void
     def place_heading(text, level)
       @flow.gap(block_gap) unless @flow.at_top?
-      @flow.page.anchors.mark(text, @flow.top, level)
-      @flow.text(text, 0.0, @styles.heading(level))
+      page = @flow.page
+      page.heading(text, @flow.top, level)
+      @flow.text(text, 0.0, page.heading_style(text, @styles.heading(level)))
       @flow.gap(block_gap / 2)
     end
 

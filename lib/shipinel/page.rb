@@ -12,15 +12,13 @@ require_relative "document_view"
 require_relative "draw_list"
 require_relative "frame"
 require_relative "header"
-require_relative "highlights"
-require_relative "poller"
+require_relative "highlighter"
 require_relative "scroll_spot"
 require_relative "screen"
 require_relative "scroll"
 require_relative "scrollbar"
 require_relative "typesetter"
 require_relative "view"
-require_relative "wall_time"
 
 module Shipinel
   # See the file comment.
@@ -37,27 +35,27 @@ module Shipinel
       @view = view
       @scroll = Scroll.new
       @typesetter = Typesetter.new(fonts)
-      @highlighter = Highlighter.new(WallTime.today)
+      @highlighter = Highlighter.new(Day.today)
     end
 
     # After a file poll, given what the file held before it: the lines
-    # changed outside are marked and the date moves on (Highlighter), and
-    # glyphs are loaded for new characters. The characters are only
+    # changed outside are marked and the date moves on (Highlighter; at
+    # midnight the page goes to the new day's heading), and glyphs are
+    # loaded for new characters. The characters are only
     # collected when the file changed.
     #: (String before, DocumentView document) -> void
     def reloaded(before, document)
       after = document.content
-      @highlighter.poll(before, after, Clock.now_ms)
-      @highlighter.turn_to(WallTime.today)
+      steer(@highlighter.reloaded(before, after, document.blocks))
       refresh_fonts(document.shown_text) unless before == after
     end
 
     # Before the first frame: fonts for the document's characters, and the
-    # place it was left (`spot`).
-    #: (DocumentView document, ScrollSpot spot) -> void
-    def prepare(document, spot)
+    # place it was left; on a new day, today's heading instead.
+    #: (DocumentView document, SavedState saved) -> void
+    def prepare(document, saved)
       load_fonts(document.shown_text)
-      aim(spot)
+      aim(@highlighter.opening(saved, document.blocks))
     end
 
     # Glyphs are rendered at the largest size on the page (Styles), with
@@ -103,6 +101,12 @@ module Shipinel
     end
 
     private
+
+    # Goes to `spot` unless it is ScrollSpot.none (nowhere to go).
+    #: (ScrollSpot spot) -> void
+    def steer(spot)
+      aim(spot) if spot.aimed?
+    end
 
     # Zooming loads the fonts again at the new size and stays in the same
     # section; the header key only changes what the next frame builds (a
