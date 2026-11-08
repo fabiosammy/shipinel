@@ -85,7 +85,8 @@ test it. Two checks run on every pull request and must be green:
   built on Ubuntu 22.04 (`packaging/linux/build.sh`), started, and driven
   in a virtual display by the window test (`test/window/run.sh`).
 
-`main` only takes pull requests with both checks green, squash-merged.
+`main` only takes pull requests with all three checks green (`validate`,
+`linux-bundle / bundle` and `title`), squash-merged.
 
 Every Monday, **30 · Update flake** opens (or refreshes) the pull request
 `chore(flake): update flake.lock` with the newest nixpkgs. When a newer

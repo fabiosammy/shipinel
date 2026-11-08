@@ -184,7 +184,8 @@ window test `test/window/run.sh` in Xvfb) and `11 · PR title` on every pull
 request; `20 · Release` by hand (attaches the bundle); `30 · Update
 flake` opens the weekly flake.lock pull request (and starts 10 on it, since
 the workflow token's pull requests start no workflows). `main` is protected:
-10 and 11 must pass, squash merges only; I (admin) may still push directly.
+the `validate`, `linux-bundle / bundle` (both from 10) and `title` (11)
+checks must pass, squash merges only; I (admin) may still push directly.
 
 **The sandbox's clang-tidy is older than the flake's.** A green local
 `rake check` does not prove CI green for the C checks: run `nix flake check`
