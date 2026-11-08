@@ -17,29 +17,33 @@ module Shipinel
   class TrayIcon
     # @rbs @tray: Tray | AbsentTray
     # @rbs @settings: TraySettings
-    # @rbs @hides_on_close: bool
+    # @rbs @title: String
     # @rbs @quit: bool
 
     #: (TraySettings settings) -> void
     def initialize(settings)
       @tray = AbsentTray.new
       @settings = settings
-      @hides_on_close = false
+      @title = ""
       @quit = false
     end
 
     # Opens `tray` when the config asks for an icon; it is used once a tray
-    # host took it.
+    # host took it. The title is kept for an icon turned on later.
     #: (Tray tray, String title) -> void
     def start(tray, title)
-      return unless @settings.shown?
+      @title = title
+      open_in(tray) if @settings.shown?
+      nil
+    end
 
-      if tray.open(title)
-        @tray = tray
-        @hides_on_close = @settings.close_to_tray?
-      else
-        warn "shipinel: no tray to show the icon in (on GNOME the AppIndicator extension adds one)"
-      end
+    # The config changed: the icon is opened (in `tray`) or closed when
+    # `tray=` changed, and close_to_tray follows the new settings.
+    #: (TraySettings settings, Tray tray) -> void
+    def use(settings, tray)
+      turned = settings.shown? != @settings.shown?
+      @settings = settings
+      turn(tray) if turned
       nil
     end
 
@@ -64,13 +68,43 @@ module Shipinel
     def ending?(screen)
       return true if @quit
       return false unless screen.closing?
-      return true unless @hides_on_close
+      return true unless hides_on_close?
 
       @tray.hide_window
       false
     end
 
     private
+
+    # `tray=` changed: the icon comes (in `tray`) or goes.
+    #: (Tray tray) -> void
+    def turn(tray)
+      @settings.shown? ? open_in(tray) : remove
+    end
+
+    #: (Tray tray) -> void
+    def open_in(tray)
+      if tray.open(@title)
+        @tray = tray
+      else
+        warn "shipinel: no tray to show the icon in (on GNOME the AppIndicator extension adds one)"
+      end
+      nil
+    end
+
+    # The icon goes away; a window hidden in it is shown again first.
+    #: () -> void
+    def remove
+      @tray.close
+      @tray = AbsentTray.new
+      nil
+    end
+
+    # Only with an icon to bring the window back.
+    #: () -> bool
+    def hides_on_close?
+      @tray.open? && @settings.close_to_tray?
+    end
 
     # Hides a shown window or shows a hidden one; whether it shows now.
     #: () -> bool

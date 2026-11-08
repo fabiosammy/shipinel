@@ -50,7 +50,9 @@ contribution process. This file is how you (Claude) work on the project.
   header, window size; position only on X11; the day it was saved) from
   `~/.local/state/shipinel/`.
 - Config `~/.config/shipinel/config`: `file`, `notify_daily`,
-  `notify_save_failed`, `tray`, `close_to_tray` (docs/config.example).
+  `notify_save_failed`, `tray`, `close_to_tray` (docs/config.example). Read
+  again every chore (Desktop#follow_config): changes apply at once, the tray
+  icon opening or closing; `file` only at the next start.
 - Notifications through `notify-send`: a daily open-tasks nudge naming one
   open task that is not waiting, and a failed save.
 - Tray icon (StatusNotifierItem + dbusmenu over sd-bus): progress ring and

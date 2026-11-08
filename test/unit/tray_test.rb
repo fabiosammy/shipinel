@@ -31,4 +31,12 @@ class TrayTest < Minitest::Test
 
     assert_equal [Shipinel::Tray::NONE, true, []], [absent.next_event, absent.window_shown?, Shipinel::UI.calls]
   end
+
+  def test_closing_shows_the_window_then_removes_the_icon
+    @tray.close
+    Shipinel::AbsentTray.new.close
+
+    assert_equal [[[:show_window, 1], [:tray_close]], true, false],
+                 [Shipinel::UI.calls, @tray.open?, Shipinel::AbsentTray.new.open?]
+  end
 end

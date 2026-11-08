@@ -86,3 +86,15 @@ stand-in watcher: the item registers; `ToolTip`, `Menu`, `IconPixmap`,
 `GetLayout` and `GetGroupProperties` answer as above; `Activate` hides and
 shows the window; with `close_to_tray` the close button hides it and the
 process keeps running; `Event(3, "clicked")` quits.
+
+## Turning the icon off and on while running (2026-11-08)
+
+The config can change `tray=` in a running window (Desktop#follow_config).
+Ruby calls `tray_close` (`ui.rb`) through `Tray#close`, which first shows
+the window (it may be hidden in the icon), and `tray_open` again for a new
+icon. The waker thread re-reads `tray_bus_fd()` on every loop and treats a
+new fd as usable again, so a bus that was closed (or failed) does not keep
+a new one out. Checked on a private bus with the stand-in watcher: the
+icon's name appears and disappears with the config, and a window hidden in
+the icon comes back when it goes.
+

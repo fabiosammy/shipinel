@@ -112,6 +112,9 @@ missing final newline are kept exactly when a checkbox is toggled.
 Optional: `~/.config/shipinel/config` (or `$XDG_CONFIG_HOME/shipinel/config`),
 one `key=value` per line, `#` starts a comment line. Everything has a
 default; a value that does not fit keeps it and is reported on stderr.
+Changes apply to the open window within a second (the tray icon comes or
+goes, notifications follow the new settings), except `file`, which applies
+at the next start.
 
 | Setting | Default | Does |
 |---|---|---|

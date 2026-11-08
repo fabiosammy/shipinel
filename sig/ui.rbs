@@ -15,6 +15,7 @@ module Shipinel
     def self.tray_open: (String title) -> bool
     def self.tray_show_progress: (String label, Integer permille) -> void
     def self.tray_next_event: () -> Integer
+    def self.tray_close: () -> void
     def self.ui_screen_width: () -> Integer
     def self.ui_screen_height: () -> Integer
     def self.ui_begin_frame: (Integer background_rgba) -> void

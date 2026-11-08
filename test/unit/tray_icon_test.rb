@@ -20,6 +20,8 @@ class TrayIconTest < Minitest::Test
     def show_progress(label, share) = @calls << [:progress, label, share]
     def next_event = @events.shift || Shipinel::Tray::NONE
     def window_shown? = @shown
+    def open? = true
+    def close = (@calls << [:close]) && (@shown = true)
 
     def hide_window = (@calls << [:show_window, false]) && (@shown = false)
 
@@ -95,5 +97,26 @@ class TrayIconTest < Minitest::Test
 
     assert_match(/no tray to show the icon in/, err)
     assert lost.ending?(PRESSED)
+  end
+
+  # Turned on in the config while running: the icon opens with the title
+  # it started with; turned off: it closes, showing a hidden window first.
+  def test_the_config_turns_the_icon_on_and_off
+    later = FakeTray.new
+    icon = icon(FakeTray.new, shown: false)
+    icon.use(Shipinel::TraySettings.new(true, true), later)
+    hides = icon.ending?(PRESSED)
+    icon.use(Shipinel::TraySettings.new(false, true), FakeTray.new)
+
+    assert_equal [false, [[:open, "Shipinel · week.md"], [:show_window, false], [:close]], true],
+                 [hides, later.calls, icon.ending?(PRESSED)]
+  end
+
+  def test_close_to_tray_follows_the_config_without_reopening
+    tray = FakeTray.new
+    icon = icon(tray)
+    icon.use(Shipinel::TraySettings.new(true, true), FakeTray.new)
+
+    assert_equal [false, [[:open, "Shipinel · week.md"], [:show_window, false]]], [icon.ending?(PRESSED), tray.calls]
   end
 end
