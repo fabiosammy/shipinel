@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 # The page being laid out, top to bottom: where the next line goes, and the
-# draw commands so far. LineWrap breaks one block's text into lines.
+# draw commands so far (with the page's anchors and marks). LineWrap breaks
+# one block's text into lines.
 
 require_relative "draw_list"
 require_relative "geometry"
@@ -66,10 +67,11 @@ module Shipinel
       gap(style.line_height)
     end
 
-    # Where the page's headings start, and their task counts.
-    #: () -> AnchorList
-    def anchors
-      @list.anchors
+    # The page so far: where its headings start (anchors) and what it
+    # points out (marks).
+    #: () -> DrawList
+    def page
+      @list
     end
 
     # Centered on the line that the item's text starts on.

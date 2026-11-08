@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 # The notifications the config asks for: once a day at notify_daily, how
-# many tasks are still open (sent on the first chore at or after that time,
-# so a window opened later that day still gets it), and a notice when a
+# many tasks are still open and one of them (sent on the first chore at or
+# after that time, so a window opened later that day still gets it), and a
+# notice when a
 # click could not be saved. The day of the last nudge is saved with the
 # plan's state, so a restart does not send it twice.
 
 require_relative "config"
-require_relative "markdown/task_progress"
+require_relative "markdown/block"
 require_relative "notifier"
 require_relative "wall_time"
 
@@ -28,12 +29,13 @@ module Shipinel
     end
 
     # Called every chore. HH:MM strings compare in time order.
-    #: (WallTime now, Markdown::TaskProgress progress, String name) -> void
-    def tick(now, progress, name)
+    #: (WallTime now, Markdown::BlockList blocks, String name) -> void
+    def tick(now, blocks, name)
       return unless due?(now)
 
       @nudged = now.date
-      tell(progress.open_label, progress.done_line(name)) unless progress.complete?
+      progress = blocks.task_progress
+      tell(progress.open_label, progress.nudge_body(name, blocks.open_example.text)) unless progress.complete?
     end
 
     # After a click on a checkbox: `problem` is "" when it was saved.

@@ -29,10 +29,28 @@ module Shipinel
       @checked = checked
     end
 
+    # A click on no task: there is nothing to undo.
+    #: () -> TaskClick
+    def self.none
+      TaskClick.new(-1, false)
+    end
+
+    #: () -> bool
+    def nothing?
+      @line_index.negative?
+    end
+
     # The state the user saw, which the click flips.
     #: () -> bool
     def checked?
       @checked
+    end
+
+    # The click that puts this one back, once it was saved: the same task,
+    # in the state the click left it.
+    #: () -> TaskClick
+    def put_back
+      TaskClick.new(@line_index, !@checked)
     end
 
     # The content with this checkbox flipped, or nil when the content no
@@ -63,8 +81,8 @@ module Shipinel
   end
 
   # What a toggle did: :toggled, :line_changed (the file no longer has that
-  # task in that state; the next reload shows what it has) or :failed, with
-  # `problem` saying why.
+  # task in that state; the next reload shows what it has), :failed, with
+  # `problem` saying why, or :nothing (an undo with nothing to undo).
   class ToggleResult
     attr_reader :status #: Symbol
     attr_reader :problem #: String
@@ -73,6 +91,11 @@ module Shipinel
     def initialize(status, problem)
       @status = status
       @problem = problem
+    end
+
+    #: () -> bool
+    def toggled?
+      @status == :toggled
     end
   end
 

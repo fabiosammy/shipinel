@@ -21,6 +21,8 @@ module Shipinel
       HEADING = 0xF2F4F8FF
       # Done tasks fade back.
       MUTED = 0x7E8490FF
+      # Tasks waiting on something step back, less than done ones.
+      WAITING = 0x9CA2ADFF
       CODE = 0xE5C07BFF
     end
 
@@ -28,6 +30,10 @@ module Shipinel
     module Accent
       LINK = 0x7AA2F7FF
       PROBLEM = 0xE06C75FF
+      # A past date in an open task.
+      OVERDUE = 0xE5A04BFF
+      # The mark beside lines an outside edit just changed.
+      CHANGED = 0x56B6C2FF
     end
 
     # The progress header pinned to the top of the window.
@@ -76,6 +82,13 @@ module Shipinel
       MARKER = 1.5
       # After paragraphs and around headings and rules.
       BLOCK_GAP = 0.6
+    end
+
+    # The mark beside lines an outside edit just changed, in pixels: in the
+    # left margin, clear of the text.
+    module ChangeMark
+      LEFT = 5.0
+      WIDTH = 3.0
     end
 
     # Text sizes relative to the body font size.

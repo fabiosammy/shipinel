@@ -30,6 +30,12 @@ module Shipinel
       SpanLook.new(style, span.url, span.style == :strike)
     end
 
+    # The same look in the overdue color, for a past date in an open task.
+    #: () -> SpanLook
+    def overdue
+      SpanLook.new(@style.with_color(Theme::Accent::OVERDUE), @url, @struck)
+    end
+
     # The same look in the symbol font, for an emoji inside the span.
     #: () -> SpanLook
     def as_symbol

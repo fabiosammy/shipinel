@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 # How far through its tasks a document is: how many tasks it has and how
-# many of them are checked. Tasks inside code fences are not tasks, so they
-# never count.
+# many of them are checked, and one that is still open (for the daily
+# nudge). Tasks inside code fences are not tasks, so they never count.
+
+require_relative "inline"
 
 module Shipinel
   module Markdown
@@ -76,10 +78,12 @@ module Shipinel
         "#{left} #{left == 1 ? 'task' : 'tasks'} still open"
       end
 
-      # For the daily nudge: "week.md · 33% done".
-      #: (String name) -> String
-      def done_line(name)
-        "#{name} · #{percent}% done"
+      # For the daily nudge: "week.md · 33% done", and on a second line an
+      # open task that is not waiting, when there is one.
+      #: (String name, String example) -> String
+      def nudge_body(name, example)
+        done_line = "#{name} · #{percent}% done"
+        example.empty? ? done_line : "#{done_line}\nStill open: #{example}"
       end
 
       private
@@ -92,6 +96,35 @@ module Shipinel
       #: () -> String
       def noun
         @total == 1 ? "task" : "tasks"
+      end
+    end
+
+    # The first open task not waiting on anything, as plain text without
+    # its markup ("" when there is none). Tasks are not done in order, so
+    # it is an example of what is left, not "the next one".
+    class OpenExample
+      attr_reader :text #: String
+
+      #: () -> void
+      def initialize
+        @text = ""
+      end
+
+      # Keeps the first such task's text; looks at nothing after it.
+      #: (Block block) -> void
+      def add(block)
+        @text = OpenExample.text_of(block) if @text.empty?
+        nil
+      end
+
+      # A task's plain text when it is open and not waiting, else "" (so
+      # the search goes on).
+      #: (Block block) -> String
+      def self.text_of(block)
+        return "" unless Task.open?(block)
+
+        text = block.text
+        Task.waiting?(text) ? "" : Inline.parse(text).plain
       end
     end
   end

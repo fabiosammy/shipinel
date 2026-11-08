@@ -351,7 +351,9 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
      Enumerable builtins (35 warnings) although nothing called Enumerable.
      **Rule:** never name a method or attribute after an Enumerable method
      (`count`, `find`, `index`, `detect`, `tally`, `partition`, `take`, ...);
-     AnchorList has `add_block`, SectionLine `tasks`.
+     AnchorList has `add_block`, SectionLine `tasks`. Predicates too: a
+     `TaskClick#none?` (2026-11-08) brought the Enumerator builtins in (42
+     warnings); it is `nothing?`.
    - `String#partition` resolves to the widening `Enumerable#partition`
      builtin (checked with a probe, 2026-11-08). **Rule:** split key=value
      lines with `split("=", 2)` (StateReader).

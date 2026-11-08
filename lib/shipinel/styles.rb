@@ -2,6 +2,7 @@
 
 # Every TextStyle the page uses, derived from the --font-size the user chose.
 
+require_relative "markdown/block"
 require_relative "theme"
 
 module Shipinel
@@ -41,6 +42,16 @@ module Shipinel
     #: () -> TextStyle
     def done
       TextStyle.new(Theme::FontSlot::BODY, @size, Theme::Ink::MUTED)
+    end
+
+    # The text of an open task: body text, or when it is waiting on
+    # something (Markdown::Task.waiting?) italic and quieter, so the tasks
+    # that can be done now stand out.
+    #: (String text) -> TextStyle
+    def open_task(text)
+      return body unless Markdown::Task.waiting?(text)
+
+      TextStyle.new(Theme::FontSlot::ITALIC, @size, Theme::Ink::WAITING)
     end
 
     #: (Integer level) -> TextStyle

@@ -7,36 +7,41 @@
 
 require_relative "draw_list"
 require_relative "geometry"
+require_relative "highlights"
 require_relative "markdown/block"
 
 module Shipinel
   # What a layout depends on, cheap to build and compare every frame: the
   # blocks (by identity: DocumentView parses into a new BlockList whenever
   # the file changes), the problem from the last click (shown as a notice),
-  # and the window size. The height is part of it although the layout
+  # what the page points out (today's date, lines changed outside), and the
+  # window size. The height is part of it although the layout
   # ignores it: a new size has to be drawn. Font notices change only when
   # the fonts are loaded, which clears the cache.
   class LayoutKey
     attr_reader :blocks #: Markdown::BlockList
     attr_reader :problem #: String
+    attr_reader :highlights #: Highlights
     attr_reader :area #: Rect
 
-    #: (Markdown::BlockList blocks, String problem, Rect area) -> void
-    def initialize(blocks, problem, area)
+    #: (Markdown::BlockList blocks, String problem, Highlights highlights, Rect area) -> void
+    def initialize(blocks, problem, highlights, area)
       @blocks = blocks
       @problem = problem
+      @highlights = highlights
       @area = area
     end
 
     # One that no layout matches: its blocks belong to no document.
     #: () -> LayoutKey
     def self.none
-      LayoutKey.new(Markdown::BlockList.new, "", Rect.new(0.0, 0.0, 0.0, 0.0))
+      LayoutKey.new(Markdown::BlockList.new, "", Highlights.none, Rect.new(0.0, 0.0, 0.0, 0.0))
     end
 
     #: (LayoutKey other) -> bool
     def same_as?(other)
-      @blocks.equal?(other.blocks) && @problem == other.problem && same_size?(other.area)
+      @blocks.equal?(other.blocks) && @problem == other.problem && @highlights.same_as?(other.highlights) &&
+        same_size?(other.area)
     end
 
     private

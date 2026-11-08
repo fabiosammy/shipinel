@@ -35,15 +35,20 @@ contribution process. This file is how you (Claude) work on the project.
   (a tick where Monday 00:00 → Friday 24:00 is; amber when more than a
   workday behind; green when done), and the current section with its own
   count ("Goal 1 · 3 of 8"). `h` hides it.
-- Keys: `j`/`k`, arrows, Page Up/Down, Home/End, `+`/`-`/`0` zoom, `h`.
+- Focus marks: an open task with `⏳` or "(waiting" is waiting (italic,
+  quieter; still counted); a `YYYY-MM-DD` before today in an open task is
+  amber; lines changed outside get a margin mark for 10 s (Highlights,
+  compared by content per poll, so own ticks never mark).
+- Keys: `j`/`k`, arrows, Page Up/Down, Home/End, `+`/`-`/`0` zoom, `h`,
+  `u` (undo the last tick once, through the same safe toggle).
 - Scrollbar (wheel, drag, track click).
 - Reopens each plan where it was left (section by heading slug, zoom,
   header, window size; position only on X11) from
   `~/.local/state/shipinel/`.
 - Config `~/.config/shipinel/config`: `file`, `notify_daily`,
   `notify_save_failed`, `tray`, `close_to_tray` (docs/config.example).
-- Notifications through `notify-send`: a daily open-tasks nudge, and a
-  failed save.
+- Notifications through `notify-send`: a daily open-tasks nudge naming one
+  open task that is not waiting, and a failed save.
 - Tray icon (StatusNotifierItem + dbusmenu over sd-bus): progress ring and
   tooltip, click shows/hides the window, menu with Quit, optional close to
   tray; without a tray host, closing quits.
@@ -63,11 +68,11 @@ them; if an idea crosses one, say so:
 - **Not a service**: one local file, no accounts, sync or network (besides
   links I click and notifications).
 
-### Open questions
+### Decided
 
-- Tasks are not done in order, and some wait on others. A "next task" marker
-  was dropped for that reason; dimming tasks marked as waiting (e.g. ⏳ or a
-  "Waiting on" heading) is an idea only. Ask before building anything here.
+- Tasks are not done in order, and some wait on others: no "next task"
+  marker. Waiting is marked per task (`⏳`, "(waiting"), not by heading;
+  the nudge names an example open task, never "the next one".
 
 ---
 
@@ -108,6 +113,7 @@ apart from the thin native layer.
 | `lib/shipinel/markdown/` | Parser: lines → blocks with source line index; inline spans |
 | `layout.rb`, `flow.rb`, `line_wrap.rb`, `*_layout.rb`, `anchor.rb` | Blocks → draw commands for a width; heading anchors with task counts |
 | `page.rb`, `typesetter.rb`, `content_cache.rb`, `header.rb`, `progress_bar.rb`, `painter.rb` | One frame: cached layout, header, scrollbar, drawing, clicks |
+| `highlights.rb`, `ChangeMarks` in `draw_list.rb` | Past dates and lines changed outside: kept per poll, marked while laying out |
 | `app.rb`, `session.rb`, `desktop.rb`, `reminder.rb`, `tray_icon.rb` | Loop, file poll, saved state, notifications, tray |
 | `task_toggler.rb`, `document_file.rb` | Safe toggle, atomic write |
 | `config.rb`, `state_file.rb`, `key_values.rb` | Config and saved state (key=value) |

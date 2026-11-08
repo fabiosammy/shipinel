@@ -136,12 +136,14 @@ class AppTest < Minitest::Test
     assert_equal ["\"/s.ttf\"", "\"/b.ttf\"", "\"/i.ttf\"", "\"/m.ttf\"", "\"/e.ttf\""], notices.map(&:strip)
   end
 
-  # The clock is stubbed: 0 ms at start, then 600 ms later per frame, so
+  READINGS = Array.new(11) { |reading| reading * 600 }
+
+  # The clock is stubbed: 0 ms at start, then 600 ms later per reading, so
   # every frame is due to poll.
   def test_an_external_edit_shows_up_on_the_next_poll
     screen = FakeScreen.new(frames: 3)
     screen.on_frame_end = ->(frame) { File.write(@path, "# Domingo\n") if frame.zero? }
-    times = [0, 600, 1200, 1800].each
+    times = READINGS.each
     Shipinel::Clock.stub(:now_ms, -> { times.next }) { run_app(screen) }
 
     assert_equal [["Semana", "Reunião", "0 of 1 task done · 0%", "semana.md"], ["Domingo", "semana.md"]],

@@ -36,7 +36,8 @@ class ContentCacheTest < Minitest::Test
 
   # The laid-out page of the next frame (the first frames are busy, so
   # each one is built).
-  def laid_out = @page.update(@screen, @document).content
+  def update = @page.update(@screen.input, @screen.placement.area, @document)
+  def laid_out = update.content
 
   def test_same_document_and_width_reuse_the_layout
     assert_same laid_out, laid_out
@@ -67,11 +68,11 @@ class ContentCacheTest < Minitest::Test
   # The pointer never moves here: the first frames are busy (it appeared),
   # then idle frames are not built until the file changes.
   def test_idle_frames_are_not_built_until_the_page_changes
-    frames = Array.new(40) { @page.update(@screen, @document) }
+    frames = Array.new(40) { update }
     File.write(@path, "# Domingo\n")
     @document.reload
 
-    assert_equal [false, true, false], [frames.first.nil?, frames.last.nil?, @page.update(@screen, @document).nil?]
+    assert_equal [false, true, false], [frames.first.nil?, frames.last.nil?, update.nil?]
   end
 
   def press(code) = 1 << Shipinel::Keyboard.watched.find_index(code)
@@ -79,9 +80,9 @@ class ContentCacheTest < Minitest::Test
   # Glyphs are loaded at the level 1 heading size: 1.6 x 20, then 1.6 x 22.
   def test_zoom_reloads_the_fonts_bigger_and_lays_out_again
     @page.load_fonts("")
-    @page.update(@screen, @document)
+    update
     @screen.keys = press(Shipinel::Keyboard::Zoom::EQUAL)
-    @page.update(@screen, @document)
+    update
     sizes = @shim.calls.select { |call| call.first == :load }.map(&:last).uniq
 
     assert_equal [32, 35], sizes
@@ -90,9 +91,9 @@ class ContentCacheTest < Minitest::Test
   # The header shows "0 of 1 task done"; h hides it, so the page starts
   # at the top of the window.
   def test_h_hides_the_header
-    shown = @page.update(@screen, @document).view.top
+    shown = update.view.top
     @screen.keys = press(Shipinel::Keyboard::HEADER)
-    hidden = @page.update(@screen, @document).view.top
+    hidden = update.view.top
 
     assert_equal [true, 0.0], [shown.positive?, hidden]
   end

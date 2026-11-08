@@ -39,6 +39,32 @@ class DocumentViewTest < Minitest::Test
     assert_predicate self, :first_task_checked?
   end
 
+  def test_undo_flips_the_last_tick_back_once
+    @view.toggle(Shipinel::TaskClick.new(0, false))
+    first = @view.undo.status
+    second = @view.undo.status
+
+    assert_equal [:toggled, :nothing, "- [ ] Reunião\n"], [first, second, File.read(@path)]
+  end
+
+  def test_nothing_to_undo_before_a_tick
+    assert_equal :nothing, @view.undo.status
+  end
+
+  # The same safe toggle: a line changed since the tick is left alone.
+  def test_undo_leaves_a_line_changed_since_alone
+    @view.toggle(Shipinel::TaskClick.new(0, false))
+    File.write(@path, "- [ ] Reunião, remarcada\n")
+
+    assert_equal [:line_changed, "- [ ] Reunião, remarcada\n"], [@view.undo.status, File.read(@path)]
+  end
+
+  def test_a_failed_save_cannot_be_undone
+    @view.toggle(Shipinel::TaskClick.new(0, true))
+
+    assert_equal :nothing, @view.undo.status
+  end
+
   def test_toggle_writes_and_shows_the_new_state
     result = @view.toggle(Shipinel::TaskClick.new(0, false))
 

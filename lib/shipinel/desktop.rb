@@ -30,9 +30,10 @@ module Shipinel
     end
 
     # Every chore: the daily nudge when it is time, and the tray's progress.
-    #: (Markdown::TaskProgress progress, String name) -> void
-    def remind(progress, name)
-      @reminder.tick(WallTime.now, progress, name)
+    #: (Markdown::BlockList blocks, String name) -> void
+    def remind(blocks, name)
+      @reminder.tick(WallTime.now, blocks, name)
+      progress = blocks.task_progress
       @tray_icon.show(progress.tray_label, progress.share)
     end
 

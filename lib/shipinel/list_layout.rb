@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 # Places one list item on the Flow: its checkbox or marker ("•", "2."),
-# then its text, indented by nesting depth.
+# then its text, indented by nesting depth. A task's text is quieter when
+# it is done or waiting on something.
 
 require_relative "task_toggler"
 require_relative "theme"
@@ -24,7 +25,7 @@ module Shipinel
     def task(text, line_index, checked)
       styles = @flow.styles
       @flow.checkbox(@indent, TaskClick.new(line_index, checked))
-      @flow.text(text, text_indent, checked ? styles.done : styles.body)
+      @flow.text(text, text_indent, checked ? styles.done : styles.open_task(text))
     end
 
     # The marker ends just before the text starts.

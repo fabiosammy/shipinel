@@ -25,40 +25,53 @@ class ReminderTest < Minitest::Test
     Shipinel::Reminder.new(Shipinel::NotifySettings.new(daily, save_failed), @notifier, nudged)
   end
 
-  def progress(source) = Shipinel::Markdown::Parser.parse(source).task_progress
+  def blocks(source) = Shipinel::Markdown::Parser.parse(source)
   def at(time, date = "2026-11-08") = Shipinel::WallTime.new(date, time, 0.5)
 
   OPEN = "- [x] a\n- [ ] b\n- [ ] c\n"
 
   def test_nudges_once_a_day_at_or_after_the_time
     nudger = reminder
-    ["17:29", "17:30", "18:00"].each { |time| nudger.tick(at(time), progress(OPEN), "week.md") }
-    nudger.tick(at("17:31", "2026-11-09"), progress(OPEN), "week.md")
+    ["17:29", "17:30", "18:00"].each { |time| nudger.tick(at(time), blocks(OPEN), "week.md") }
+    nudger.tick(at("17:31", "2026-11-09"), blocks(OPEN), "week.md")
 
-    assert_equal [["2 tasks still open", "week.md · 33% done"]] * 2, @notifier.shown
+    assert_equal [["2 tasks still open", "week.md · 33% done\nStill open: b"]] * 2, @notifier.shown
+  end
+
+  # Waiting tasks are skipped, and the example is shown without markup.
+  def test_names_an_open_task_that_is_not_waiting
+    reminder.tick(at("17:30"), blocks("- [ ] a ⏳\n- [ ] b (waiting on Ana)\n- [ ] **ship** [it](x)\n"), "week.md")
+
+    assert_equal "week.md · 0% done\nStill open: ship it", @notifier.shown.first.last
+  end
+
+  def test_only_the_count_when_every_open_task_waits
+    reminder.tick(at("17:30"), blocks("- [ ] a ⏳\n"), "week.md")
+
+    assert_equal "week.md · 0% done", @notifier.shown.first.last
   end
 
   def test_one_open_task_is_singular
-    reminder.tick(at("17:30"), progress("- [ ] a\n"), "week.md")
+    reminder.tick(at("17:30"), blocks("- [ ] a\n"), "week.md")
 
     assert_equal "1 task still open", @notifier.shown.first.first
   end
 
   def test_no_nudge_when_everything_is_done_but_the_day_counts
     nudger = reminder
-    nudger.tick(at("17:30"), progress("- [x] a\n"), "week.md")
+    nudger.tick(at("17:30"), blocks("- [x] a\n"), "week.md")
 
     assert_equal [[], "2026-11-08"], [@notifier.shown, nudger.nudged]
   end
 
   def test_no_nudge_after_a_restart_the_same_day
-    reminder(nudged: "2026-11-08").tick(at("19:00"), progress(OPEN), "week.md")
+    reminder(nudged: "2026-11-08").tick(at("19:00"), blocks(OPEN), "week.md")
 
     assert_empty @notifier.shown
   end
 
   def test_no_daily_time_no_nudge
-    reminder(daily: "").tick(at("23:59"), progress(OPEN), "week.md")
+    reminder(daily: "").tick(at("23:59"), blocks(OPEN), "week.md")
 
     assert_empty @notifier.shown
   end

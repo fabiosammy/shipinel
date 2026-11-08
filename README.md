@@ -26,10 +26,15 @@
 - **Where you are.** The header names the section you are in, with its own
   count ("Goal 1 — Billing CSV export · 3 of 7"), and the plan reopens where
   you left it, at the same size, even after it was edited above you.
+- **What can be done now.** A task marked as waiting (`⏳` or "(waiting on
+  …)") steps back in quieter italics, so the ones you can pick up stand out;
+  a date that has passed in an open task (`due 2026-11-06`) turns amber.
+- **Changes noticed.** Lines edited outside Shipinel (by you in your editor,
+  or an assistant) get a mark beside them for ten seconds.
 - **Keyboard**: `j`/`k`, the arrows, Page Up/Down and Home/End scroll; `+`,
-  `-` and `0` zoom; `h` hides the header.
-- **Notifications**: a daily nudge with the number of tasks still open, and a
-  warning when a tick could not be saved.
+  `-` and `0` zoom; `h` hides the header; `u` undoes the last tick.
+- **Notifications**: a daily nudge with the number of tasks still open and
+  one of them, and a warning when a tick could not be saved.
 - **Tray icon**: the progress as a ring and in its tooltip; a click shows or
   hides the window, and closing can hide it there instead of quitting.
 - **Light on the machine.** An idle window sleeps until input arrives and
@@ -63,6 +68,7 @@
 | `+` (or `=`), `-`, keypad `+` / `-` | Bigger / smaller text, with or without Ctrl; from 8 to 72 pixels |
 | `0` | Back to the `--font-size` the window started with |
 | `h` | Hide or show the progress header |
+| `u` | Undo the last tick (once), as long as that line has not changed since |
 
 Keys repeat while held. Escape does nothing; only the window's close button
 quits (or hides it in the tray, see `close_to_tray`).
@@ -73,6 +79,8 @@ quits (or hides it in the tray, see `close_to_tray`).
 |---|---|
 | `#`, `##`, `###` (up to `######`) headings, optional closing `#`s | Bold, sized by level |
 | `- [ ] task`, `- [x] task`, `- [X] task`, also with `*` or `+` | A checkbox you can click; done tasks are dimmed |
+| An open task with `⏳`, or `(waiting` in any case (`(Waiting on Ana)`) | Waiting: quieter italics. It still counts in the progress |
+| A date `YYYY-MM-DD` in an open task, before today | The word holding it in amber. Done tasks and other text are left as they are |
 | `- item`, `* item`, `+ item` | A bullet |
 | `1. item`, `2) item` | A numbered item, with its own number; `1. [ ] task` is a task |
 | Indented items (2 or 4 spaces, or tabs) | Nested, indented by depth |
@@ -100,7 +108,7 @@ default; a value that does not fit keeps it and is reported on stderr.
 | Setting | Default | Does |
 |---|---|---|
 | `file` | none | The plan opened when `shipinel` runs without a path (`~` is your home). A path on the command line wins. |
-| `notify_daily` | empty (off) | `HH:MM`: once a day from that time, a notification with how many tasks are still open (nothing when all are done; also sent when the window opens later that day). |
+| `notify_daily` | empty (off) | `HH:MM`: once a day from that time, a notification with how many tasks are still open and one of them that is not waiting (nothing when all are done; also sent when the window opens later that day). |
 | `notify_save_failed` | `on` | A notification when ticking a box cannot be saved. |
 | `tray` | `off` | The tray icon. |
 | `close_to_tray` | `off` | With the tray icon, the close button hides the window there instead of quitting. |
@@ -205,6 +213,12 @@ rules by title (for example "Auto Move Windows" for the workspace part).
   second of a change; deleting it starts fresh. On X11 the window's position
   comes back too; on Wayland only the compositor places windows, so use a
   window rule.
+- **Undo** (`u`) flips the last tick back once, with the same care as a
+  click: if the line changed since, nothing is written. A tick that could
+  not be saved has nothing to undo.
+- **Changed lines** are compared by content with the file as it was half a
+  second earlier, so a line that only moved is not marked, and your own
+  ticks never are.
 - **The pace** assumes the tasks are spread evenly from Monday 00:00 to
   Friday 24:00; at the weekend the week is over. More than a workday's share
   behind (20% of the tasks) turns the bar amber. Tasks inside code fences

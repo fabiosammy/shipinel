@@ -7,17 +7,14 @@
 require_relative "document_file"
 require_relative "document_view"
 require_relative "draw_list"
-require_relative "font_locator"
 require_relative "font_set"
 require_relative "launch"
-require_relative "font_shim"
 require_relative "frame"
 require_relative "page"
 require_relative "painter"
 require_relative "poller"
 require_relative "session"
 require_relative "screen"
-require_relative "view"
 require_relative "theme"
 
 module Shipinel
@@ -54,11 +51,11 @@ module Shipinel
 
     private
 
-    # Fonts for the document's characters, and back to where it was left.
+    # Fonts for the document's characters, back to where it was left, and
+    # the tray icon.
     #: () -> void
     def prepare
-      @page.load_fonts(@document.shown_text)
-      @page.aim(@session.saved.spot)
+      @page.prepare(@document, @session.saved.spot)
       @session.desktop.start("Shipinel · #{@document.name}")
     end
 
@@ -89,20 +86,25 @@ module Shipinel
     def tick
       chores if @session.due?(Clock.now_ms)
       @page.redraw if @session.desktop.reshown?
-      clicked = show(@page.update(@screen, @document))
-      act(clicked) if clicked
-      nil
+      respond(@screen.input)
     end
 
+    # This frame's input: the page drawn (or not), a click acted on, and
+    # `u` undoing the last tick.
+    #: (Input input) -> void
+    def respond(input)
+      clicked = show(@page.update(input, @screen.placement.area, @document))
+      act(clicked) if clicked
+      saved(@document.undo) if input.keys.undo?
+    end
+
+    # Without a frame to draw, keeps the window responsive without drawing:
+    # waits for input. When the window system lost the picture, the next
+    # frame is drawn in full.
     #: (Frame? frame) -> DrawCommand?
     def show(frame)
-      frame ? draw(frame) : skip
-    end
+      return draw(frame) if frame
 
-    # Keeps the window responsive without drawing: waits for input. When
-    # the window system lost the picture, the next frame is drawn in full.
-    #: () -> DrawCommand?
-    def skip
       @page.redraw if @screen.skip_frame
       nil
     end
@@ -111,22 +113,16 @@ module Shipinel
     def chores
       poll
       remember
-      @session.desktop.remind(@document.blocks.task_progress, @document.name)
+      @session.desktop.remind(@document.blocks, @document.name)
     end
 
-    # Picks up external edits, and loads glyphs for any new characters.
-    # The characters are only collected when the file changed: a reload
-    # parses into new blocks.
+    # Picks up external edits: the page marks what changed and loads glyphs
+    # for any new characters.
     #: () -> void
     def poll
-      before = @document.blocks
+      before = @document.content
       @document.reload
-      @page.refresh_fonts(@document.shown_text) if changed_since?(before)
-    end
-
-    #: (Markdown::BlockList blocks) -> bool
-    def changed_since?(blocks)
-      !@document.blocks.equal?(blocks)
+      @page.reloaded(before, @document)
     end
 
     #: (Frame frame) -> DrawCommand?
@@ -140,11 +136,18 @@ module Shipinel
     #: (DrawCommand command) -> void
     def act(command)
       case command
-      when Checkbox then @session.desktop.save_failed(@document.toggle(command.click).problem)
+      when Checkbox then saved(@document.toggle(command.click))
       when LinkArea then @document.follow(command.url)
       end
       # A problem notice may bring characters the fonts lack.
       @page.refresh_fonts(@document.shown_text)
+    end
+
+    # A tick, or its undo: a notification when it could not be saved.
+    #: (ToggleResult result) -> void
+    def saved(result)
+      @session.desktop.save_failed(result.problem)
+      nil
     end
   end
 end

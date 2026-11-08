@@ -38,12 +38,14 @@ module Shipinel
 
     # Hides or shows the progress header.
     HEADER = 72
+    # Undoes the last tick.
+    UNDO = 85
 
     # Bit n of a KeyPress is the n-th key here.
     #: () -> Array[Integer]
     def self.watched
       [Lines::J, Lines::DOWN, Lines::K, Lines::UP, Jumps::PAGE_DOWN, Jumps::PAGE_UP, Jumps::HOME, Jumps::END_KEY,
-       Zoom::EQUAL, Zoom::KEYPAD_PLUS, Zoom::MINUS, Zoom::KEYPAD_MINUS, Zoom::ZERO, HEADER]
+       Zoom::EQUAL, Zoom::KEYPAD_PLUS, Zoom::MINUS, Zoom::KEYPAD_MINUS, Zoom::ZERO, HEADER, UNDO]
     end
   end
 
@@ -70,6 +72,7 @@ module Shipinel
     end
 
     HEADER = 0b10_0000_0000_0000
+    UNDO = 0b100_0000_0000_0000
 
     # @rbs @bits: Integer
 
@@ -110,6 +113,12 @@ module Shipinel
     #: () -> bool
     def header?
       on?(HEADER)
+    end
+
+    # u: undo the last tick.
+    #: () -> bool
+    def undo?
+      on?(UNDO)
     end
 
     private

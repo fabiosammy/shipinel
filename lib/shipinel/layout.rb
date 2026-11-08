@@ -12,6 +12,7 @@ require_relative "list_layout"
 require_relative "quote_layout"
 require_relative "markdown/block"
 require_relative "font_set"
+require_relative "highlights"
 require_relative "styles"
 require_relative "table_layout"
 
@@ -36,25 +37,40 @@ module Shipinel
       @in_code = false
     end
 
+    # The same layout, pointing out `highlights` (none by default).
+    #: (Highlights highlights) -> Layout
+    def marking(highlights)
+      @flow.page.point_out(highlights)
+      self
+    end
+
     # Notices (a missing file, a failed save, a font problem) go first.
     #: (Markdown::BlockList blocks, Array[String] notices) -> DrawList
     def arrange(blocks, notices)
       notices.each { |notice| place_text(notice, @styles.problem) }
-      blocks.size.times { |position| place(blocks.at(position)) }
+      blocks.size.times { |position| place(blocks.at(position), blocks.last_line_of(position)) }
       @flow.finish
     end
 
     private
 
+    # The page marks the block as Highlights asks, and counts it under its
+    # headings (DrawList#begin_block, #end_block).
+    #: (Markdown::Block block, Integer last) -> void
+    def place(block, last)
+      room_around_code(block)
+      page = @flow.page
+      page.begin_block(block, last)
+      place_kind(block)
+      page.end_block(block)
+    end
+
     # A run of code lines gets a little room above and below it.
     #: (Markdown::Block block) -> void
-    def place(block)
+    def room_around_code(block)
       code = block.is_a?(Markdown::CodeLine)
       @flow.gap(block_gap / 2) if code != @in_code && !@flow.at_top?
       @in_code = code
-      place_kind(block)
-      # Every block is counted under the open headings (only tasks count).
-      @flow.anchors.add_block(block)
     end
 
     # Headings and list items carry more than their text. Each branch reads
@@ -85,7 +101,7 @@ module Shipinel
     #: (String text, Integer level) -> void
     def place_heading(text, level)
       @flow.gap(block_gap) unless @flow.at_top?
-      @flow.anchors.mark(text, @flow.top, level)
+      @flow.page.anchors.mark(text, @flow.top, level)
       @flow.text(text, 0.0, @styles.heading(level))
       @flow.gap(block_gap / 2)
     end

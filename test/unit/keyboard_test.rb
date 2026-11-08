@@ -38,5 +38,6 @@ class KeyboardTest < Minitest::Test
 
   def test_h_toggles_the_header
     assert_equal [true, false], [press(K::HEADER).header?, press(K::Lines::J).header?]
+    assert_equal [true, false], [press(K::UNDO).undo?, press(K::HEADER).undo?]
   end
 end

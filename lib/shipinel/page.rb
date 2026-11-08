@@ -6,18 +6,21 @@
 # that is due or shows a changed page applies the wheel and the scrollbar,
 # reuses the document's layout unless something it depends on changed, and
 # builds the overlay: progress header and scrollbar. Any other frame does
-# nothing more.
+# nothing more. It also keeps what the page points out (Highlighter).
 
 require_relative "document_view"
 require_relative "draw_list"
 require_relative "frame"
 require_relative "header"
+require_relative "highlights"
+require_relative "poller"
 require_relative "scroll_spot"
 require_relative "screen"
 require_relative "scroll"
 require_relative "scrollbar"
 require_relative "typesetter"
 require_relative "view"
+require_relative "wall_time"
 
 module Shipinel
   # See the file comment.
@@ -27,12 +30,34 @@ module Shipinel
 
     # @rbs @scroll: Scroll
     # @rbs @typesetter: Typesetter
+    # @rbs @highlighter: Highlighter
 
     #: (View view, FontSet fonts) -> void
     def initialize(view, fonts)
       @view = view
       @scroll = Scroll.new
       @typesetter = Typesetter.new(fonts)
+      @highlighter = Highlighter.new(WallTime.today)
+    end
+
+    # After a file poll, given what the file held before it: the lines
+    # changed outside are marked and the date moves on (Highlighter), and
+    # glyphs are loaded for new characters. The characters are only
+    # collected when the file changed.
+    #: (String before, DocumentView document) -> void
+    def reloaded(before, document)
+      after = document.content
+      @highlighter.poll(before, after, Clock.now_ms)
+      @highlighter.turn_to(WallTime.today)
+      refresh_fonts(document.shown_text) unless before == after
+    end
+
+    # Before the first frame: fonts for the document's characters, and the
+    # place it was left (`spot`).
+    #: (DocumentView document, ScrollSpot spot) -> void
+    def prepare(document, spot)
+      load_fonts(document.shown_text)
+      aim(spot)
     end
 
     # Glyphs are rendered at the largest size on the page (Styles), with
@@ -66,12 +91,12 @@ module Shipinel
       @scroll.aim(spot)
     end
 
-    # The frame to draw, or nil when nothing is to be drawn.
-    #: (Screen screen, DocumentView document) -> Frame?
-    def update(screen, document)
-      input = screen.input
+    # The frame to draw in the window's `area` after this frame's `input`,
+    # or nil when nothing is to be drawn.
+    #: (Input input, Rect area, DocumentView document) -> Frame?
+    def update(input, area, document)
       adjust(input.keys)
-      key = LayoutKey.new(document.blocks, document.action_problem, screen.placement.area)
+      key = LayoutKey.new(document.blocks, document.action_problem, @highlighter.highlights, area)
       return unless wanted?(input, key)
 
       build(input, key, document)

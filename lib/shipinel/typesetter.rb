@@ -70,7 +70,8 @@ module Shipinel
       return @cache.list if @cache.holds?(key)
 
       notices = (@fonts.notices + document.notices).uniq
-      @cache.keep(key, Layout.new(@fonts, styles, key.area.width).arrange(key.blocks, notices))
+      layout = Layout.new(@fonts, styles, key.area.width).marking(key.highlights)
+      @cache.keep(key, layout.arrange(key.blocks, notices))
     end
   end
 end

@@ -11,9 +11,10 @@
 # week, so this line changes every Monday.
 file=~/Desenvolvimento/clausea/todo_list/week-2026-11-09-runbook.md
 
-# A daily notification with the number of tasks still open, at this time
-# (24-hour HH:MM). Sent once a day, also when the window opens later that
-# day; nothing when every task is done. Leave it empty for none.
+# A daily notification with the number of tasks still open and one of them
+# that is not waiting, at this time (24-hour HH:MM). Sent once a day, also
+# when the window opens later that day; nothing when every task is done.
+# Leave it empty for none.
 notify_daily=17:30
 
 # A notification when ticking a box cannot be saved to the file

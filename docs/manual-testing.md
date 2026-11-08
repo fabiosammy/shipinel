@@ -99,6 +99,21 @@ cp test/fixtures/semana.md /tmp/semana.md
     amber, otherwise blue (green when all are done). Scroll into a section
     with tasks: the section line ends with "· N of M", counting its
     subsections; a long title is cut with "…" before the count.
+22. **Waiting and overdue.** In an open task, `⏳` (drawn from the emoji
+    font) or "(waiting on …)" makes the text italic and quieter; a date
+    before today (`2026-11-06` on 2026-11-08) is amber. The same in a done
+    task, or in a paragraph, stays as it is.
+23. **Changed lines.** Edit two lines in your editor and save: within a
+    second a teal mark appears in the left margin beside each of their
+    lines (a wrapped task gets one per line), and it is gone ten seconds
+    later. Ticking a box in Shipinel marks nothing.
+24. **Undo.** Tick a box, press `u`: it is open again in the window and in
+    the file. A second `u` does nothing. Tick, edit that line in your
+    editor, press `u`: the file keeps your edit.
+25. **Daily nudge with a task.** With `notify_daily` a minute ahead, the
+    notification's second line is "Still open: …" with the first open task
+    that is not waiting, without its Markdown.
+26. **Version.** `shipinel --version` prints `shipinel 0.1.0`.
 
 ## Per desktop
 
@@ -117,3 +132,4 @@ cp test/fixtures/semana.md /tmp/semana.md
 |---|---|---|---|---|
 | 2026-11-07 | Xvfb in the dev sandbox (no compositor) | X11, software GL | Items 1, 3, 4, 5 (CRLF file byte-identical after two toggles), 7 (save by rename), 8, 10 (wheel and a click after scrolling) pass | Driven with XTest inside Xvfb; not a real desktop |
 | 2026-11-07 | NixOS host, `nix build` result | Wayland | Item 2 passes (`wl_display#1.get_registry`: native Wayland client) | Remaining items not yet run |
+| 2026-11-08 | Xvfb in the dev sandbox (no compositor) | X11, software GL | Items 22 (no emoji font installed, so `⏳` drew as `?`), 23, and a tick marking nothing pass | Undo checked by unit tests and in Xvfb below |

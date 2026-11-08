@@ -33,7 +33,7 @@ class PageTest < Minitest::Test
     FileUtils.remove_entry(@dir)
   end
 
-  def frame = @page.update(@screen, @document)
+  def frame = @page.update(@screen.input, @screen.placement.area, @document)
   def press(code) = 1 << Shipinel::Keyboard.watched.find_index(code)
 
   def title(frame)

@@ -69,7 +69,7 @@ class ScreenTest < Minitest::Test
   def test_input_keys
     keys = @screen.input.keys
 
-    assert_equal [true, [:keys, Shipinel::Keyboard.watched, 14]], [keys.pressed?, Shipinel::UI.calls.last]
+    assert_equal [true, [:keys, Shipinel::Keyboard.watched, 15]], [keys.pressed?, Shipinel::UI.calls.last]
   end
 
   def test_checkbox

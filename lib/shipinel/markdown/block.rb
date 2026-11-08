@@ -79,7 +79,25 @@ module Shipinel
 
     # "- [x] Ligar para a Ana"
     class Task < ListItem
+      # Marks an open task as waiting on something: "⏳" anywhere, or
+      # "(waiting" ("(waiting on Ana)", "(Waiting for the review)").
+      HOURGLASS = "⏳"
+      WAITING = "(waiting"
+
       # @rbs @checked: bool
+
+      # A task not checked yet.
+      #: (Block block) -> bool
+      def self.open?(block)
+        block.is_a?(Task) && !block.checked?
+      end
+
+      # Whether a task's text says it is waiting. A method on the class, so
+      # callers that only hold the text (the layout) can ask too.
+      #: (String text) -> bool
+      def self.waiting?(text)
+        text.include?(HOURGLASS) || text.downcase.include?(WAITING)
+      end
 
       #: (Integer line_index, Integer depth, String text, bool checked) -> void
       def initialize(line_index, depth, text, checked)
@@ -186,6 +204,9 @@ module Shipinel
     # would compile to an untyped array under Spinel; kept in this ivar and
     # read by index, it stays typed (docs/spinel-notes.md).
     class BlockList
+      # Past the end of any file.
+      LAST_LINE = 1_000_000_000
+
       # @rbs @blocks: Array[Block]
 
       #: () -> void
@@ -207,6 +228,24 @@ module Shipinel
       #: (Integer position) -> Block
       def at(position)
         @blocks[position]
+      end
+
+      # An open task not waiting on anything, for the daily nudge
+      # (OpenExample).
+      #: () -> OpenExample
+      def open_example
+        example = OpenExample.new
+        @blocks.each { |block| example.add(block) }
+        example
+      end
+
+      # The last source line of the block at `position`: the line before
+      # the next block's (blank lines included); the last block may run to
+      # the end of the file.
+      #: (Integer position) -> Integer
+      def last_line_of(position)
+        following = position + 1
+        following < @blocks.size ? @blocks[following].line_index - 1 : LAST_LINE
       end
 
       # How many tasks there are, and how many are checked.

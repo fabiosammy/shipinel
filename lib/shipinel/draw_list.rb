@@ -6,6 +6,8 @@
 
 require_relative "anchor"
 require_relative "geometry"
+require_relative "highlights"
+require_relative "markdown/block"
 require_relative "task_toggler"
 require_relative "theme"
 
@@ -73,11 +75,63 @@ module Shipinel
     end
   end
 
-  # The commands of one laid-out page, in drawing order, its height, and
-  # where its headings start.
+  # The marks Highlights asks for while one page is laid out: past dates
+  # in open tasks, and a mark in the left margin beside every text line of
+  # a block changed outside.
+  class ChangeMarks
+    # @rbs @highlights: Highlights
+    # @rbs @changed: bool
+    # @rbs @open_task: bool
+    # @rbs @marked_top: Float
+
+    #: (Highlights highlights) -> void
+    def initialize(highlights)
+      @highlights = highlights
+      @changed = false
+      @open_task = false
+      @marked_top = -1.0
+    end
+
+    # A word holding a past date, in an open task.
+    #: (String word) -> bool
+    def overdue?(word)
+      @open_task && @highlights.overdue?(word)
+    end
+
+    # The block that starts here and ends on line `last` is placed next.
+    #: (Markdown::Block block, Integer last) -> void
+    def start_block(block, last)
+      @changed = @highlights.changed?(block.line_index, last)
+      @open_task = Markdown::Task.open?(block)
+      nil
+    end
+
+    #: () -> void
+    def end_block
+      @changed = false
+      @open_task = false
+      nil
+    end
+
+    # The mark for a command just added to the page, if it starts a text
+    # line of a changed block (the pieces of a line share its top).
+    #: (DrawCommand command) -> DrawCommand?
+    def mark_for(command)
+      line = command.rect
+      top = line.top
+      return nil unless @changed && command.is_a?(TextRun) && top != @marked_top
+
+      @marked_top = top
+      Box.new(Rect.new(Theme::ChangeMark::LEFT, top, Theme::ChangeMark::WIDTH, line.height), Theme::Accent::CHANGED)
+    end
+  end
+
+  # The commands of one laid-out page, in drawing order, its height, where
+  # its headings start, and the marks Highlights asks for.
   class DrawList
     attr_reader :height #: Float
     attr_reader :anchors #: AnchorList
+    attr_reader :marks #: ChangeMarks
 
     # @rbs @commands: Array[DrawCommand]
 
@@ -86,11 +140,37 @@ module Shipinel
       @commands = []
       @height = 0.0
       @anchors = AnchorList.new
+      @marks = ChangeMarks.new(Highlights.none)
     end
 
+    # Points out `highlights` on this page (nothing by default).
+    #: (Highlights highlights) -> void
+    def point_out(highlights)
+      @marks = ChangeMarks.new(highlights)
+      nil
+    end
+
+    # The block that ends on source line `last` is placed next: what it
+    # shows is marked as Highlights asks.
+    #: (Markdown::Block block, Integer last) -> void
+    def begin_block(block, last)
+      @marks.start_block(block, last)
+    end
+
+    # The block was placed: it is counted under the open headings (only
+    # tasks count), and the marks stop.
+    #: (Markdown::Block block) -> void
+    def end_block(block)
+      @anchors.add_block(block)
+      @marks.end_block
+    end
+
+    # A text line of a block changed outside also gets its mark.
     #: (DrawCommand command) -> void
     def add(command)
       @commands << command
+      mark = @marks.mark_for(command)
+      @commands << mark if mark
       nil
     end
 
