@@ -1,72 +1,73 @@
-# Shipinel
+<h1 align="center">Shipinel</h1>
 
-"Ship it this week": a small, always-visible window that shows a Markdown
-week plan and lets you tick its task checkboxes. Clicking a checkbox flips
-`[ ]` ↔ `[x]` on that exact line of the file and saves it; edits made in any
-other editor show up within about a second.
+<p align="center">
+  <i>Ship it this week.</i> A small, always-visible window that shows your
+  Markdown week plan<br />and lets you tick its tasks, so the week's work stays
+  in view while you do it.
+</p>
 
-Written in Ruby, compiled to a native binary with
-[Spinel](https://github.com/matz/spinel), drawn with raylib + raygui. Runs
-natively on Wayland (and on X11).
+<p align="center">
+  <a href="https://github.com/fabiosammy/shipinel/issues">Report a bug or suggest an idea</a>
+</p>
 
-## Build and run
+<p align="center">
+  <img src="docs/screenshot.png" width="440" alt="Shipinel showing an example week: 4 of 12 tasks done, a tick on the bar where Wednesday afternoon is, and the tasks of Goal 1" />
+</p>
 
-With Nix (the supported way):
+## Features
 
-```sh
-nix build              # → ./result/bin/shipinel
-nix run . -- ~/notes/week.md
-nix develop            # Ruby tooling, Spinel, raylib, clang tools
-```
+- **Your plan, as you wrote it.** A Markdown file you keep in your editor (or
+  that an assistant updates). Shipinel shows it and lets you tick its
+  checkboxes: a click flips `[ ]` ↔ `[x]` on that exact line and saves the
+  file. Edits made anywhere else show up within a second.
+- **Progress against the week.** "12 of 40 tasks done · 30%", a bar filled by
+  that share, and a tick where the work week is. The bar turns amber when you
+  are more than a day behind, and green when everything is done.
+- **Where you are.** The header names the section you are in, with its own
+  count ("Goal 1 — Billing CSV export · 3 of 7"), and the plan reopens where
+  you left it, at the same size, even after it was edited above you.
+- **Keyboard**: `j`/`k`, the arrows, Page Up/Down and Home/End scroll; `+`,
+  `-` and `0` zoom; `h` hides the header.
+- **Notifications**: a daily nudge with the number of tasks still open, and a
+  warning when a tick could not be saved.
+- **Tray icon**: the progress as a ring and in its tooltip; a click shows or
+  hides the window, and closing can hide it there instead of quitting.
+- **Light on the machine.** An idle window sleeps until input arrives and
+  costs next to no CPU.
+- Native on **Wayland** (KDE Plasma, Hyprland, GNOME) and on X11.
 
-Without Nix, see [docs/development.md](docs/development.md) (Debian packages,
-raylib from its 6.2 tag, Spinel from its release tarball), then:
+## Getting started
 
-```sh
-spin build && build/bin/shipinel ~/notes/week.md
-```
+1. Build it with [Nix](https://nixos.org):
 
-Quality gate: `bundle exec rake check` (or `nix flake check`).
+   ```sh
+   nix build                       # → ./result/bin/shipinel
+   ./result/bin/shipinel docs/example-week.md
+   ```
 
-## Command line
+   `nix run github:fabiosammy/shipinel -- ~/notes/week.md` runs it without
+   cloning. Without Nix, see [Development setup](#development-setup).
+2. Point it at your plan: `shipinel ~/notes/week.md`, or set `file=` in the
+   [config](#config) and run `shipinel` alone.
+3. Keep it in view with a [window rule](#window-rules): position, size, on top
+   and on every desktop.
+4. Optionally, turn on the [tray icon and notifications](#config).
 
-```
-shipinel [PATH.md] [--font PATH] [--font-size N] [--emoji-font PATH]
-```
+### Keys
 
-| Option | Meaning |
+| Key | Does |
 |---|---|
-| `PATH.md` | The file to show. If it does not exist yet, the window says so and shows it as soon as it appears. Without it, the config's `file` is opened. |
-| `--font PATH` | A TTF/OTF font for the text (also used for bold and italic). Default: what `fc-match sans` returns, with `fc-match sans:bold` for bold and `fc-match sans:italic` for italic; if no italic face is installed, fontconfig returns the upright one and italics look upright. Code always uses `fc-match monospace`. |
-| `--font-size N` | Body text size in pixels, 8 to 72. Default 20. Headings are larger, code slightly smaller. |
-| `--emoji-font PATH` | A **monochrome** TTF/OTF for emoji and other symbols the text font lacks. Default: `fc-match 'emoji:color=false'`; the Nix package passes Noto Emoji. Colour emoji fonts (Noto Color Emoji) are bitmaps raylib cannot draw. |
+| `j` / `↓`, `k` / `↑` | Scroll a line down / up |
+| Page Down / Page Up | Scroll a window down / up |
+| Home / End | Go to the top / the end |
+| `+` (or `=`), `-`, keypad `+` / `-` | Bigger / smaller text, with or without Ctrl; from 8 to 72 pixels |
+| `0` | Back to the `--font-size` the window started with |
+| `h` | Hide or show the progress header |
 
-Wrong arguments print a usage message and exit with status 2.
+Keys repeat while held. Escape does nothing; only the window's close button
+quits (or hides it in the tray, see `close_to_tray`).
 
-## Config
-
-Optional: `~/.config/shipinel/config` (or `$XDG_CONFIG_HOME/shipinel/config`),
-one `key=value` per line, `#` starts a comment line. Everything has a
-default; a value that does not fit keeps it and is reported on stderr.
-
-```ini
-# The plan to open when shipinel is run without a path (~ is your home).
-file=~/notes/week.md
-# A daily notification with the number of open tasks, at this time (HH:MM);
-# leave empty for none.
-notify_daily=17:30
-# A notification when ticking a box cannot be saved (default on).
-notify_save_failed=on
-# A tray icon (default off); with it, closing can hide the window there.
-tray=on
-close_to_tray=off
-```
-
-Yes/no settings take `on`/`off`, `yes`/`no`, `true`/`false` or `1`/`0`.
-[docs/config.example](docs/config.example) is a complete file with every
-setting explained: `install -D -m 644 docs/config.example ~/.config/shipinel/config`.
-
-## Supported Markdown
+### Supported Markdown
 
 | Markdown | Shown as |
 |---|---|
@@ -90,22 +91,49 @@ Anything else (images, nested quotes, lists inside quotes, tables without
 leading and trailing `|`) is shown as plain text. Windows line endings and a
 missing final newline are kept exactly when a checkbox is toggled.
 
-### How saving works
+### Config
 
-A click re-reads the file first and changes the line only if it is still the
-same task, in the state you saw; otherwise nothing is written and the page
-shows what the file now holds. The new content is written to a hidden
-temporary file next to yours and renamed over it, so editors never see a
-half-written file. Permissions are kept, and a symlinked plan is written
-through the link. If saving fails (e.g. a read-only directory), a red notice
-says why, and the file is left as it was.
+Optional: `~/.config/shipinel/config` (or `$XDG_CONFIG_HOME/shipinel/config`),
+one `key=value` per line, `#` starts a comment line. Everything has a
+default; a value that does not fit keeps it and is reported on stderr.
 
-## Window rules
+| Setting | Default | Does |
+|---|---|---|
+| `file` | none | The plan opened when `shipinel` runs without a path (`~` is your home). A path on the command line wins. |
+| `notify_daily` | empty (off) | `HH:MM`: once a day from that time, a notification with how many tasks are still open (nothing when all are done; also sent when the window opens later that day). |
+| `notify_save_failed` | `on` | A notification when ticking a box cannot be saved. |
+| `tray` | `off` | The tray icon. |
+| `close_to_tray` | `off` | With the tray icon, the close button hides the window there instead of quitting. |
+
+Yes/no settings take `on`/`off`, `yes`/`no`, `true`/`false` or `1`/`0`.
+[docs/config.example](docs/config.example) is a complete file with every
+setting explained:
+
+```sh
+install -D -m 644 docs/config.example ~/.config/shipinel/config
+```
+
+### Command line
+
+```
+shipinel [PATH.md] [--font PATH] [--font-size N] [--emoji-font PATH]
+```
+
+| Option | Meaning |
+|---|---|
+| `PATH.md` | The file to show. If it does not exist yet, the window says so and shows it as soon as it appears. Without it, the config's `file` is opened. |
+| `--font PATH` | A TTF/OTF font for the text (also used for bold and italic). Default: what `fc-match sans` returns, with `fc-match sans:bold` for bold and `fc-match sans:italic` for italic; if no italic face is installed, fontconfig returns the upright one and italics look upright. Code always uses `fc-match monospace`. |
+| `--font-size N` | Body text size in pixels, 8 to 72. Default 20. Headings are larger, code slightly smaller. |
+| `--emoji-font PATH` | A **monochrome** TTF/OTF for emoji and other symbols the text font lacks. Default: `fc-match 'emoji:color=false'`; the Nix package passes Noto Emoji. Colour emoji fonts (Noto Color Emoji) are bitmaps raylib cannot draw. |
+
+Wrong arguments print a usage message and exit with status 2.
+
+### Window rules
 
 The window title is always exactly `shipinel`, so compositors can place it.
 Shipinel does not position itself or stay on top on its own.
 
-### KDE Plasma (KWin)
+#### KDE Plasma (KWin)
 
 System Settings → Window Management → Window Rules → Add New…, then:
 Window title *Exactly Match* `shipinel`, and add Position, Size, Keep above
@@ -142,7 +170,7 @@ initially* (KWin `rules.h`). An empty `desktops` list forced means all
 desktops. Reload with `qdbus org.kde.KWin /KWin reconfigure` (`qdbus6` on
 some distributions), or log out and in.
 
-### Hyprland
+#### Hyprland
 
 ```ini
 windowrulev2 = float, title:^(shipinel)$
@@ -154,102 +182,126 @@ windowrulev2 = size 440 640, title:^(shipinel)$
 `pin` keeps the floating window on every workspace. Newer Hyprland
 versions merged `windowrulev2` into `windowrule`; the rules are the same.
 
-### GNOME
+#### GNOME
 
 GNOME has no window rules. Right-click the title bar and choose *Always on
 Top* and *Always on Visible Workspace*, or use an extension that applies
 rules by title (for example "Auto Move Windows" for the workspace part).
 
-## Wayland
+### Good to know
 
-raylib uses GLFW, which picks its Wayland backend when `WAYLAND_DISPLAY` is
-set. To confirm a running Shipinel is a native Wayland client:
+- **Saving.** A click re-reads the file first and changes the line only if
+  it is still the same task, in the state you saw; otherwise nothing is
+  written and the page shows what the file now holds. The new content goes
+  to a hidden temporary file next to yours and is renamed over it, so
+  editors never see a half-written file. Permissions are kept, and a
+  symlinked plan is written through the link. If saving fails (a read-only
+  directory, say), a red notice says why and the file is left as it was.
+- **Reopening where you left.** Each plan's section (found by its heading),
+  text size, header and window size are kept in a small file per plan in
+  `~/.local/state/shipinel/` (or `$XDG_STATE_HOME`), saved within half a
+  second of a change; deleting it starts fresh. On X11 the window's position
+  comes back too; on Wayland only the compositor places windows, so use a
+  window rule.
+- **The pace** assumes the tasks are spread evenly from Monday 00:00 to
+  Friday 24:00; at the weekend the week is over. More than a workday's share
+  behind (20% of the tasks) turns the bar amber. Tasks inside code fences
+  never count.
+- **The tray icon** shows on KDE Plasma as is; Hyprland needs a bar with a
+  tray (waybar's `tray` module), GNOME the AppIndicator extension. Without a
+  tray, Shipinel says so on stderr and closing quits as usual.
+- **Notifications** go through `notify-send` (libnotify), which the Nix package
+  brings.
+- **Idle cost.** The window is drawn 60 times a second only while you scroll,
+  click or point at it; otherwise it sleeps until input arrives, waking twice
+  a second to check the file (by content, so editors that save by renaming
+  are caught too).
+- **Wayland or X11.** raylib uses GLFW, which picks its Wayland backend
+  when `WAYLAND_DISPLAY` is set. `WAYLAND_DEBUG=1 shipinel 2>&1 | head`
+  prints `wl_display` / `wl_registry` messages on a native Wayland window and
+  nothing on X11; KDE's debug console (`qdbus org.kde.KWin /KWin
+  showDebugConsole`) also lists it under *Wayland Windows*. To run it through
+  XWayland instead: `env -u WAYLAND_DISPLAY shipinel`.
+
+## What Shipinel is not
+
+Shipinel stays small on purpose: it keeps one week's work in view so you
+deliver it. These are left out by design, not by lack of time:
+
+- **Not an editor.** No typing, no adding, moving or deleting tasks: your
+  editor (or an assistant) writes the plan; Shipinel only flips checkboxes.
+  Two writers on one file is how plans get lost.
+- **Not a filter or a task manager.** It shows the whole plan as you wrote it:
+  no views, tags, priorities, assignees or due-date engine.
+- **Not a timer.** No pomodoros, time tracking or focus sessions; they compete
+  for attention instead of directing it.
+- **No history, stats or streaks.** It is about this week, not about the
+  past ones.
+- **Not a service.** One local file: no accounts, no sync, no network, except
+  the links you click and the notifications your desktop shows.
+
+Ideas that fit these lines are welcome; ideas that cross them belong in
+another tool.
+
+## Contributing
+
+Bug reports, ideas and pull requests are welcome. Please open an
+[issue](https://github.com/fabiosammy/shipinel/issues) first for bigger
+changes, and keep [What Shipinel is not](#what-shipinel-is-not) in mind.
+
+### Development setup
+
+With Nix:
 
 ```sh
-WAYLAND_DEBUG=1 shipinel ~/notes/week.md 2>&1 | head
+nix develop               # Ruby tooling, Spinel, raylib, GLFW, libsystemd, clang tools
+bundle exec rake check    # every gate below; also `nix flake check`
+spin build                # → build/bin/shipinel
 ```
 
-prints `wl_display` / `wl_registry` messages on a native Wayland window, and
-nothing on X11. In KDE, the KWin debug console (`qdbus org.kde.KWin
-/KWin showDebugConsole`) also lists it under *Wayland Windows*, not
-*X11 Windows*.
+Without Nix (Debian 12): [docs/development.md](docs/development.md) has the
+packages, GLFW and raylib 6.2 built from source, and Spinel from its release
+tarball.
 
-To run it through XWayland instead (for example if your compositor
-mishandles it):
+`rake check` must pass with zero offenses before anything is merged:
 
-```sh
-env -u WAYLAND_DISPLAY shipinel ~/notes/week.md
-```
+- **Ruby**: RuboCop (with rubocop_spinel), Reek, Flog (≤ 20 per method),
+  Flay, RubyCritic (every file A or B), Steep with inline RBS, Minitest with
+  SimpleCov (≥ 95% of lines).
+- **C** (`ext/`): `-std=c11 -Wall -Wextra -Wpedantic -Wconversion -Werror`,
+  clang-tidy, cppcheck, clang-format.
+- **Spinel**: the app and the snapshot programs compile with every widening
+  warning treated as an error, and `spinel diff` prints the same under
+  CRuby and Spinel.
 
-## Keys
+Thresholds are never relaxed; the few narrow exceptions are listed, with
+their reasons, in [docs/exceptions.md](docs/exceptions.md). The window itself
+is checked by hand: [docs/manual-testing.md](docs/manual-testing.md).
 
-| Key | Does |
+### How it works
+
+Shipinel is Ruby compiled to a native binary by
+[Spinel](https://github.com/matz/spinel), which takes a subset of Ruby
+([docs/spinel-notes.md](docs/spinel-notes.md) lists what this code follows
+because of it). Everything that decides something is plain Ruby, unit-tested
+under CRuby; the native side is a thin C shim that takes only numbers and
+strings.
+
+| Part | Role |
 |---|---|
-| `j` / `↓`, `k` / `↑` | Scroll a line down / up |
-| Page Down / Page Up | Scroll a window down / up |
-| Home / End | Go to the top / the end |
-| `+` (or `=`), `-`, keypad `+` / `-` | Bigger / smaller text, with or without Ctrl; from 8 to 72 pixels |
-| `0` | Back to the `--font-size` the window started with |
-| `h` | Hide or show the progress header |
+| `bin/shipinel.rb` | Entry point: command line, config, fonts, then `App` |
+| `lib/shipinel/markdown/` | The parser: lines to blocks (each with its source line), inline spans |
+| `lib/shipinel/layout.rb`, `flow.rb`, `line_wrap.rb`, `*_layout.rb` | Blocks to positioned draw commands for a window width |
+| `lib/shipinel/page.rb`, `typesetter.rb`, `header.rb`, `painter.rb` | One frame: the cached layout, the header and scrollbar, drawing and clicks |
+| `lib/shipinel/app.rb`, `session.rb`, `desktop.rb` | The loop, the file poll, the saved state, notifications and the tray |
+| `lib/shipinel/task_toggler.rb`, `document_file.rb` | Flipping one checkbox safely and writing the file atomically |
+| `lib/shipinel/ui.rb` | Spinel FFI declarations for the C side |
+| `ext/ui_shim.c` | The window over raylib, raygui and GLFW: drawing, input, frame pacing |
+| `ext/tray.c` | The tray icon: StatusNotifierItem and dbusmenu over sd-bus |
 
-Keys repeat while held. Escape does nothing.
+More detail: [docs/raylib-notes.md](docs/raylib-notes.md) (every raylib,
+raygui and GLFW call, with signatures from the headers) and
+[docs/tray-notes.md](docs/tray-notes.md) (the tray's D-Bus interfaces).
 
-## Behaviour
-
-- The window is drawn 60 times a second while you scroll, click or move
-  the pointer over it (and half a second after), and otherwise only when
-  the page changes or the window system asks for it. An idle window sleeps
-  until input arrives, waking twice a second to check the file: it costs
-  next to no CPU. The page is laid out again only when the file, the
-  window size or the fonts change, and only what the window shows is
-  drawn.
-- The file is re-read about every 500 ms by comparing its content, which
-  also catches editors that save by renaming.
-- A strip pinned to the top of the window names the section you are in,
-  with its own count ("Goal 1 — Drata · 3 of 8", counting its
-  subsections): the last heading scrolled to or past the top, or the
-  file's name above the first one (cut with "…" when long). When the file
-  has tasks, it also shows how many are checked ("12 of 40 tasks done ·
-  30%") and a bar filled by that share, which turns green when every task
-  is done.
-- The bar has a tick where the work week is, as if the tasks were spread
-  evenly from Monday 00:00 to Friday 24:00 (at the weekend, the end). More
-  than a workday's share behind it (20% of the tasks), the bar turns amber. Tasks
-  inside code fences do not count. `h` hides the strip.
-- Notifications (see Config) go through `notify-send`, which the Nix
-  package brings: once a day at `notify_daily`, how many tasks are still
-  open (sent once that day, also when the window opens later; nothing when
-  all are done), and when ticking a box cannot be saved.
-- With `tray=on`, a tray icon shows the progress as a ring (green when
-  everything is done) and in its tooltip; a click shows or hides the
-  window, and its menu has Show / hide window and Quit. With
-  `close_to_tray=on`, the window's close button hides it there instead of
-  quitting. KDE Plasma shows it as is; Hyprland needs a bar with a tray
-  (waybar's `tray` module); GNOME needs the AppIndicator extension. Without
-  a tray Shipinel says so on stderr and closing quits as usual
-  (docs/tray-notes.md).
-- Each plan reopens where it was left: the same section (found by its
-  heading, so edits above it do not move you), the same text size and
-  header, and the window's size. On X11 the window's position comes back
-  too; on Wayland only the compositor places windows, so use the window
-  rules below. The state is a small text file per plan in
-  `~/.local/state/shipinel/` (or `$XDG_STATE_HOME/shipinel/`), saved
-  within half a second of a change; deleting it starts fresh.
-- A page taller than the window gets a scrollbar on the right: the wheel
-  scrolls, the thumb can be dragged, and a click on the track moves one
-  window up or down. The scroll position survives reloads.
-- Escape does nothing; only the window's close button quits.
-- The window is resizable, and text re-wraps to its width.
-
-## Project docs
-
-- [docs/spinel-notes.md](docs/spinel-notes.md): what Spinel allows, with
-  every rule this code follows because of it.
-- [docs/raylib-notes.md](docs/raylib-notes.md): the raylib/raygui calls used,
-  with signatures from the headers.
-- [docs/tray-notes.md](docs/tray-notes.md): the tray icon's D-Bus
-  interfaces and the sd-bus calls used.
-- [docs/exceptions.md](docs/exceptions.md): every place a check is relaxed,
-  and why.
-- [docs/manual-testing.md](docs/manual-testing.md): the checklist for KDE,
-  GNOME and Hyprland.
+The screenshot above is of [docs/example-week.md](docs/example-week.md), a
+made-up plan.
