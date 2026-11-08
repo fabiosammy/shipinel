@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
-# What Shipinel shows outside its window: notifications (Reminder) and the
-# tray icon (TrayIcon), both as the config asks.
+# What Shipinel shows outside its window and hears from outside it:
+# notifications (Reminder) and the tray icon (TrayIcon), both as the config
+# asks, and the signals that ask it to stop (StopSignals).
 
 require_relative "reminder"
+require_relative "stop_signals"
 require_relative "tray_icon"
 
 module Shipinel
@@ -11,11 +13,13 @@ module Shipinel
   class Desktop
     # @rbs @reminder: Reminder
     # @rbs @tray_icon: TrayIcon
+    # @rbs @signals: StopSignals
 
-    #: (Reminder reminder, TrayIcon tray_icon) -> void
-    def initialize(reminder, tray_icon)
+    #: (Reminder reminder, TrayIcon tray_icon, StopSignals signals) -> void
+    def initialize(reminder, tray_icon, signals)
       @reminder = reminder
       @tray_icon = tray_icon
+      @signals = signals
     end
 
     # The date of the last daily nudge, saved with the plan's state.
@@ -26,6 +30,7 @@ module Shipinel
 
     #: (String title) -> void
     def start(title)
+      @signals.watch
       @tray_icon.start(Tray.new, title)
     end
 
@@ -48,10 +53,11 @@ module Shipinel
       @tray_icon.reshown?
     end
 
-    # The tray's Quit, or the window's close button unless that hides it.
+    # A stop signal, the tray's Quit, or the window's close button unless
+    # that hides it.
     #: (Screen screen) -> bool
     def ending?(screen)
-      @tray_icon.ending?(screen)
+      @signals.received? || @tray_icon.ending?(screen)
     end
   end
 end
