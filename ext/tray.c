@@ -89,9 +89,9 @@ static void paint_pixel(int index, const uint8_t *color) {
 
 /* A ring filled clockwise from the top by the progress, on transparency. */
 static void draw_icon(void) {
-    const double share = (double)progress_permille / PERMILLE_FULL;
+    const double share = (double)progress_permille / (double)PERMILLE_FULL;
     const uint8_t *fill = progress_permille >= PERMILLE_FULL ? COMPLETE_COLOR : FILL_COLOR;
-    const double center = ICON_SIZE / 2.0;
+    const double center = (double)ICON_SIZE / 2.0;
     memset(icon_pixels, 0, sizeof icon_pixels);
     for (int row = 0; row < ICON_SIZE; row++) {
         for (int column = 0; column < ICON_SIZE; column++) {
@@ -228,6 +228,14 @@ static const sd_bus_vtable ITEM_VTABLE[] = {
     SD_BUS_SIGNAL("NewStatus", "s", 0),
     SD_BUS_VTABLE_END};
 
+/* The text of a menu entry; the root has none. */
+static const char *menu_label(int item) {
+    if (item == MENU_TOGGLE) {
+        return "Show / hide window";
+    }
+    return item == MENU_QUIT ? "Quit" : "";
+}
+
 /* An item's properties: a{sv}. The root says it holds a submenu. */
 static int append_menu_properties(sd_bus_message *reply, int item) {
     int result = sd_bus_message_open_container(reply, 'a', "{sv}");
@@ -236,12 +244,10 @@ static int append_menu_properties(sd_bus_message *reply, int item) {
     }
     if (item == MENU_ROOT) {
         result = sd_bus_message_append(reply, "{sv}", "children-display", "s", "submenu");
-    } else if (item == MENU_TOGGLE) {
-        result = sd_bus_message_append(reply, "{sv}", "label", "s", "Show / hide window");
     } else if (item == MENU_SEPARATOR) {
         result = sd_bus_message_append(reply, "{sv}", "type", "s", "separator");
-    } else if (item == MENU_QUIT) {
-        result = sd_bus_message_append(reply, "{sv}", "label", "s", "Quit");
+    } else {
+        result = sd_bus_message_append(reply, "{sv}", "label", "s", menu_label(item));
     }
     return result >= 0 ? sd_bus_message_close_container(reply) : result;
 }
@@ -413,10 +419,8 @@ static int on_get_property(sd_bus_message *message, void *userdata, sd_bus_error
     if (result < 0) {
         return result;
     }
-    const char *label = item == MENU_TOGGLE ? "Show / hide window"
-                        : item == MENU_QUIT ? "Quit"
-                                            : "";
-    return sd_bus_reply_method_return(message, "v", "s", strcmp(name, "label") == 0 ? label : "");
+    const char *label = strcmp(name, "label") == 0 ? menu_label(item) : "";
+    return sd_bus_reply_method_return(message, "v", "s", label);
 }
 
 /* The dbusmenu's own properties. The parameters are sd_bus_property_get_t's
