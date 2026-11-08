@@ -9,6 +9,36 @@ require_relative "day"
 require_relative "line_changes"
 
 module Shipinel
+  # A word cut around the past date it holds: what comes before, the date,
+  # and what comes after ("(", "2026-11-07", ")."). A word without one is
+  # all `before`, with an empty date.
+  class DatedWord
+    attr_reader :before #: String
+    attr_reader :date #: String
+    attr_reader :after #: String
+
+    #: (String before, String date, String after) -> void
+    def initialize(before, date, after)
+      @before = before
+      @date = date
+      @after = after
+    end
+
+    #: (String word) -> DatedWord
+    def self.plain(word)
+      DatedWord.new(word, "", "")
+    end
+
+    # `word` cut around `date` ("" for none).
+    #: (String word, String date) -> DatedWord
+    def self.around(word, date)
+      return DatedWord.plain(word) if date.empty?
+
+      parts = word.split(date, 2)
+      DatedWord.new(parts[0].to_s, date, parts[1].to_s)
+    end
+  end
+
   # See the file comment: today (Day.none to point out no day or dates) and
   # the lines just changed outside.
   class Highlights
@@ -35,15 +65,19 @@ module Shipinel
       @day.date
     end
 
-    # A word holding a date before today. ISO dates compare in time order
-    # as text.
-    #: (String word) -> bool
-    def overdue?(word)
-      match = DATE.match(word)
-      return false unless match
+    # A word cut around the date before today it holds ("2026-11-07" in
+    # "(2026-11-07)."), if any.
+    #: (String word) -> DatedWord
+    def overdue_parts(word)
+      date = Highlights.date_in(word)
+      DatedWord.around(word, @day.later_than?(date) ? date : "")
+    end
 
-      today = @day.date
-      !today.empty? && match[:date].to_s < today
+    # The first YYYY-MM-DD in a word, or "".
+    #: (String word) -> String
+    def self.date_in(word)
+      match = DATE.match(word)
+      match ? match[:date].to_s : ""
     end
 
     # Whether a block on lines first..last was changed outside.

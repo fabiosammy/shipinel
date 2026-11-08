@@ -40,13 +40,19 @@ class HighlightsTest < Minitest::Test
   def test_dates_before_today_are_overdue
     highlights = Shipinel::Highlights.new(SUNDAY, Shipinel::LineChanges.none)
 
-    assert highlights.overdue?("(2026-11-07)")
-    refute highlights.overdue?("2026-11-08")
-    refute highlights.overdue?("Monday")
+    dates = ["(2026-11-07).", "2026-11-08", "Monday"].map { |word| highlights.overdue_parts(word).date }
+
+    assert_equal ["2026-11-07", "", ""], dates
   end
 
   def test_no_date_known_nothing_is_overdue
-    refute Shipinel::Highlights.none.overdue?("1999-01-01")
+    assert_equal "", Shipinel::Highlights.none.overdue_parts("1999-01-01").date
+  end
+
+  def test_a_dated_word_is_cut_around_its_date
+    parts = Shipinel::DatedWord.around("(2026-11-07).", "2026-11-07")
+
+    assert_equal ["(", "2026-11-07", ")."], [parts.before, parts.date, parts.after]
   end
 
   def poll_marks(highlighter, after, now)

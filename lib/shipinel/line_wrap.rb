@@ -13,8 +13,8 @@ require_relative "theme"
 module Shipinel
   # Places text piece by piece, starting a new line when the next piece
   # would pass the right edge. A word longer than a whole line (a long path
-  # in a narrow table column) is broken between characters instead. A word
-  # holding a past date in an open task is drawn in the overdue color.
+  # in a narrow table column) is broken between characters instead. A past
+  # date in an open task is drawn in the overdue color.
   class LineWrap
     # Example match: "ação " in "ação de teste" (a word with the spaces
     # after it), or a run of spaces.
@@ -48,8 +48,17 @@ module Shipinel
 
     #: (String word, SpanLook look) -> void
     def place_word(word, look)
-      look = look.overdue if @flow.page.marks.overdue?(word)
-      @flow.fonts.pieces(word).each { |piece| place(piece, look) }
+      # Only a past date in the overdue color: "(" before it and ")." after
+      # it keep the look of the text around them.
+      parts = @flow.page.marks.overdue_parts(word)
+      place_pieces(parts.before, look)
+      place_pieces(parts.date, look.overdue)
+      place_pieces(parts.after, look)
+    end
+
+    #: (String text, SpanLook look) -> void
+    def place_pieces(text, look)
+      @flow.fonts.pieces(text).each { |piece| place(piece, look) }
       nil
     end
 
