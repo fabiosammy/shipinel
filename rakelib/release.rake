@@ -47,9 +47,11 @@ task :check_version do
 end
 
 # actionlint knows the workflow syntax, the expressions and the action
-# inputs, and runs shellcheck on every `run:` script.
+# inputs, and runs shellcheck on every `run:` script. The files are named:
+# it only finds them by itself in a Git checkout, and `nix flake check`
+# builds from a copy without .git.
 desc "Lint the YAML with yamllint (.yamllint) and the workflows with actionlint"
 task :yaml_checks do
   sh "yamllint", "--strict", "."
-  sh "actionlint"
+  sh "actionlint", *Dir[".github/workflows/*.yml"]
 end
