@@ -246,8 +246,11 @@ another tool.
 ## Contributing
 
 Bug reports, ideas and pull requests are welcome. Please open an
-[issue](https://github.com/fabiosammy/shipinel/issues) first for bigger
-changes, and keep [What Shipinel is not](#what-shipinel-is-not) in mind.
+[issue](https://github.com/fabiosammy/shipinel/issues/new/choose) first for
+bigger changes, and keep [What Shipinel is not](#what-shipinel-is-not) in
+mind. [CONTRIBUTING.md](CONTRIBUTING.md) has the whole process: commits and
+pull request titles, the checks every pull request runs, and how releases
+are made.
 
 ### Development setup
 
@@ -273,10 +276,17 @@ tarball.
 - **Spinel**: the app and the snapshot programs compile with every widening
   warning treated as an error, and `spinel diff` prints the same under
   CRuby and Spinel.
+- **Release and CI**: `flake.nix` and `spin.toml` have the same version, and
+  the workflows and issue forms pass yamllint.
 
 Thresholds are never relaxed; the few narrow exceptions are listed, with
 their reasons, in [docs/exceptions.md](docs/exceptions.md). The window itself
 is checked by hand: [docs/manual-testing.md](docs/manual-testing.md).
+
+Every pull request runs [10 · Validate](.github/workflows/10-validate.yml)
+(all of the above through `nix flake check`, the Nix build, and a start of
+the built binary) and [11 · PR title](.github/workflows/11-pr-title.yml).
+Releases are made by [20 · Release](.github/workflows/20-release.yml).
 
 ### How it works
 

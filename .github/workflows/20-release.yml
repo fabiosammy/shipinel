@@ -1,0 +1,73 @@
+name: 20 · Release
+
+# Step 20: run by hand from the Actions tab, on main, once "10 · Validate"
+# passed there with the new version in flake.nix and spin.toml
+# (CONTRIBUTING.md, Releases). Runs every gate again, builds the package,
+# and creates the GitHub Release v<version> with generated notes and how to
+# install that version with Nix.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: cachix/install-nix-action@v31
+
+      - uses: nix-community/cache-nix-action@v6
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.lock', 'gemset.nix') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+
+      # One number in flake.nix and spin.toml; `rake check` fails when they
+      # differ, and the gate below runs it.
+      - name: Read the version
+        id: version
+        run: echo "version=$(nix develop --command rake --silent version)" >> "$GITHUB_OUTPUT"
+
+      # A version is released once.
+      - name: Refuse an already released version
+        env:
+          TAG: v${{ steps.version.outputs.version }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG"; then
+            echo "::error::$TAG is already released. Bump the version in flake.nix and spin.toml first."
+            exit 1
+          fi
+
+      - name: Every quality gate (rake check)
+        run: nix flake check --print-build-logs
+
+      - name: Build the package
+        run: nix build --print-build-logs
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ steps.version.outputs.version }}
+        run: |
+          cat > install.md <<NOTES
+          Install or update with [Nix](https://nixos.org):
+
+          \`\`\`sh
+          nix profile install github:${GITHUB_REPOSITORY}/${TAG}
+          \`\`\`
+
+          or run it once: \`nix run github:${GITHUB_REPOSITORY}/${TAG} -- ~/notes/week.md\`.
+          NOTES
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --notes-file install.md \
+            --generate-notes

@@ -1,0 +1,50 @@
+name: Bug report
+description: Something Shipinel does wrong, or a plan it shows wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what Shipinel did instead.
+    validations:
+      required: true
+  - type: textarea
+    id: plan
+    attributes:
+      label: The Markdown that shows it
+      description: The smallest part of your plan that shows the problem (leave out anything private).
+      render: markdown
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The release (`v0.1.0`) or commit you run, and how you installed it (Nix, built by hand).
+    validations:
+      required: true
+  - type: dropdown
+    id: desktop
+    attributes:
+      label: Desktop
+      options:
+        - KDE Plasma (Wayland)
+        - KDE Plasma (X11)
+        - Hyprland
+        - GNOME (Wayland)
+        - GNOME (X11)
+        - Other (say which below)
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: What Shipinel printed
+      description: >
+        Anything `shipinel` wrote to the terminal, and your config
+        (`~/.config/shipinel/config`) if it matters.
+      render: text
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: A screenshot of the window, if the problem is something you see.

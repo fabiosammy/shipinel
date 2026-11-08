@@ -1,0 +1,28 @@
+name: 11 · PR title
+
+# Step 11: the pull request's title is a lowercase Conventional Commit, such
+# as "feat(tray): show the progress ring" (CONTRIBUTING.md). Pull requests
+# are squash-merged, so the title becomes the commit on main and a line of
+# the release notes. Runs again when the title is edited.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  title:
+    runs-on: ubuntu-latest
+    steps:
+      # The title comes in through the environment, never into the script.
+      - name: Lowercase Conventional Commit title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          types='feat|fix|perf|refactor|docs|test|build|ci|chore'
+          if ! printf '%s' "$TITLE" | grep -Eq "^($types)(\([a-z0-9-]+\))?!?: [^A-Z]+$"; then
+            echo "::error::\"$TITLE\" is not a lowercase Conventional Commit," \
+              "e.g. \"feat(tray): show the progress ring\". See CONTRIBUTING.md."
+            exit 1
+          fi

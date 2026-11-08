@@ -6,4 +6,4 @@
 task default: :check
 
 desc "Run every quality gate: Ruby, types, native code, Spinel"
-task check: %i[ruby_checks type_checks native_checks spinel_checks]
+task check: %i[check_version yaml_checks ruby_checks type_checks native_checks spinel_checks]

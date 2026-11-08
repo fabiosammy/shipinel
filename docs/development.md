@@ -9,7 +9,7 @@ equivalent, as used in the Debian 12 sandbox where Shipinel is developed.
 apt install build-essential cmake pkg-config fontconfig \
   libwayland-dev libwayland-bin wayland-protocols libxkbcommon-dev \
   libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
-  libgl-dev libegl-dev libsystemd-dev clang-format clang-tidy cppcheck
+  libgl-dev libegl-dev libsystemd-dev clang-format clang-tidy cppcheck yamllint
 ```
 
 Debian has no raylib 6.2 package (and only GLFW 3.3), so GLFW is built as

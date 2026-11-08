@@ -1,0 +1,52 @@
+name: 10 · Validate
+
+# Step 10: validates every pull request (and main after merge): every
+# quality gate in `rake check` (run by `nix flake check`), the Nix package
+# build, and a start of the built binary, so a change cannot break the app
+# without a red check here.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: cachix/install-nix-action@v31
+
+      # Keeps the Nix store between runs: Spinel, raylib, GLFW, the gems.
+      - uses: nix-community/cache-nix-action@v6
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.lock', 'gemset.nix') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+
+      # The version, RuboCop, Reek, Flog, Flay, RubyCritic, Steep, the unit
+      # tests with coverage, the C checks, Spinel's widening warnings and
+      # `spinel diff`: everything `bundle exec rake check` runs.
+      - name: Every quality gate (rake check)
+        run: nix flake check --print-build-logs
+
+      - name: Build the package
+        run: nix build --print-build-logs
+
+      # The window needs a display, so the binary is started with an
+      # argument it refuses: it still has to load raylib, GLFW and
+      # libsystemd, then print the usage error with status 2.
+      - name: The built binary starts
+        run: |
+          status=0
+          ./result/bin/shipinel --font-size 0 2> stderr.txt || status=$?
+          cat stderr.txt
+          test "$status" -eq 2
+          grep -q "font-size must be" stderr.txt

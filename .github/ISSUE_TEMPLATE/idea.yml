@@ -1,0 +1,30 @@
+name: Idea
+description: Something Shipinel could do to keep the week's work in view
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Shipinel stays small on purpose. Please read
+        [What Shipinel is not](https://github.com/fabiosammy/shipinel#what-shipinel-is-not)
+        first: editing, filtering, timers, history and sync are left out by design.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What gets in the way of shipping the week
+      description: The situation, as you live it with your plan.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What Shipinel could do
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: It does not make Shipinel an editor, a filter, a timer, a history or a service.
+          required: true
