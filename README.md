@@ -277,7 +277,8 @@ tarball.
   warning treated as an error, and `spinel diff` prints the same under
   CRuby and Spinel.
 - **Release and CI**: `flake.nix` and `spin.toml` have the same version, and
-  the workflows and issue forms pass yamllint.
+  the workflows and issue forms pass yamllint, and the workflows pass
+  actionlint (with shellcheck on every script).
 
 Thresholds are never relaxed; the few narrow exceptions are listed, with
 their reasons, in [docs/exceptions.md](docs/exceptions.md). The window itself
@@ -286,7 +287,9 @@ is checked by hand: [docs/manual-testing.md](docs/manual-testing.md).
 Every pull request runs [10 · Validate](.github/workflows/10-validate.yml)
 (all of the above through `nix flake check`, the Nix build, and a start of
 the built binary) and [11 · PR title](.github/workflows/11-pr-title.yml).
-Releases are made by [20 · Release](.github/workflows/20-release.yml).
+Releases are made by [20 · Release](.github/workflows/20-release.yml), and
+[30 · Update flake](.github/workflows/30-update-flake.yml) opens a pull
+request with the newest nixpkgs every Monday.
 
 ### How it works
 

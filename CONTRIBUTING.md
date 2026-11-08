@@ -82,6 +82,12 @@ test it. Two checks run on every pull request and must be green:
 - **11 · PR title**: the title is a lowercase Conventional Commit. Editing
   the title runs it again.
 
+`main` only takes pull requests with both checks green, squash-merged.
+
+Every Monday, **30 · Update flake** opens (or refreshes) the pull request
+`chore(flake): update flake.lock` with the newest nixpkgs. When a newer
+tool rejects the code there, the fix goes on that branch.
+
 A maintainer reviews, may ask for changes, and squash-merges.
 
 ## Releases

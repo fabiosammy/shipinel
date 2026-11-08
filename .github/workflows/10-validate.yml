@@ -5,10 +5,14 @@ name: 10 · Validate
 # build, and a start of the built binary, so a change cannot break the app
 # without a red check here.
 
+# workflow_dispatch: the weekly flake.lock pull request (30 · Update flake)
+# is opened by the workflow token, which starts no pull_request run; that
+# workflow starts this one on its branch instead.
 on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -26,7 +30,7 @@ jobs:
       - uses: cachix/install-nix-action@v31
 
       # Keeps the Nix store between runs: Spinel, raylib, GLFW, the gems.
-      - uses: nix-community/cache-nix-action@v6
+      - uses: nix-community/cache-nix-action@v7
         with:
           primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.lock', 'gemset.nix') }}
           restore-prefixes-first-match: nix-${{ runner.os }}-

@@ -34,7 +34,10 @@ task :check_version do
   puts "version #{flake}"
 end
 
-desc "Lint the GitHub workflows and issue forms with yamllint (.yamllint)"
+# actionlint knows the workflow syntax, the expressions and the action
+# inputs, and runs shellcheck on every `run:` script.
+desc "Lint the YAML with yamllint (.yamllint) and the workflows with actionlint"
 task :yaml_checks do
   sh "yamllint", "--strict", "."
+  sh "actionlint"
 end

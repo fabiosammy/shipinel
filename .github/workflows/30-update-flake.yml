@@ -1,0 +1,91 @@
+name: 30 · Update flake
+
+# Step 30: every Monday, updates flake.lock (nixpkgs: raylib, GLFW, the C
+# and Ruby tools) on the `chore/update-flake-lock` branch and opens or
+# updates one pull request for it. A newer tool that rejects the code (a
+# clang-tidy check, a RuboCop cop) then shows up red in that pull request,
+# on its own, instead of in the next feature's. Also run by hand from the
+# Actions tab.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  # To start "10 · Validate" on the branch (see the last step).
+  actions: write
+
+concurrency:
+  group: update-flake
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH: chore/update-flake-lock
+      TITLE: "chore(flake): update flake.lock"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: cachix/install-nix-action@v31
+
+      - name: Update flake.lock
+        id: update
+        run: |
+          nix flake update
+          if git diff --quiet flake.lock; then
+            echo "flake.lock is up to date."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The branch is rebuilt from main each week, so the pull request
+      # always holds one commit on top of main.
+      - name: Push the branch
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --create "$BRANCH"
+          git commit --all --message "$TITLE"
+          git push --force origin "$BRANCH"
+
+      - name: Open the pull request
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            gh pr create --head "$BRANCH" --base main --title "$TITLE" --body-file - <<'BODY'
+          ## What changed
+
+          Updates `flake.lock` to the latest nixpkgs (opened by 30 · Update flake).
+
+          ## Review notes
+
+          Merge when 10 · Validate is green. When it is red, a newer tool rejects
+          the code: fix that on this branch, or close the pull request and the
+          next run opens a new one.
+
+          ## How to test and screenshots
+
+          1. 10 · Validate passes on this pull request.
+          2. Optionally run `nix run github:fabiosammy/shipinel/chore/update-flake-lock -- docs/example-week.md`.
+
+          Screenshots: N/A
+          BODY
+          fi
+
+      # A pull request opened with the workflow token starts no workflows,
+      # but a workflow_dispatch does: its run is reported on the branch's
+      # commit, which is what the required "validate" check looks at.
+      - name: Validate the branch
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run 10-validate.yml --ref "$BRANCH"

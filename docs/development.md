@@ -43,6 +43,14 @@ GLFW's CMake summary should say both "Including Wayland support" and
 
 `libsystemd-dev` brings sd-bus, which the tray icon uses (docs/tray-notes.md).
 
+Debian 12 has no actionlint package. Take the one the flake pins, which
+comes wrapped with shellcheck:
+`nix build --inputs-from . nixpkgs#actionlint -o ~/.cache/actionlint` and
+link `~/.cache/actionlint/bin/actionlint` into `~/.local/bin`.
+
+The sandbox's clang-tidy (LLVM 14) is older than the flake's, which knows
+more checks: run `nix flake check` before pushing, as CI does.
+
 ## Spinel 2026.10.25
 
 Build the pinned release tarball (hash in docs/spinel-notes.md) with

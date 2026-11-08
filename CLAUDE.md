@@ -149,7 +149,8 @@ apart from the thin native layer.
 zero offenses before a change is done:
 
 - Version: `flake.nix` and `spin.toml` agree (`rake check_version`).
-- YAML: workflows and issue forms pass `yamllint --strict` (`.yamllint`).
+- YAML: workflows and issue forms pass `yamllint --strict` (`.yamllint`);
+  workflows pass actionlint (with shellcheck).
 - RuboCop (+ rubocop-performance, -rake, -minitest, rubocop_spinel), Reek,
   Flog (≤ 20 per method), Flay, RubyCritic (every file A or B), Steep with
   inline RBS, Minitest with SimpleCov (≥ 95% of `lib/` lines).
@@ -165,7 +166,14 @@ its reason; a new one needs a structural reason and my OK. If a threshold
 seems wrong, stop and ask.
 
 CI runs the same: `10 · Validate` (flake check, build, binary start) and
-`11 · PR title` on every pull request; `20 · Release` by hand.
+`11 · PR title` on every pull request; `20 · Release` by hand; `30 · Update
+flake` opens the weekly flake.lock pull request (and starts 10 on it, since
+the workflow token's pull requests start no workflows). `main` is protected:
+10 and 11 must pass, squash merges only; I (admin) may still push directly.
+
+**The sandbox's clang-tidy is older than the flake's.** A green local
+`rake check` does not prove CI green for the C checks: run `nix flake check`
+before telling me a change is ready to push.
 
 ---
 
@@ -208,7 +216,7 @@ CI runs the same: `10 · Validate` (flake check, build, binary start) and
 ## 7. Nix
 
 - `flake.nix`: `devShells.default` (Ruby tooling, Spinel, raylib, GLFW,
-  systemdLibs, raygui, clang tools, cppcheck, yamllint, ...),
+  systemdLibs, raygui, clang tools, cppcheck, yamllint, actionlint, ...),
   `packages.default` (the binary, wrapped with fontconfig, xdg-utils and
   libnotify on PATH and Noto Emoji as `--emoji-font`; `meta` with MIT), and
   `checks.default` (`rake check` under a UTF-8 locale).

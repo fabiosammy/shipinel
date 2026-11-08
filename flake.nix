@@ -57,6 +57,7 @@
         pkgs.fontconfig
         pkgs.bundix
         pkgs.yamllint
+        pkgs.actionlint
       ];
     in
     {
