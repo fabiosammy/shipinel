@@ -1,0 +1,32 @@
+# Shipinel settings: ~/.config/shipinel/config (or $XDG_CONFIG_HOME/shipinel/config).
+#
+# One key=value per line. A line starting with "#" is a comment; comments
+# cannot follow a value on the same line. Every setting has a default, and a
+# value that does not fit keeps the default and is reported on stderr.
+#
+# Yes/no settings take on/off, yes/no, true/false or 1/0.
+
+# The plan to open when shipinel is run without a path; ~ is your home.
+# A path on the command line still wins. The runbook is a new file each
+# week, so this line changes every Monday.
+file=~/Desenvolvimento/clausea/todo_list/week-2026-11-09-runbook.md
+
+# A daily notification with the number of tasks still open, at this time
+# (24-hour HH:MM). Sent once a day, also when the window opens later that
+# day; nothing when every task is done. Leave it empty for none.
+notify_daily=17:30
+
+# A notification when ticking a box cannot be saved to the file
+# (default: on).
+notify_save_failed=on
+
+# A tray icon with the progress ring and tooltip; a click shows or hides
+# the window, and its menu has Quit (default: off). KDE Plasma shows it as
+# is; Hyprland needs a bar with a tray (waybar's "tray" module); GNOME needs
+# the AppIndicator extension.
+tray=on
+
+# With the tray icon, the window's close button hides the window there
+# instead of quitting (default: off). Quit from the tray's menu. Ignored
+# when no tray can show the icon, so the window can never get lost.
+close_to_tray=on

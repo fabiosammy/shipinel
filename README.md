@@ -63,6 +63,8 @@ close_to_tray=off
 ```
 
 Yes/no settings take `on`/`off`, `yes`/`no`, `true`/`false` or `1`/`0`.
+[docs/config.example](docs/config.example) is a complete file with every
+setting explained: `install -D -m 644 docs/config.example ~/.config/shipinel/config`.
 
 ## Supported Markdown
 
