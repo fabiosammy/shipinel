@@ -65,6 +65,11 @@
           pname = "shipinel";
           version = "0.1.0";
           src = self;
+          meta = {
+            description = "A small, always-visible window that shows a Markdown week plan and ticks its tasks";
+            license = pkgs.lib.licenses.mit;
+            mainProgram = "shipinel";
+          };
           nativeBuildInputs = [ spinel pkgs.pkg-config pkgs.makeWrapper ];
           buildInputs = nativeLibs;
           buildPhase = ''

@@ -305,3 +305,13 @@ raygui and GLFW call, with signatures from the headers) and
 
 The screenshot above is of [docs/example-week.md](docs/example-week.md), a
 made-up plan.
+
+## License
+
+[MIT](LICENSE)
+
+Shipinel links against libraries under their own licenses, which Nix (or
+your distribution) installs beside it: raylib and raygui (zlib), GLFW
+(zlib/libpng), libsystemd (LGPL-2.1-or-later), and it uses Noto Emoji (SIL
+Open Font License) through the Nix package. Spinel compiles it.
+
