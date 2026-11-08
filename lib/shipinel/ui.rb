@@ -11,6 +11,8 @@ module Shipinel
     ffi_lib "raylib"
     # The shim calls GLFW directly to wait for input while idle.
     ffi_lib "glfw"
+    # The tray icon talks to the session bus through sd-bus.
+    ffi_lib "systemd"
 
     ffi_func :ui_open_window, %i[int int str], :void
     ffi_func :ui_window_ready, [], :bool
@@ -20,6 +22,11 @@ module Shipinel
     ffi_func :ui_window_x, [], :int
     ffi_func :ui_window_y, [], :int
     ffi_func :ui_move_window, %i[int int], :void
+    ffi_func :ui_show_window, %i[int], :void
+    ffi_func :ui_window_shown, [], :bool
+    ffi_func :tray_open, %i[str], :bool
+    ffi_func :tray_show_progress, %i[str int], :void
+    ffi_func :tray_next_event, [], :int
     ffi_func :ui_screen_width, [], :int
     ffi_func :ui_screen_height, [], :int
     ffi_func :ui_begin_frame, %i[uint32], :void

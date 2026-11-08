@@ -38,22 +38,29 @@ module Shipinel
         tasks? && @done == @total
       end
 
-      # The checked share, from 0.0 to 1.0.
+      # The checked share, from 0.0 to 1.0 (0.0 without tasks: 0 of at
+      # least 1).
       #: () -> Float
       def share
-        tasks? ? @done.to_f / @total : 0.0
+        @done.to_f / divisor
       end
 
       # Rounded down, so 100% only shows once every task is checked.
       #: () -> Integer
       def percent
-        tasks? ? @done * 100 / @total : 0
+        @done * 100 / divisor
       end
 
       # Example: "12 of 40 tasks done · 30%".
       #: () -> String
       def label
         "#{@done} of #{@total} #{noun} done · #{percent}%"
+      end
+
+      # The tray icon's tooltip.
+      #: () -> String
+      def tray_label
+        tasks? ? label : "No tasks in this plan"
       end
 
       # For the daily nudge: "2 tasks still open".
@@ -70,6 +77,11 @@ module Shipinel
       end
 
       private
+
+      #: () -> Integer
+      def divisor
+        [@total, 1].max
+      end
 
       #: () -> String
       def noun

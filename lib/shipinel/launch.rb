@@ -28,7 +28,7 @@ module Shipinel
     # for a plan never shown before.
     #: (WindowPlace place) -> Session
     def session(place)
-      Session.for(@path, SavedState.fresh(@view, place), @config.notify)
+      Session.for(@path, SavedState.fresh(@view, place), @config)
     end
   end
 end

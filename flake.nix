@@ -42,9 +42,9 @@
       };
 
       # raylib (built against GLFW with Wayland and X11), the GLFW it uses
-      # (the shim calls it to wait for input while idle) and the header-only
-      # raygui. The cc wrapper adds their include and library paths.
-      nativeLibs = [ pkgs.raylib pkgs.glfw pkgs.raygui ];
+      # (the shim calls it to wait for input while idle), libsystemd's sd-bus
+      # for the tray icon, and the header-only raygui. The cc wrapper adds their include and library paths.
+      nativeLibs = [ pkgs.raylib pkgs.glfw pkgs.systemdLibs pkgs.raygui ];
 
       devTools = [
         tools

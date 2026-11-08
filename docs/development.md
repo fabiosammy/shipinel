@@ -9,7 +9,7 @@ equivalent, as used in the Debian 12 sandbox where Shipinel is developed.
 apt install build-essential cmake pkg-config fontconfig \
   libwayland-dev libwayland-bin wayland-protocols libxkbcommon-dev \
   libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
-  libgl-dev libegl-dev clang-format clang-tidy cppcheck
+  libgl-dev libegl-dev libsystemd-dev clang-format clang-tidy cppcheck
 ```
 
 Debian has no raylib 6.2 package (and only GLFW 3.3), so GLFW is built as
@@ -40,6 +40,8 @@ install -m 644 raygui/src/raygui.h $HOME/.local/include/raygui.h
 GLFW's CMake summary should say both "Including Wayland support" and
 "Including X11 support"; raylib's should say "Using external GLFW".
 `ldd build/bin/shipinel` then lists `libglfw.so.3` from `~/.local/lib`.
+
+`libsystemd-dev` brings sd-bus, which the tray icon uses (docs/tray-notes.md).
 
 ## Spinel 2026.10.25
 

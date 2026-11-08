@@ -11,6 +11,10 @@ detectors:
       # the window and font state. Holding state here would duplicate it.
       - "Shipinel::Screen"
       - "Shipinel::FontShim"
+      # The same for the tray icon (ext/tray.c), and the window's visibility;
+      # AbsentTray stands in for it, doing nothing, when there is no tray.
+      - "Shipinel::Tray"
+      - "Shipinel::AbsentTray"
       # The same for the fc-match process: FontLocator takes a fake in tests.
       - "Shipinel::Fontconfig"
   FeatureEnvy:

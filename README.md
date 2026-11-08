@@ -213,6 +213,14 @@ Keys repeat while held. Escape does nothing.
   package brings: once a day at `notify_daily`, how many tasks are still
   open (sent once that day, also when the window opens later; nothing when
   all are done), and when ticking a box cannot be saved.
+- With `tray=on`, a tray icon shows the progress as a ring (green when
+  everything is done) and in its tooltip; a click shows or hides the
+  window, and its menu has Show / hide window and Quit. With
+  `close_to_tray=on`, the window's close button hides it there instead of
+  quitting. KDE Plasma shows it as is; Hyprland needs a bar with a tray
+  (waybar's `tray` module); GNOME needs the AppIndicator extension. Without
+  a tray Shipinel says so on stderr and closing quits as usual
+  (docs/tray-notes.md).
 - Each plan reopens where it was left: the same section (found by its
   heading, so edits above it do not move you), the same text size and
   header, and the window's size. On X11 the window's position comes back
@@ -232,6 +240,8 @@ Keys repeat while held. Escape does nothing.
   every rule this code follows because of it.
 - [docs/raylib-notes.md](docs/raylib-notes.md): the raylib/raygui calls used,
   with signatures from the headers.
+- [docs/tray-notes.md](docs/tray-notes.md): the tray icon's D-Bus
+  interfaces and the sd-bus calls used.
 - [docs/exceptions.md](docs/exceptions.md): every place a check is relaxed,
   and why.
 - [docs/manual-testing.md](docs/manual-testing.md): the checklist for KDE,

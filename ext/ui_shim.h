@@ -26,6 +26,9 @@ int ui_window_x(void);
 int ui_window_y(void);
 /* Does nothing on Wayland. */
 void ui_move_window(int left, int top);
+/* Shows (1) or hides (0) the window; hidden, it is unmapped. */
+void ui_show_window(int shown);
+int ui_window_shown(void);
 int ui_screen_width(void);
 int ui_screen_height(void);
 

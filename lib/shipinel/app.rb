@@ -48,7 +48,7 @@ module Shipinel
       return unless @screen.ready?
 
       prepare
-      tick until @screen.closing?
+      tick until ending?
       finish
     end
 
@@ -59,6 +59,13 @@ module Shipinel
     def prepare
       @page.load_fonts(@document.shown_text)
       @page.aim(@session.saved.spot)
+      @session.desktop.start("Shipinel · #{@document.name}")
+    end
+
+    # The tray's Quit, or the close button unless it hides to the tray.
+    #: () -> bool
+    def ending?
+      @session.desktop.ending?(@screen)
     end
 
     #: () -> void
@@ -76,10 +83,12 @@ module Shipinel
 
     # One frame, 60 a second. The layout is reused until the file or the
     # window size changes, and an idle frame showing the same page is not
-    # built or drawn again (Activity).
+    # built or drawn again (Activity). A window shown again from the tray is
+    # drawn in full.
     #: () -> void
     def tick
       chores if @session.due?(Clock.now_ms)
+      @page.redraw if @session.desktop.reshown?
       clicked = show(@page.update(@screen, @document))
       act(clicked) if clicked
       nil
@@ -102,7 +111,7 @@ module Shipinel
     def chores
       poll
       remember
-      @session.remind(@document.blocks.task_progress, @document.name)
+      @session.desktop.remind(@document.blocks.task_progress, @document.name)
     end
 
     # Picks up external edits, and loads glyphs for any new characters.
@@ -131,7 +140,7 @@ module Shipinel
     #: (DrawCommand command) -> void
     def act(command)
       case command
-      when Checkbox then @session.save_failed(@document.toggle(command.click).problem)
+      when Checkbox then @session.desktop.save_failed(@document.toggle(command.click).problem)
       when LinkArea then @document.follow(command.url)
       end
       # A problem notice may bring characters the fonts lack.

@@ -1,9 +1,10 @@
-# spin manifest. The C shim is the only carried C; raylib's and GLFW's
-# include flags come from pkg-config, and ui.rb's ffi_lib links them.
+# spin manifest. The C shim and the tray are the carried C; raylib's, GLFW's
+# and libsystemd's include flags come from pkg-config, and ui.rb's ffi_lib
+# links them.
 [package]
 name = "shipinel"
 version = "0.1.0"
-sources = ["ext/ui_shim.c"]
+sources = ["ext/ui_shim.c", "ext/tray.c"]
 
 [native]
-pkg_config = ["raylib", "glfw3"]
+pkg_config = ["raylib", "glfw3", "libsystemd"]

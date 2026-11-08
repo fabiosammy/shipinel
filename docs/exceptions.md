@@ -17,7 +17,7 @@ coverage) are never relaxed.
 | Smell | Where | Why |
 |---|---|---|
 | `FeatureEnvy`, `DuplicateMethodCall` | `Shipinel::Layout#place_kind` (both) and `Shipinel::Painter#draw` (`FeatureEnvy`) only (`.reek.yml`) | The method dispatches on the block's kind with `case`. Spinel refuses to pass a block narrowed by `is_a?` to a method typed with its subclass, so each branch reads its kind's fields (`level`; `depth`, `line_index`, `checked?`; `depth`, `marker`) right there: Reek sees many references to `block`, and `block.depth` in two exclusive branches. |
-| `UtilityFunction` | `Shipinel::Screen`, `Shipinel::FontShim` and `Shipinel::Fontconfig` only (`.reek.yml`) | These are adapters over something outside Ruby: the first two make single calls into `ext/ui_shim.c`, which holds the window and font state; `Fontconfig` runs `fc-match`. They exist so `App`, `FontSet` and `FontLocator` can take fakes in CRuby tests; giving them state of their own would duplicate the outside side. Every other class keeps the smell on. |
+| `UtilityFunction` | `Shipinel::Screen`, `Shipinel::FontShim`, `Shipinel::Tray`, `Shipinel::AbsentTray` and `Shipinel::Fontconfig` only (`.reek.yml`) | These are adapters over something outside Ruby: Screen, FontShim and Tray make single calls into `ext/ui_shim.c` and `ext/tray.c`, which hold the window, font and tray state (AbsentTray stands in for Tray, doing nothing, when there is no tray); `Fontconfig` runs `fc-match`. They exist so `App`, `FontSet` and `FontLocator` can take fakes in CRuby tests; giving them state of their own would duplicate the outside side. Every other class keeps the smell on. |
 
 ## Spinel widen warnings
 
@@ -27,7 +27,8 @@ None. `rake spinel_widen` fails on any warning.
 
 | Check | Where | Why |
 |---|---|---|
-| `bugprone-reserved-identifier` | the `#define _POSIX_C_SOURCE 200809L` line at the top of `ext/ui_shim.c` only (`NOLINTNEXTLINE`) | Frame pacing sleeps with `clock_nanosleep`, which is POSIX, not C11, so under `-std=c11` the C library declares it only when this feature-test macro is defined first. The name is reserved precisely because the C library reads it; POSIX tells programs to define it. The check stays on for every other identifier. |
+| `bugprone-reserved-identifier` | the `#define _POSIX_C_SOURCE 200809L` line at the top of `ext/ui_shim.c` and of `ext/tray.c` only (`NOLINTNEXTLINE`) | Frame pacing sleeps with `clock_nanosleep` and the waker uses `poll`, `pipe` and `nanosleep`; the tray names its bus service with `getpid`. All are POSIX, not C11, so under `-std=c11` the C library declares them only when this feature-test macro is defined first. The name is reserved precisely because the C library reads it; POSIX tells programs to define it. The check stays on for every other identifier. |
+| `bugprone-easily-swappable-parameters` | `get_item_property` and `get_menu_property` in `ext/tray.c` only (`NOLINTNEXTLINE`) | Their parameters are sd-bus's `sd_bus_property_get_t` (sd-bus.h:112), which has three `const char *` in a row (path, interface, property); a getter cannot choose its own signature. The other getters were merged into these two, so the exception covers two functions. |
 | `bugprone-easily-swappable-parameters` | `IgnoredParameterNames` adds the geometry names `left`, `top`, `width`, `height`, `size` (`.clang-tidy`) | Structs cannot cross Spinel's FFI, so `ui_draw_text`, `ui_draw_rect` and `ui_checkbox` take positions and sizes as separate floats in raylib's order. Their only callers are `Screen` methods that unpack a Ruby `Point` or `Rect`, so a swap cannot happen at a call site that people write. The check stays on for every other parameter name. |
 
 cppcheck: none.

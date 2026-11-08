@@ -10,11 +10,15 @@
 
 #include "ui_shim.h"
 
+#include "tray.h"
+
 #include <errno.h>
+#include <poll.h>
 #include <raylib.h>
 #include <stdbool.h>
 #include <threads.h>
 #include <time.h>
+#include <unistd.h>
 
 /* GLFW is the window layer raylib is built on; the shim calls it only to
  * wake an idle wait and to hear when the window must be drawn again
@@ -37,7 +41,11 @@ enum {
      * points; idle frames wait for input instead (ui_skip_frame). */
     FRAME_RATE = 60,
     /* How often the waker ends an idle wait, so the file is still polled. */
-    WAKES_PER_SECOND = 2,
+    WAKE_MILLISECONDS = 500,
+    /* After waking the main thread for a tray message, the waker gives it
+     * this long to read the message before looking at the bus again. */
+    BUS_SETTLE_MILLISECONDS = 20,
+    MILLISECONDS = 1000,
     RED_SHIFT = 24,
     GREEN_SHIFT = 16,
     BLUE_SHIFT = 8,
@@ -83,10 +91,10 @@ static const long FRAME_NANOSECONDS = NANOSECONDS / FRAME_RATE;
 static struct timespec next_frame;
 
 /* The waker thread posts an empty GLFW event every half second while the
- * window is open; it stops when waker_running turns false under the lock. */
+ * window is open, and whenever the tray's bus has a message; one byte
+ * written to its stop pipe ends it. */
 static thrd_t waker;
-static mtx_t waker_lock;
-static cnd_t waker_stop;
+static int waker_stop[2] = {-1, -1};
 static bool waker_running = false;
 /* Set by GLFW when the window system needs the window drawn again (an X11
  * window uncovered without a compositor); read by ui_skip_frame. */
@@ -137,43 +145,45 @@ static void on_window_refresh(GLFWwindow *window) {
     redraw_requested = true;
 }
 
-/* Sleeps in half-second steps until told to stop, posting an empty event
- * after each: glfwPostEmptyEvent is the one GLFW call any thread may make,
- * and it ends the main thread's glfwWaitEvents. */
+static void sleep_milliseconds(long milliseconds) {
+    struct timespec pause = {0, milliseconds * (NANOSECONDS / MILLISECONDS)};
+    while (nanosleep(&pause, &pause) == -1 && errno == EINTR) {
+    }
+}
+
+/* Waits up to half a second for the stop pipe or the tray's bus, then posts
+ * an empty event: glfwPostEmptyEvent is the one GLFW call any thread may
+ * make, and it ends the main thread's glfwWaitEvents, which then reads the
+ * bus (tray_next_event). A bus that fails is left out from then on. */
 static int wake_loop(void *unused) {
     (void)unused;
-    mtx_lock(&waker_lock);
-    while (waker_running) {
-        struct timespec until;
-        timespec_get(&until, TIME_UTC);
-        until.tv_nsec += NANOSECONDS / WAKES_PER_SECOND;
-        if (until.tv_nsec >= NANOSECONDS) {
-            until.tv_sec += 1;
-            until.tv_nsec -= NANOSECONDS;
+    bool bus_usable = true;
+    for (;;) {
+        struct pollfd watched[2] = {{waker_stop[0], POLLIN, 0},
+                                    {bus_usable ? tray_bus_fd() : -1, POLLIN, 0}};
+        poll(watched, 2, WAKE_MILLISECONDS);
+        if (watched[0].revents != 0) {
+            return 0;
         }
-        if (cnd_timedwait(&waker_stop, &waker_lock, &until) == thrd_timedout) {
-            glfwPostEmptyEvent();
+        glfwPostEmptyEvent();
+        if ((watched[1].revents & (POLLERR | POLLHUP | POLLNVAL)) != 0) {
+            bus_usable = false;
+        } else if ((watched[1].revents & POLLIN) != 0) {
+            sleep_milliseconds(BUS_SETTLE_MILLISECONDS);
         }
     }
-    mtx_unlock(&waker_lock);
-    return 0;
 }
 
 /* Without the waker an idle wait could last forever, so ui_skip_frame
  * falls back to sleeping and polling when it cannot start. */
 static void start_waker(void) {
-    if (mtx_init(&waker_lock, mtx_plain) != thrd_success) {
+    if (pipe(waker_stop) != 0) {
         return;
     }
-    if (cnd_init(&waker_stop) != thrd_success) {
-        mtx_destroy(&waker_lock);
-        return;
-    }
-    waker_running = true;
-    if (thrd_create(&waker, wake_loop, NULL) != thrd_success) {
-        waker_running = false;
-        cnd_destroy(&waker_stop);
-        mtx_destroy(&waker_lock);
+    waker_running = thrd_create(&waker, wake_loop, NULL) == thrd_success;
+    if (!waker_running) {
+        close(waker_stop[0]);
+        close(waker_stop[1]);
     }
 }
 
@@ -181,13 +191,13 @@ static void stop_waker(void) {
     if (!waker_running) {
         return;
     }
-    mtx_lock(&waker_lock);
+    const char stop = 1;
+    if (write(waker_stop[1], &stop, 1) == 1) {
+        thrd_join(waker, NULL);
+    }
     waker_running = false;
-    cnd_signal(&waker_stop);
-    mtx_unlock(&waker_lock);
-    thrd_join(waker, NULL);
-    cnd_destroy(&waker_stop);
-    mtx_destroy(&waker_lock);
+    close(waker_stop[0]);
+    close(waker_stop[1]);
 }
 
 void ui_open_window(int width, int height, const char *title) {
@@ -223,9 +233,10 @@ int ui_window_should_close(void) {
 }
 
 /* The waker stops first: it must not post to GLFW once CloseWindow has
- * shut GLFW down. */
+ * shut GLFW down, nor poll the tray's bus once it is closed. */
 void ui_close_window(void) {
     stop_waker();
+    tray_close();
     for (int slot = 0; slot < FONT_SLOTS; slot++) {
         release_font(slot);
     }
@@ -250,6 +261,20 @@ void ui_move_window(int left, int top) {
     if (ui_window_placeable()) {
         SetWindowPosition(left, top);
     }
+}
+
+/* Hiding unmaps the window (the tray icon brings it back); the app keeps
+ * running, waiting for input as when idle. */
+void ui_show_window(int shown) {
+    if (shown) {
+        ClearWindowState(FLAG_WINDOW_HIDDEN);
+    } else {
+        SetWindowState(FLAG_WINDOW_HIDDEN);
+    }
+}
+
+int ui_window_shown(void) {
+    return IsWindowState(FLAG_WINDOW_HIDDEN) ? 0 : 1;
 }
 
 int ui_screen_width(void) {
