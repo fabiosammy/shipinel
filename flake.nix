@@ -67,7 +67,7 @@
         inherit spinel;
         default = pkgs.stdenv.mkDerivation {
           pname = "shipinel";
-          version = "0.2.0";
+          version = "0.3.0";
           src = self;
           meta = {
             description = "A small, always-visible window that shows a Markdown week plan and ticks its tasks";
