@@ -1,22 +1,25 @@
 #!/usr/bin/env bash
-# Builds the Linux bundle for people without Nix: a tarball with the
-# shipinel binary and the raylib and GLFW it was built with, found next to
-# it ($ORIGIN/../lib). Everything else comes from the system (glibc,
-# libsystemd, the OpenGL driver, and at run time fc-match, xdg-open and
+# Builds Shipinel for people without Nix: one executable with raylib and
+# GLFW linked in, and a tarball with that executable, the desktop entry and
+# the icon. Everything else comes from the system (glibc, libsystemd,
+# libX11, the OpenGL driver, and at run time fc-match, xdg-open and
 # notify-send), so the build runs on the oldest system it should support:
 # CI builds on Ubuntu 22.04 (glibc 2.35).
 #
 # Usage: packaging/linux/build.sh WORK_DIR
-# Writes WORK_DIR/shipinel-<version>-linux-x86_64.tar.gz and its .sha256.
+# Writes WORK_DIR/shipinel-linux-x86_64 (the executable),
+# WORK_DIR/shipinel-linux-x86_64.tar.gz and WORK_DIR/SHA256SUMS.
 # Needs: a C compiler, cmake, pkg-config, ruby (Spinel's build), curl, git,
-# patchelf, and the -dev packages in docs/development.md.
+# and the -dev packages in docs/development.md.
 set -euo pipefail
 
 work=$(realpath "$1")
 source_dir=$(realpath "$(dirname "$0")/../..")
 prefix=$work/prefix
 version=$(sed -n 's/^version = "\(.*\)"$/\1/p' "$source_dir/spin.toml")
-bundle=shipinel-$version-linux-x86_64
+# The release's file names carry no version, so
+# .../releases/latest/download/shipinel-linux-x86_64 always works.
+single=shipinel-linux-x86_64
 
 # The same versions flake.nix builds with, pinned by content: the Spinel
 # tarball by its sha256 (flake.nix has it in SRI form), raylib and raygui
@@ -49,52 +52,75 @@ tar -xf spinel.tar.xz
 make -C "spinel-$spinel_version" all tools
 make -C "spinel-$spinel_version" install "PREFIX=$prefix"
 
-# GLFW from the copy raylib bundles, built shared with both backends, and
-# raylib against it: the shim calls GLFW itself (docs/development.md).
+# GLFW from the copy raylib bundles (both backends) and raylib against
+# it, as static libraries, so they end up inside the one executable. The
+# shim calls GLFW itself (docs/development.md). A static GLFW is
+# libglfw3.a; ui.rb's ffi_lib "glfw" links -lglfw, hence the second name.
 echo "== GLFW and raylib $raylib_tag"
 fetch_tag raysan5/raylib "$raylib_tag" "$raylib_commit" raylib
 fetch_tag raysan5/raygui "$raygui_tag" "$raygui_commit" raygui
 cmake -S raylib/src/external/glfw -B glfw-build -DCMAKE_BUILD_TYPE=Release \
-  -DBUILD_SHARED_LIBS=ON -DGLFW_BUILD_WAYLAND=ON -DGLFW_BUILD_X11=ON \
+  -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+  -DGLFW_BUILD_WAYLAND=ON -DGLFW_BUILD_X11=ON \
   -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF \
   -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_INSTALL_LIBDIR=lib
 cmake --build glfw-build -j1
 cmake --install glfw-build
+ln -sf libglfw3.a "$prefix/lib/libglfw.a"
 cmake -S raylib -B raylib-build -DCMAKE_BUILD_TYPE=Release -DPLATFORM=Desktop \
-  -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=OFF -DUSE_EXTERNAL_GLFW=ON \
+  -DBUILD_SHARED_LIBS=OFF -DBUILD_EXAMPLES=OFF -DUSE_EXTERNAL_GLFW=ON \
   -DCMAKE_PREFIX_PATH="$prefix" -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_INSTALL_LIBDIR=lib
 cmake --build raylib-build -j1
 cmake --install raylib-build
 install -m 644 raygui/src/raygui.h "$prefix/include/raygui.h"
 
+# A static raylib calls libX11 itself (its X11 clipboard code), which a
+# shared one brought along. Spinel links with the `cc` on PATH, so this one
+# adds -lX11 at the end of every link (not to -c compiles).
+real_cc=$(command -v cc)
+mkdir -p "$work/cc-bin"
+cat > "$work/cc-bin/cc" <<CC
+#!/usr/bin/env bash
+for arg in "\$@"; do
+  if [ "\$arg" = "-c" ]; then
+    exec $real_cc "\$@"
+  fi
+done
+exec $real_cc "\$@" -lX11
+CC
+chmod +x "$work/cc-bin/cc"
+
 echo "== shipinel $version"
 rm -rf build-src
 cp -r "$source_dir" build-src
 rm -rf build-src/build
-export PATH=$prefix/bin:$PATH
+export PATH=$work/cc-bin:$prefix/bin:$PATH
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
 export LIBRARY_PATH=$prefix/lib
 export C_INCLUDE_PATH=$prefix/include
 (cd build-src && HOME=$work spin build)
 
-echo "== $bundle"
-rm -rf "$bundle"
-mkdir -p "$bundle/bin" "$bundle/lib" "$bundle/licenses"
-install -m 755 build-src/build/bin/shipinel "$bundle/bin/shipinel"
-cp -P "$prefix"/lib/libraylib.so.* "$prefix"/lib/libglfw.so.* "$bundle/lib/"
-# The binary finds raylib, and raylib finds GLFW, next to themselves.
-patchelf --set-rpath "\$ORIGIN/../lib" "$bundle/bin/shipinel"
-patchelf --set-rpath "\$ORIGIN" "$bundle"/lib/libraylib.so.*.*.*
-install -m 644 "$source_dir/LICENSE" "$bundle/licenses/shipinel.txt"
-install -m 644 raylib/LICENSE "$bundle/licenses/raylib.txt"
-install -m 644 raylib/src/external/glfw/LICENSE.md "$bundle/licenses/glfw.txt"
-install -m 644 raygui/LICENSE "$bundle/licenses/raygui.txt"
-install -m 644 "$source_dir/docs/config.example" "$bundle/config.example"
-install -m 644 "$source_dir/packaging/linux/INSTALL.md" "$bundle/INSTALL.md"
-install -D -m 644 "$source_dir/packaging/shipinel.desktop" "$bundle/share/applications/shipinel.desktop"
-install -D -m 644 "$source_dir/packaging/shipinel.svg" "$bundle/share/icons/hicolor/scalable/apps/shipinel.svg"
+# The single file: everything but glibc, libm, libsystemd, libX11 and what
+# GLFW opens at run time (the OpenGL driver, X11 or Wayland) is inside.
+echo "== $single"
+install -m 755 build-src/build/bin/shipinel "$single"
 
-tar -czf "$bundle.tar.gz" "$bundle"
-sha256sum "$bundle.tar.gz" > "$bundle.tar.gz.sha256"
-echo "== built $work/$bundle.tar.gz"
-ldd "$bundle/bin/shipinel"
+# The tarball: the same executable, with the desktop entry, the icon, the
+# example config and the licenses.
+echo "== $single.tar.gz"
+rm -rf shipinel
+mkdir -p shipinel/bin shipinel/licenses
+install -m 755 "$single" shipinel/bin/shipinel
+install -m 644 "$source_dir/LICENSE" shipinel/licenses/shipinel.txt
+install -m 644 raylib/LICENSE shipinel/licenses/raylib.txt
+install -m 644 raylib/src/external/glfw/LICENSE.md shipinel/licenses/glfw.txt
+install -m 644 raygui/LICENSE shipinel/licenses/raygui.txt
+install -m 644 "$source_dir/docs/config.example" shipinel/config.example
+install -m 644 "$source_dir/packaging/linux/INSTALL.md" shipinel/INSTALL.md
+install -D -m 644 "$source_dir/packaging/shipinel.desktop" shipinel/share/applications/shipinel.desktop
+install -D -m 644 "$source_dir/packaging/shipinel.svg" shipinel/share/icons/hicolor/scalable/apps/shipinel.svg
+tar -czf "$single.tar.gz" shipinel
+
+sha256sum "$single" "$single.tar.gz" > SHA256SUMS
+echo "== built $work/$single, $work/$single.tar.gz and $work/SHA256SUMS ($version)"
+ldd "$single"

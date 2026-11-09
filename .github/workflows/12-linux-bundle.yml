@@ -1,9 +1,10 @@
 name: 12 · Linux bundle
 
-# Step 12: builds the bundle for people without Nix
-# (packaging/linux/build.sh) on the oldest system it supports, Ubuntu 22.04,
-# checks that it starts, runs the window test (test/window/run.sh) on it,
-# and keeps the tarball as an artifact. Called by "10 · Validate" on every
+# Step 12: builds Shipinel for people without Nix (packaging/linux/build.sh)
+# on the oldest system it supports, Ubuntu 22.04: one executable with
+# raylib and GLFW inside, and a tarball with the desktop entry and icon.
+# Checks that it starts, runs the window test (test/window/run.sh) on it,
+# and keeps both, with SHA256SUMS, as an artifact. Called by "10 · Validate" on every
 # pull request and by "20 · Release", which attaches it to the release.
 
 on:
@@ -27,7 +28,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends \
-            build-essential cmake pkg-config patchelf libcrypt-dev \
+            build-essential cmake pkg-config libcrypt-dev \
             libwayland-dev libwayland-bin wayland-protocols libxkbcommon-dev \
             libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
             libgl-dev libegl-dev libsystemd-dev
@@ -42,20 +43,24 @@ jobs:
           sudo apt-get install --yes --no-install-recommends \
             xvfb xdotool libgl1-mesa-dri fontconfig fonts-dejavu-core
 
-      - name: The bundle starts and knows its version
+      # The single file links nothing from the build but the system's
+      # glibc, libm, libsystemd and libX11.
+      - name: The executable starts and knows its version
         run: |
           version=$(sed -n 's/^version = "\(.*\)"$/\1/p' spin.toml)
-          bundle=$RUNNER_TEMP/bundle/shipinel-$version-linux-x86_64
-          test "$("$bundle/bin/shipinel" --version)" = "shipinel $version"
-          echo "BUNDLE=$bundle" >> "$GITHUB_ENV"
+          single=$RUNNER_TEMP/bundle/shipinel-linux-x86_64
+          test "$("$single" --version)" = "shipinel $version"
+          ldd "$single"
+          echo "SINGLE=$single" >> "$GITHUB_ENV"
 
       - name: Window test
-        run: test/window/run.sh "$BUNDLE/bin/shipinel"
+        run: test/window/run.sh "$SINGLE"
 
       - uses: actions/upload-artifact@v7
         with:
           name: linux-bundle
           path: |
-            ${{ runner.temp }}/bundle/shipinel-*-linux-x86_64.tar.gz
-            ${{ runner.temp }}/bundle/shipinel-*-linux-x86_64.tar.gz.sha256
+            ${{ runner.temp }}/bundle/shipinel-linux-x86_64
+            ${{ runner.temp }}/bundle/shipinel-linux-x86_64.tar.gz
+            ${{ runner.temp }}/bundle/SHA256SUMS
           if-no-files-found: error

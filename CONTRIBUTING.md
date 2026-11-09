@@ -81,9 +81,10 @@ test it. Two checks run on every pull request and must be green:
   build, and a start of the built binary.
 - **11 · PR title**: the title is a lowercase Conventional Commit. Editing
   the title runs it again.
-- **12 · Linux bundle** (part of 10): the bundle for people without Nix,
-  built on Ubuntu 22.04 (`packaging/linux/build.sh`), started, and driven
-  in a virtual display by the window test (`test/window/run.sh`).
+- **12 · Linux bundle** (part of 10): the single executable and the
+  tarball for people without Nix, built on Ubuntu 22.04
+  (`packaging/linux/build.sh`); the executable is started and driven in a
+  virtual display by the window test (`test/window/run.sh`).
 
 `main` only takes pull requests with all three checks green (`validate`,
 `linux-bundle / bundle` and `title`), squash-merged.

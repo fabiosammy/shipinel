@@ -23,20 +23,28 @@ module ReleaseNotes
     [install(repo, tag), changes(commits), changelog(repo, tag, previous)].join("\n\n")
   end
 
+  # How to install the release: the single executable first, then the
+  # tarball and Nix (%<repo>s, %<tag>s are filled in).
+  INSTALL = <<~TEXT.chomp
+    Install or update on x86_64 Linux (glibc 2.35 or newer: Ubuntu 22.04,
+    Debian 12, Fedora 36 and later): `shipinel-linux-x86_64` below is one
+    executable with raylib and GLFW inside.
+
+    ```sh
+    mkdir -p ~/.local/bin
+    curl -fLo ~/.local/bin/shipinel https://github.com/%<repo>s/releases/download/%<tag>s/shipinel-linux-x86_64
+    chmod +x ~/.local/bin/shipinel
+    ```
+
+    `shipinel-linux-x86_64.tar.gz` adds the desktop entry and the icon
+    (`INSTALL.md` inside); `SHA256SUMS` has both files' checksums.
+
+    With [Nix](https://nixos.org): `nix profile install github:%<repo>s/%<tag>s`,
+    or run it once: `nix run github:%<repo>s/%<tag>s -- ~/notes/week.md`.
+  TEXT
+
   def self.install(repo, tag)
-    <<~TEXT.chomp
-      Install or update with [Nix](https://nixos.org):
-
-      ```sh
-      nix profile install github:#{repo}/#{tag}
-      ```
-
-      or run it once: `nix run github:#{repo}/#{tag} -- ~/notes/week.md`.
-
-      Without Nix (x86_64, glibc 2.35 or newer: Ubuntu 22.04, Debian 12,
-      Fedora 36 and later): download `shipinel-#{tag.delete_prefix('v')}-linux-x86_64.tar.gz`
-      below and follow the `INSTALL.md` inside.
-    TEXT
+    format(INSTALL, repo: repo, tag: tag)
   end
 
   def self.changes(commits)

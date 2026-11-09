@@ -188,9 +188,11 @@ its reason; a new one needs a structural reason and my OK. If a threshold
 seems wrong, stop and ask.
 
 CI runs the same: `10 · Validate` (flake check, build, binary start, and
-`12 · Linux bundle`: `packaging/linux/build.sh` on Ubuntu 22.04 plus the
+`12 · Linux bundle`: `packaging/linux/build.sh` on Ubuntu 22.04 (one
+executable with raylib and GLFW linked statically, plus a tarball) and the
 window test `test/window/run.sh` in Xvfb) and `11 · PR title` on every pull
-request; `20 · Release` by hand (attaches the bundle); `30 · Update
+request; `20 · Release` by hand (attaches `shipinel-linux-x86_64`, the
+tarball and SHA256SUMS, names without a version for `latest/download`); `30 · Update
 flake` opens the weekly flake.lock pull request (and starts 10 on it, since
 the workflow token's pull requests start no workflows), and Dependabot one
 for newer actions. `main` is protected:
