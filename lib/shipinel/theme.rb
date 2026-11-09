@@ -55,6 +55,11 @@ module Shipinel
       BEHIND = 0xE5A04BFF
     end
 
+    # Text selected with the mouse.
+    module Selected
+      BACKGROUND = 0x34456BFF
+    end
+
     # Task checkboxes.
     module Checkbox
       BORDER = 0x6B7280FF

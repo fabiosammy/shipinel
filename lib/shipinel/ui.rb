@@ -49,5 +49,7 @@ module Shipinel
     ffi_func :ui_draw_checkbox, %i[float float float bool], :void
     ffi_func :ui_pointer_on, %i[float float float float], :int
     ffi_func :ui_set_hand_cursor, %i[bool], :void
+    ffi_func :ui_control_down, [], :bool
+    ffi_func :ui_set_clipboard, %i[str], :void
   end
 end

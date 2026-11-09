@@ -6,7 +6,7 @@
 # layout.
 
 require_relative "draw_list"
-require_relative "frame"
+require_relative "look"
 require_relative "geometry"
 require_relative "highlights"
 require_relative "markdown/block"

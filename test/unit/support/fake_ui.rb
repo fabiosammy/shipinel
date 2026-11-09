@@ -47,5 +47,7 @@ module Shipinel
     end
 
     def self.ui_set_hand_cursor(*) = record(:hand_cursor, *)
+    def self.ui_control_down = record(:control_down, answer: false)
+    def self.ui_set_clipboard(*) = record(:clipboard, *)
   end
 end

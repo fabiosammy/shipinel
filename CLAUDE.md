@@ -46,6 +46,9 @@ contribution process. This file is how you (Claude) work on the project.
   RemovedLines; compared by content per poll, so own ticks never mark).
 - Keys: `j`/`k`, arrows, Page Up/Down, Home/End, `+`/`-`/`0` zoom, `h`,
   `u` (undo the last tick once, through the same safe toggle).
+- Select and copy: dragging over the page (or Ctrl+A) selects text in
+  reading order (Selection, page positions, so it survives scrolling; a
+  new layout drops it); Ctrl+C copies it, a line per laid-out line.
 - Scrollbar (wheel, drag, track click).
 - Reopens each plan where it was left (section by heading slug, zoom,
   header, window size; position only on X11; the day it was saved) from
@@ -127,6 +130,7 @@ apart from the thin native layer.
 | `layout.rb`, `flow.rb`, `line_wrap.rb`, `*_layout.rb`, `anchor.rb` | Blocks → draw commands for a width; heading anchors with task counts |
 | `page.rb`, `typesetter.rb`, `content_cache.rb`, `header.rb`, `progress_bar.rb`, `painter.rb` | One frame: cached layout, header, scrollbar, drawing, clicks |
 | `day.rb`, `line_changes.rb`, `highlights.rb`, `highlighter.rb`, `ChangeMarks` in `draw_list.rb` | Today's heading, past dates, lines changed outside: kept per poll, marked while laying out |
+| `selection.rb`, `reading_order.rb`, `selected_lines.rb`, `clipboard.rb` | Text selected with the mouse or Ctrl+A, and Ctrl+C |
 | `app.rb`, `session.rb`, `desktop.rb`, `reminder.rb`, `tray_icon.rb` | Loop, file poll, saved state, notifications, tray |
 | `task_toggler.rb`, `document_file.rb` | Safe toggle, atomic write |
 | `config.rb`, `state_file.rb`, `key_values.rb` | Config and saved state (key=value) |

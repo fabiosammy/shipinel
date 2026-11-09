@@ -100,6 +100,8 @@
 | `0` | Back to the `--font-size` the window started with |
 | `h` | Hide or show the progress header |
 | `u` | Undo the last tick (once), as long as that line has not changed since |
+| Drag over the text, Ctrl+A | Select text (a click elsewhere clears it) |
+| Ctrl+C | Copy the selected text, a line for each line on the page |
 
 Keys repeat while held. Escape does nothing; only the window's close button
 quits (or hides it in the tray, see `close_to_tray`).

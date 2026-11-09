@@ -139,7 +139,8 @@ module Shipinel
       header = Header.for(@view, key)
       content = @typesetter.page_for(key, @view.styles, document)
       bar = @scroll.bar_for(input, content, key.area.below(header.height))
-      Frame.of(content, header.titled(content.section_at(bar.offset, document.name), @typesetter.fonts), bar)
+      title = header.titled(bar.section_in(content, document.name), @typesetter.fonts)
+      @highlighter.selecting(input, Frame.of(content, title, bar))
     end
   end
 end

@@ -1,13 +1,16 @@
 # frozen_string_literal: true
 
 # Keeps what the page points out (Highlights) up to date with every file
-# poll and with the date, and says where a new day opens.
+# poll and with the date, and says where a new day opens; also the text
+# selected with the mouse.
 
+require_relative "clipboard"
 require_relative "highlights"
 require_relative "markdown/block"
 require_relative "poller"
 require_relative "saved_state"
 require_relative "scroll_spot"
+require_relative "selection"
 
 module Shipinel
   # Keeps the Highlights up to date on every file poll: marks the lines an
@@ -16,10 +19,22 @@ module Shipinel
   # back between two polls, so they are never marked.
   class Highlighter
     attr_reader :highlights #: Highlights
+    # The text selected with the mouse (Selection).
+    attr_reader :selection #: Selection
 
     #: (Day day) -> void
     def initialize(day)
       @highlights = Highlights.new(day, LineChanges.none)
+      @selection = Selection.none
+    end
+
+    # `frame`, showing the selection as this frame's input leaves it;
+    # Ctrl+C puts its text on the clipboard.
+    #: (Input input, Frame frame) -> Frame
+    def selecting(input, frame)
+      @selection = @selection.after(input, frame)
+      Clipboard.copy(@selection.text) if input.keys.copy?
+      frame.showing(@selection)
     end
 
     # `before` and `after`: the file's content around this poll's reload.

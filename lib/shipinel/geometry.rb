@@ -16,6 +16,12 @@ module Shipinel
       @top = top
     end
 
+    # The same point `distance` further down (a window point on the page).
+    #: (Float distance) -> Point
+    def down(distance)
+      Point.new(@left, @top + distance)
+    end
+
     #: (Point other) -> bool
     def same_as?(other)
       @left == other.left && @top == other.top

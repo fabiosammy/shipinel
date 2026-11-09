@@ -29,6 +29,7 @@ module Shipinel
     # The checkbox or link clicked this frame, if any (the last one wins).
     #: () -> DrawCommand?
     def paint
+      paint_selection
       paint_contents
       paint_overlays
       @screen.use_hand_cursor(@hand)
@@ -36,6 +37,25 @@ module Shipinel
     end
 
     private
+
+    # Selected text gets a background, drawn before (under) the page. Only
+    # page text: the overlay's is never selected.
+    #: () -> void
+    def paint_selection
+      return unless @frame.selection.active?
+
+      @frame.content_size.times { |position| mark_selected(@frame.content_at(position)) }
+    end
+
+    #: (DrawCommand command) -> void
+    def mark_selected(command)
+      view = @frame.view
+      area = command.rect.up(view.shift)
+      return unless view.shows?(area) && Selection.highlights?(@frame.selection, command)
+
+      @screen.draw_rect(area, Theme::Selected::BACKGROUND)
+      nil
+    end
 
     #: () -> void
     def paint_contents
@@ -75,11 +95,12 @@ module Shipinel
       nil
     end
 
+    # A release that ends a text selection clicks nothing.
     #: (DrawCommand command, Rect area) -> void
     def point_at(command, area)
       pointer = @screen.pointer_on(area)
       @hand ||= pointer != :away
-      @clicked = command if pointer == :clicked
+      @clicked = command if pointer == :clicked && !@frame.selection.released?
       nil
     end
   end

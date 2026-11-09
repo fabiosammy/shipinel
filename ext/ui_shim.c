@@ -413,6 +413,16 @@ int ui_pointer_on(float left, float top, float width, float height) {
 
 /* raylib's SetMouseCursor creates a new GLFW cursor on every call and never
  * frees it, so the cursor is only set when it changes. */
+int ui_control_down(void) {
+    return IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL) ? 1 : 0;
+}
+
+/* GLFW keeps a copy and answers other programs' requests for it while the
+ * window runs (X11 selection, Wayland data offer). */
+void ui_set_clipboard(const char *text) {
+    SetClipboardText(text);
+}
+
 void ui_set_hand_cursor(int hand) {
     static int current = 0;
     const int wanted = hand != 0 ? 1 : 0;
