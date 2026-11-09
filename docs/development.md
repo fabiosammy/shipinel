@@ -55,10 +55,15 @@ or the same way as actionlint (`nixpkgs#shellcheck`,
 
 ## The Linux bundle and the window test
 
-`packaging/linux/build.sh WORK_DIR` builds the bundle for people without
-Nix from scratch (Spinel, GLFW, raylib, then Shipinel) into
-`WORK_DIR/shipinel-<version>-linux-x86_64.tar.gz`; it also needs `patchelf`.
-CI builds it on Ubuntu 22.04, the oldest glibc it supports.
+`packaging/linux/build.sh WORK_DIR` builds Shipinel for people without Nix
+from scratch (Spinel, then GLFW and raylib as static libraries, then
+Shipinel) into `WORK_DIR/shipinel-linux-x86_64` (one executable that links
+only glibc, libm, libsystemd and libX11), `shipinel-linux-x86_64.tar.gz`
+(the same with the desktop entry and icon) and `SHA256SUMS`. A static
+raylib calls libX11 itself and Spinel links with the `cc` on `PATH`, so the
+script puts a `cc` first that adds `-lX11` to links; a static GLFW is
+`libglfw3.a`, linked as `libglfw.a` too for `ffi_lib "glfw"`. CI builds it
+on Ubuntu 22.04, the oldest glibc it supports.
 
 `test/window/run.sh PATH/TO/shipinel` opens that binary in its own Xvfb
 (`apt install xvfb xdotool libgl1-mesa-dri`), clicks a task, presses `u`

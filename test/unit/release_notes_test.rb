@@ -33,9 +33,10 @@ class ReleaseNotesTest < Minitest::Test
     MARKDOWN
   end
 
-  def test_install_lines_name_the_tag_and_the_bundle
+  def test_install_lines_name_the_tag_and_the_files
+    assert_includes notes, "https://github.com/fabiosammy/shipinel/releases/download/v0.3.0/shipinel-linux-x86_64"
+    assert_includes notes, "`shipinel-linux-x86_64.tar.gz`"
     assert_includes notes, "nix profile install github:fabiosammy/shipinel/v0.3.0"
-    assert_includes notes, "`shipinel-0.3.0-linux-x86_64.tar.gz`"
   end
 
   def test_the_changelog_compares_with_the_previous_tag

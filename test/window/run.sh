@@ -71,15 +71,20 @@ click_at() {
   xdotool mouseup 1
 }
 
-# Stops the app once it was started, then the display (waiting for the app
-# first, so it does not report a lost display), whether the test passed or
-# not.
-stop() {
-  if [ -n "${app:-}" ]; then
-    kill "$app"
-    tail --pid="$app" -f /dev/null
+# Ends a process we started (`signal` and pid) and waits for it, unless it
+# already ended (an app that crashed must not stop the cleanup).
+end_process() {
+  if [ -n "$2" ] && [ -d "/proc/$2" ]; then
+    kill "-$1" "$2"
+    tail --pid="$2" -f /dev/null
   fi
-  kill "$xvfb"
+}
+
+# Stops the app, then the display (after the app, so it does not report a
+# lost display), whether the test passed or not.
+stop() {
+  end_process TERM "${app:-}"
+  end_process TERM "$xvfb"
 }
 
 printf -- '- [ ] Ship the window test\n' > "$plan"

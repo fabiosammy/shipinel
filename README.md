@@ -50,20 +50,37 @@
 
 ## Getting started
 
-1. Install it with [Nix](https://nixos.org):
+1. Install it: one executable, on x86_64 Linux with glibc 2.35 or newer
+   (Ubuntu 22.04, Debian 12, Fedora 36 and later), Wayland or X11:
 
    ```sh
-   nix profile install github:fabiosammy/shipinel   # or a release: …/shipinel/v0.3.0
-   shipinel docs/example-week.md
+   mkdir -p ~/.local/bin
+   curl -fLo ~/.local/bin/shipinel https://github.com/fabiosammy/shipinel/releases/latest/download/shipinel-linux-x86_64
+   chmod +x ~/.local/bin/shipinel
    ```
 
-   `nix run github:fabiosammy/shipinel -- ~/notes/week.md` runs it without
-   installing. **Without Nix** (x86_64 Linux with glibc 2.35 or newer:
-   Ubuntu 22.04, Debian 12, Fedora 36 and later), download
-   `shipinel-<version>-linux-x86_64.tar.gz` from the
+   Try it on the example week:
+
+   ```sh
+   curl -fLo /tmp/example-week.md https://raw.githubusercontent.com/fabiosammy/shipinel/main/docs/example-week.md
+   shipinel /tmp/example-week.md
+   ```
+
+   (`~/.local/bin` must be on your `PATH`; most desktops add it once it
+   exists, after logging in again.) raylib and GLFW are inside the
+   executable; the rest is on nearly every Linux desktop: libsystemd,
+   libX11, an OpenGL driver, and `fc-match`, `xdg-open` and `notify-send`
+   (packaging/linux/INSTALL.md lists the packages).
+
+   **With the launcher entry and icon**: the
    [latest release](https://github.com/fabiosammy/shipinel/releases/latest)
-   and follow the `INSTALL.md` inside
-   ([packaging/linux/INSTALL.md](packaging/linux/INSTALL.md)).
+   also has `shipinel-linux-x86_64.tar.gz`, the same executable with the
+   desktop entry, the icon and an example config; follow the `INSTALL.md`
+   inside ([packaging/linux/INSTALL.md](packaging/linux/INSTALL.md)).
+
+   **With [Nix](https://nixos.org)**: `nix profile install
+   github:fabiosammy/shipinel` (or a release: `…/shipinel/v0.3.0`), or
+   `nix run github:fabiosammy/shipinel -- ~/notes/week.md` to run it once.
 2. Point it at your plan: `shipinel ~/notes/week.md`, or set `file=` in the
    [config](#config) and run `shipinel` alone.
 3. Keep it in view with a [window rule](#window-rules): position, size, on top
@@ -159,7 +176,7 @@ print a usage message and exit with status 2; when no window can be opened
 ### Start with your session
 
 Shipinel installs a desktop entry and icon (the Nix package under
-`share/applications/`; the bundle as its `INSTALL.md` says), so it is in
+`share/applications/`; the tarball as its `INSTALL.md` says), so it is in
 your app launcher. With `file=` set in the [config](#config), running it
 needs no path, and starting it at login is:
 
@@ -167,7 +184,7 @@ needs no path, and starting it at login is:
   Shipinel.
 - **GNOME**: Tweaks → Startup Applications → + → Shipinel, or copy the
   entry: `cp ~/.nix-profile/share/applications/shipinel.desktop
-  ~/.config/autostart/` (the bundle: the entry you installed).
+  ~/.config/autostart/` (the tarball: the entry you installed).
 - **Hyprland**: `exec-once = shipinel` in `hyprland.conf`.
 - **Any XDG desktop**: copy the entry into `~/.config/autostart/`.
 
@@ -351,9 +368,10 @@ Every pull request runs [10 · Validate](.github/workflows/10-validate.yml)
 (all of the above through `nix flake check`, the Nix build, and a start of
 the built binary) and [11 · PR title](.github/workflows/11-pr-title.yml).
 [12 · Linux bundle](.github/workflows/12-linux-bundle.yml) builds the
-bundle for people without Nix on Ubuntu 22.04 and runs the window test on
-it ([test/window/run.sh](test/window/run.sh): a real window in Xvfb, a
-click, `u`, the saved state). Releases are made by
+single executable (raylib and GLFW linked in) and the tarball for people
+without Nix on Ubuntu 22.04 and runs the window test on the executable
+([test/window/run.sh](test/window/run.sh): a real window in Xvfb, a click,
+`u`, the saved state). Releases are made by
 [20 · Release](.github/workflows/20-release.yml), with that bundle
 attached, and
 [30 · Update flake](.github/workflows/30-update-flake.yml) opens a pull
