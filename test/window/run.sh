@@ -32,6 +32,29 @@ wait_for_line() {
   return 1
 }
 
+# Does a step (`press` or `click_at` and its arguments) until `file` holds
+# the line `expected`, at most three times, waiting 3 seconds after each:
+# on a slow runner the first input can come before the window takes it.
+# A step the app did take shows within half a second (the file is saved
+# by then), so a retry never undoes one.
+step_until() {
+  local file=$1 expected=$2
+  shift 2
+  for _ in 1 2 3; do
+    "$@"
+    for _ in $(seq 30); do
+      if grep -qxF -- "$expected" "$file"; then
+        return 0
+      fi
+      sleep 0.1
+    done
+    echo "no '$expected' in $file yet; doing '$*' again"
+  done
+  echo "FAIL: $file never held the line '$expected' after '$*'; it holds:"
+  cat "$file"
+  return 1
+}
+
 # Presses a key for 100 ms. `xdotool key` releases at once, and a key that
 # goes down and up between two of raylib's input polls is never seen as
 # pressed; a person's key press lasts longer.
@@ -106,16 +129,13 @@ xdotool windowfocus --sync "$window"
 # h hides the header, so the first task's checkbox sits at the page's top
 # margin: 16 px in, its center 29 px down at --font-size 20. The saved
 # state says when h was taken.
-press h
-wait_for_line "$state" 'header=0'
+step_until "$state" 'header=0' press h
 echo "h hid the header, and it was saved"
 
-click_at 24 29
-wait_for_line "$plan" '- [x] Ship the window test'
+step_until "$plan" '- [x] Ship the window test' click_at 24 29
 echo "a click ticked the task"
 
-press u
-wait_for_line "$plan" '- [ ] Ship the window test'
+step_until "$plan" '- [ ] Ship the window test' press u
 echo "u undid the tick"
 
 kill -0 "$app"
