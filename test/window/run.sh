@@ -16,18 +16,19 @@ work=$(mktemp -d)
 plan=$work/plan.md
 state_dir=$work/state/shipinel
 
-# Waits up to 10 seconds for the plan file to hold `expected`, so a slow
-# software-rendered frame is not mistaken for a failure.
-wait_for_plan() {
-  local expected=$1
+# Waits up to 10 seconds for `file` to hold the line `expected`, so a slow
+# software-rendered frame (a CI runner) is not mistaken for a failure, and
+# no step starts before the app took the one before it.
+wait_for_line() {
+  local file=$1 expected=$2
   for _ in $(seq 100); do
-    if grep -qF -- "$expected" "$plan"; then
+    if [ -f "$file" ] && grep -qxF -- "$expected" "$file"; then
       return 0
     fi
     sleep 0.1
   done
-  echo "FAIL: $plan never held '$expected'; it holds:"
-  cat "$plan"
+  echo "FAIL: $file never held the line '$expected'; it holds:"
+  cat "$file"
   return 1
 }
 
@@ -92,30 +93,29 @@ app=$!
 # gets the keyboard focus by hand.
 window=$(timeout 30 xdotool search --sync --name '^shipinel$' | head -n 1)
 echo "window $window is open"
-sleep 1
 xdotool windowfocus --sync "$window"
 
+# The state file is written by the app's loop (within half a second of a
+# change, and the first time on its first chores): once it says the header
+# shows, the window is drawn and takes input.
+state=$state_dir/$(printf '%s' "$plan" | tr / %)
+wait_for_line "$state" 'header=1'
+echo "the window is drawn"
+
 # h hides the header, so the first task's checkbox sits at the page's top
-# margin: 16 px in, its center 29 px down at --font-size 20.
+# margin: 16 px in, its center 29 px down at --font-size 20. The saved
+# state says when h was taken.
 press h
-sleep 0.5
+wait_for_line "$state" 'header=0'
+echo "h hid the header, and it was saved"
+
 click_at 24 29
-wait_for_plan '- [x] Ship the window test'
+wait_for_line "$plan" '- [x] Ship the window test'
 echo "a click ticked the task"
 
 press u
-wait_for_plan '- [ ] Ship the window test'
+wait_for_line "$plan" '- [ ] Ship the window test'
 echo "u undid the tick"
 
-# The state is saved within about half a second of a change.
-sleep 1.5
-state=$(cat "$state_dir"/*)
-if ! grep -qx 'header=0' <<< "$state"; then
-  echo "FAIL: the saved state does not have the header hidden:"
-  echo "$state"
-  exit 1
-fi
-echo "the hidden header was saved"
-
 kill -0 "$app"
-echo "PASS: the window opened, ticked, undid and saved its state"
+echo "PASS: the window opened, hid its header, ticked and undid"
