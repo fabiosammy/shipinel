@@ -53,7 +53,7 @@
 1. Install it with [Nix](https://nixos.org):
 
    ```sh
-   nix profile install github:fabiosammy/shipinel   # or a release: …/shipinel/v0.2.0
+   nix profile install github:fabiosammy/shipinel   # or a release: …/shipinel/v0.3.0
    shipinel docs/example-week.md
    ```
 
@@ -152,7 +152,7 @@ shipinel --version
 | `--font-size N` | Body text size in pixels, 8 to 72. Default 20. Headings are larger, code slightly smaller. |
 | `--emoji-font PATH` | A **monochrome** TTF/OTF for emoji and other symbols the text font lacks. Default: `fc-match 'emoji:color=false'`; the Nix package passes Noto Emoji. Colour emoji fonts (Noto Color Emoji) are bitmaps raylib cannot draw. |
 
-`--version` prints the version (`shipinel 0.2.0`) and exits. Wrong arguments
+`--version` prints the version (`shipinel 0.3.0`) and exits. Wrong arguments
 print a usage message and exit with status 2; when no window can be opened
 (no display, or no OpenGL driver) Shipinel says so and exits with status 1.
 
