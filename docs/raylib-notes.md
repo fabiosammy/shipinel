@@ -350,3 +350,15 @@ check a build: `ldd result/bin/shipinel | grep -E 'glfw|wayland'`, and
 `WAYLAND_DEBUG=1 shipinel plan.md 2>&1 | head` should show `wl_display`
 traffic. To force XWayland, run with `WAYLAND_DISPLAY=` unset
 (`env -u WAYLAND_DISPLAY shipinel plan.md`). The README will spell this out.
+
+## No Wayland app id (2026-11-09)
+
+GLFW 3.4 sets a Wayland window's app id only from the `GLFW_WAYLAND_APP_ID`
+window hint (`src/external/glfw/src/wl_window.c`, `xdg_toplevel_set_app_id`
+when `wl.appId` is set). raylib 6.2's `InitPlatform` calls
+`glfwDefaultWindowHints()` right after `glfwInit()`
+(`src/platforms/rcore_desktop_glfw.c`), inside `InitWindow`, so a hint set
+before `InitWindow` is reset and there is no hook between the two. The
+desktop entry's `StartupWMClass=shipinel` therefore matches on X11 only
+(GLFW sets WM_CLASS from the title there: `shipinel`/`shipinel`, read with
+XGetClassHint in Xvfb). Setting an app id would need a raylib patch.

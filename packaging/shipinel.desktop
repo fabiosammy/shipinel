@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Shipinel
+GenericName=Week plan
+Comment=Keep the week's Markdown plan in view and tick its tasks
+Exec=shipinel %f
+Icon=shipinel
+Terminal=false
+Categories=Office;ProjectManagement;
+Keywords=markdown;tasks;todo;week;plan;
+StartupWMClass=shipinel

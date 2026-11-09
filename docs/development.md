@@ -48,8 +48,10 @@ comes wrapped with shellcheck:
 `nix build --inputs-from . nixpkgs#actionlint -o ~/.cache/actionlint` and
 link `~/.cache/actionlint/bin/actionlint` into `~/.local/bin`.
 
-shellcheck (for `rake shell_checks`) comes from apt (`apt install
-shellcheck`) or the same way as actionlint (`nixpkgs#shellcheck`).
+shellcheck (for `rake shell_checks`) and desktop-file-validate (for `rake
+desktop_checks`) come from apt (`apt install shellcheck desktop-file-utils`)
+or the same way as actionlint (`nixpkgs#shellcheck`,
+`nixpkgs#desktop-file-utils`).
 
 ## The Linux bundle and the window test
 

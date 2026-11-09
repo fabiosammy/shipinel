@@ -61,6 +61,10 @@ contribution process. This file is how you (Claude) work on the project.
   tray; without a tray host, closing quits.
 - TERM, INT and HUP end it like the close button (StopSignals: the trap
   sets a flag the loop reads), saving the state.
+- Desktop entry and icon (`packaging/shipinel.desktop`, `.svg`) in the Nix
+  package and the bundle; `rake desktop_checks` validates the entry. No
+  Wayland app id (raylib resets GLFW's hints), so `StartupWMClass` only
+  matches on X11.
 - Idle costs next to no CPU (§3, Frames).
 
 ### What it is not (decided)
@@ -237,7 +241,7 @@ before telling me a change is ready to push.
 ## 7. Nix
 
 - `flake.nix`: `devShells.default` (Ruby tooling, Spinel, raylib, GLFW,
-  systemdLibs, raygui, clang tools, cppcheck, yamllint, actionlint, shellcheck, ...),
+  systemdLibs, raygui, clang tools, cppcheck, yamllint, actionlint, shellcheck, desktop-file-utils, ...),
   `packages.default` (the binary, wrapped with fontconfig, xdg-utils and
   libnotify on PATH and Noto Emoji as `--emoji-font`; `meta` with MIT), and
   `checks.default` (`rake check` under a UTF-8 locale).

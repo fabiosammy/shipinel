@@ -91,6 +91,8 @@ install -m 644 raylib/src/external/glfw/LICENSE.md "$bundle/licenses/glfw.txt"
 install -m 644 raygui/LICENSE "$bundle/licenses/raygui.txt"
 install -m 644 "$source_dir/docs/config.example" "$bundle/config.example"
 install -m 644 "$source_dir/packaging/linux/INSTALL.md" "$bundle/INSTALL.md"
+install -D -m 644 "$source_dir/packaging/shipinel.desktop" "$bundle/share/applications/shipinel.desktop"
+install -D -m 644 "$source_dir/packaging/shipinel.svg" "$bundle/share/icons/hicolor/scalable/apps/shipinel.svg"
 
 tar -czf "$bundle.tar.gz" "$bundle"
 sha256sum "$bundle.tar.gz" > "$bundle.tar.gz.sha256"
