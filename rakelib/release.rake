@@ -92,7 +92,7 @@ end
 # builds from a copy without .git.
 desc "Lint the shell scripts (the Linux bundle's build, the window test) with shellcheck"
 task :shell_checks do
-  sh "shellcheck", *Dir["packaging/**/*.sh", "test/**/*.sh"]
+  sh "shellcheck", *Dir["packaging/**/*.sh", "test/**/*.sh", "docs/**/*.sh"]
 end
 
 desc "Check the desktop entry (packaging/shipinel.desktop) with desktop-file-validate"

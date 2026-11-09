@@ -11,7 +11,10 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshot.png" width="440" alt="Shipinel on a Wednesday afternoon of an example week: 4 of 14 tasks done with an amber bar (behind the week's pace tick), today's heading in blue, a mark beside a line just edited elsewhere, an overdue date in amber, done tasks dimmed and a task waiting on someone in italics" />
+  <picture>
+    <source media="(prefers-reduced-motion: reduce)" srcset="docs/screenshot.png" />
+    <img src="docs/demo.gif" width="440" alt="Shipinel on a Wednesday afternoon of an example week. A task is ticked and the count goes from 4 to 5 of 14; a line edited in another editor gets a mark beside it; the page scrolls past an overdue date in amber and a task waiting on finance in italics, and back; u undoes the tick; h hides the progress header and shows it again." />
+  </picture>
 </p>
 
 ## Features
@@ -381,9 +384,10 @@ More detail: [docs/raylib-notes.md](docs/raylib-notes.md) (every raylib,
 raygui and GLFW call, with signatures from the headers) and
 [docs/tray-notes.md](docs/tray-notes.md) (the tray's D-Bus interfaces).
 
-The screenshot above is of [docs/example-week.md](docs/example-week.md), a
-made-up plan, on Wednesday 2026-11-11 at 15:30, a second after one of its
-lines was edited in another editor.
+The animation above (and the still image shown instead when your system
+asks for reduced motion) is of [docs/example-week.md](docs/example-week.md),
+a made-up plan, on Wednesday 2026-11-11 at 15:30. `docs/demo/record.sh
+PATH/TO/shipinel docs/demo.gif` records it again in a virtual display.
 
 ## License
 

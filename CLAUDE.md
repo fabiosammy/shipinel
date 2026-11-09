@@ -172,7 +172,7 @@ zero offenses before a change is done:
   (`rake check_version`).
 - YAML: workflows and issue forms pass `yamllint --strict` (`.yamllint`);
   workflows pass actionlint (with shellcheck); the shell scripts
-  (`packaging/`, `test/window/`) pass shellcheck.
+  (`packaging/`, `test/window/`, `docs/demo/`) pass shellcheck.
 - RuboCop (+ rubocop-performance, -rake, -minitest, rubocop_spinel), Reek,
   Flog (≤ 20 per method), Flay, RubyCritic (every file A or B), Steep with
   inline RBS, Minitest with SimpleCov (≥ 95% of `lib/` lines).
@@ -263,7 +263,9 @@ Keep in step with every change:
   releases).
 - `docs/spinel-notes.md`, `docs/raylib-notes.md`, `docs/tray-notes.md`,
   `docs/exceptions.md`, `docs/manual-testing.md`, `docs/development.md`,
-  `docs/config.example`, `docs/example-week.md` + `docs/screenshot.png`.
+  `docs/config.example`, `docs/example-week.md` + `docs/screenshot.png`
+  (still) + `docs/demo.gif` (recorded by `docs/demo/record.sh` in Xvfb, with
+  the clock moved by `docs/demo/clock.c`; re-record when the look changes).
 
 ---
 
