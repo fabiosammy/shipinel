@@ -126,6 +126,10 @@ cp test/fixtures/semana.md /tmp/semana.md
 29. **Stopping from outside.** `kill <pid>` (or Ctrl+C in its terminal): the
     window closes within half a second, nothing is printed, and reopening
     the plan puts it where it was.
+30. **Launcher and autostart.** After installing, Shipinel is in the app
+    launcher with its ring icon, and opens the config's plan. Added to the
+    session's autostart (README), it opens after logging in. On X11 the
+    task bar shows the same icon.
 
 ## Per desktop
 

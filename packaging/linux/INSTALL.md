@@ -37,6 +37,21 @@ shipinel --version
 (`~/.local/bin` must be on your `PATH`.) To update, replace
 `~/.local/opt/shipinel` with the new version.
 
+For the app launcher and the icon, install the desktop entry with the full
+path to the binary (the session's `PATH` may not have `~/.local/bin`):
+
+```sh
+mkdir -p ~/.local/share/applications ~/.local/share/icons/hicolor/scalable/apps
+sed "s|^Exec=shipinel|Exec=$HOME/.local/opt/shipinel/bin/shipinel|" \
+  ~/.local/opt/shipinel/share/applications/shipinel.desktop \
+  > ~/.local/share/applications/shipinel.desktop
+cp ~/.local/opt/shipinel/share/icons/hicolor/scalable/apps/shipinel.svg \
+  ~/.local/share/icons/hicolor/scalable/apps/
+```
+
+To start it with your session, copy that entry into `~/.config/autostart/`
+(or see "Start with your session" in the README for Hyprland).
+
 ## 3. Run
 
 ```sh

@@ -65,7 +65,9 @@
    [config](#config) and run `shipinel` alone.
 3. Keep it in view with a [window rule](#window-rules): position, size, on top
    and on every desktop.
-4. Optionally, turn on the [tray icon and notifications](#config).
+4. [Start it with your session](#start-with-your-session), so the plan is
+   there when you log in.
+5. Optionally, turn on the [tray icon and notifications](#config).
 
 ### Keys
 
@@ -150,6 +152,25 @@ shipinel --version
 `--version` prints the version (`shipinel 0.2.0`) and exits. Wrong arguments
 print a usage message and exit with status 2; when no window can be opened
 (no display, or no OpenGL driver) Shipinel says so and exits with status 1.
+
+### Start with your session
+
+Shipinel installs a desktop entry and icon (the Nix package under
+`share/applications/`; the bundle as its `INSTALL.md` says), so it is in
+your app launcher. With `file=` set in the [config](#config), running it
+needs no path, and starting it at login is:
+
+- **KDE Plasma**: System Settings → Autostart → Add… → Add Application →
+  Shipinel.
+- **GNOME**: Tweaks → Startup Applications → + → Shipinel, or copy the
+  entry: `cp ~/.nix-profile/share/applications/shipinel.desktop
+  ~/.config/autostart/` (the bundle: the entry you installed).
+- **Hyprland**: `exec-once = shipinel` in `hyprland.conf`.
+- **Any XDG desktop**: copy the entry into `~/.config/autostart/`.
+
+The entry's `StartupWMClass=shipinel` matches the window on X11. On
+Wayland, raylib opens the window without an app id, so a task bar may show
+it with a generic icon (docs/raylib-notes.md).
 
 ### Window rules
 

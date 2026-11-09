@@ -95,6 +95,11 @@ task :shell_checks do
   sh "shellcheck", *Dir["packaging/**/*.sh", "test/**/*.sh"]
 end
 
+desc "Check the desktop entry (packaging/shipinel.desktop) with desktop-file-validate"
+task :desktop_checks do
+  sh "desktop-file-validate", "packaging/shipinel.desktop"
+end
+
 desc "Lint the YAML with yamllint (.yamllint) and the workflows with actionlint"
 task :yaml_checks do
   sh "yamllint", "--strict", "."

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Shipinel's icon: the progress ring of the tray icon, most of the way
+       round, on the window's background, with a tick. Colors from theme.rb. -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#1D1F24"/>
+  <circle cx="32" cy="32" r="18" fill="none" stroke="#3A3E48" stroke-width="7"/>
+  <path d="M32 14 A18 18 0 1 1 14.9 26.4" fill="none" stroke="#7AA2F7" stroke-width="7" stroke-linecap="round"/>
+  <path d="M24 32.5 L30 38.5 L41 26" fill="none" stroke="#98C379" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

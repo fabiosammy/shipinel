@@ -59,6 +59,7 @@
         pkgs.yamllint
         pkgs.actionlint
         pkgs.shellcheck
+        pkgs.desktop-file-utils
       ];
     in
     {
@@ -83,8 +84,12 @@
           # opens links with `xdg-open` and notifies with `notify-send`. Emoji need a monochrome font
           # (raylib cannot draw colour emoji), so Noto Emoji ships with it;
           # a later --emoji-font on the command line still wins.
+          # The desktop entry and icon make it a launcher entry, and let a
+          # session autostart it (README, Start with your session).
           installPhase = ''
             install -D -m 755 build/bin/shipinel $out/bin/shipinel
+            install -D -m 644 packaging/shipinel.desktop $out/share/applications/shipinel.desktop
+            install -D -m 644 packaging/shipinel.svg $out/share/icons/hicolor/scalable/apps/shipinel.svg
             set -- ${pkgs.noto-fonts-monochrome-emoji}/share/fonts/noto/*.ttf
             emoji=$1
             test -f "$emoji"
