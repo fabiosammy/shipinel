@@ -3,7 +3,7 @@
 # links them.
 [package]
 name = "shipinel"
-version = "0.3.0"
+version = "0.3.1"
 sources = ["ext/ui_shim.c", "ext/tray.c"]
 
 [native]

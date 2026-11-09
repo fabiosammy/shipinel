@@ -4,5 +4,5 @@
 # flake.nix and spin.toml; `rake check_version` fails when they differ.
 
 module Shipinel
-  VERSION = "0.3.0"
+  VERSION = "0.3.1"
 end
