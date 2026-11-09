@@ -22,6 +22,18 @@ class HighlightsTest < Minitest::Test
     assert_empty changes("", "- [ ] new\n").lines
   end
 
+  # "b" was removed before "c" (now line 2); "e" from the end (line 4 is
+  # past the last line). The blank line neither ends nor places a run.
+  def test_removed_lines_are_placed_before_the_line_that_follows_them
+    assert_equal [2, 4], changes("a\nb\n\nc\nd\ne\n", "a\n\nc\nd\n").removed
+  end
+
+  def test_only_removed_lines_still_expire
+    removed = changes("a\nb\n", "a\n")
+
+    assert_equal [true, false, true], [removed.lines.empty?, removed.expired?(10_999), removed.expired?(11_000)]
+  end
+
   def test_marks_expire_after_ten_seconds
     marked = changes("a\n", "b\n")
 

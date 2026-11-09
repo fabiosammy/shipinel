@@ -33,7 +33,8 @@
   …)") steps back in quieter italics, so the ones you can pick up stand out;
   a date that has passed in an open task (`due 2026-11-06`) turns amber.
 - **Changes noticed.** Lines edited outside Shipinel (by you in your editor,
-  or an assistant) get a mark beside them for ten seconds.
+  or an assistant) get a mark beside them for ten seconds, and a short
+  notch shows where lines were deleted.
 - **Keyboard**: `j`/`k`, the arrows, Page Up/Down and Home/End scroll; `+`,
   `-` and `0` zoom; `h` hides the header; `u` undoes the last tick.
 - **Notifications**: a daily nudge with the number of tasks still open and
@@ -235,7 +236,8 @@ rules by title (for example "Auto Move Windows" for the workspace part).
   not be saved has nothing to undo.
 - **Changed lines** are compared by content with the file as it was half a
   second earlier, so a line that only moved is not marked, and your own
-  ticks never are.
+  ticks never are. Deleted lines leave a notch over the first line that
+  now follows them (blank lines aside).
 - **The pace** assumes the tasks are spread evenly from Monday 00:00 to
   Friday 24:00; at the weekend the week is over. More than a workday's share
   behind (20% of the tasks) turns the bar amber. Tasks inside code fences
