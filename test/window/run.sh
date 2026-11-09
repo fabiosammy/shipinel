@@ -89,18 +89,19 @@ unset XAUTHORITY WAYLAND_DISPLAY
 "$shipinel" "$plan" &
 app=$!
 
-# The window shows up under its fixed title; no window manager runs, so it
-# gets the keyboard focus by hand.
+# The window shows up under its fixed title.
 window=$(timeout 30 xdotool search --sync --name '^shipinel$' | head -n 1)
 echo "window $window is open"
-xdotool windowfocus --sync "$window"
 
-# The state file is written by the app's loop (within half a second of a
-# change, and the first time on its first chores): once it says the header
-# shows, the window is drawn and takes input.
+# The state file is written by the app's loop (on its first chores, then
+# within half a second of a change): once it exists, the window is mapped
+# and the loop reads the input every frame. Only then can it take the
+# keyboard focus (no window manager runs to give it): focusing a window
+# that is not mapped yet fails with BadMatch.
 state=$state_dir/$(printf '%s' "$plan" | tr / %)
 wait_for_line "$state" 'header=1'
-echo "the window is drawn"
+echo "the app's loop runs"
+xdotool windowfocus --sync "$window"
 
 # h hides the header, so the first task's checkbox sits at the page's top
 # margin: 16 px in, its center 29 px down at --font-size 20. The saved
