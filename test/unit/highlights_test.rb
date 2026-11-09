@@ -22,6 +22,18 @@ class HighlightsTest < Minitest::Test
     assert_empty changes("", "- [ ] new\n").lines
   end
 
+  # "b" was removed before "c" (now line 2); "e" from the end (line 4 is
+  # past the last line). The blank line neither ends nor places a run.
+  def test_removed_lines_are_placed_before_the_line_that_follows_them
+    assert_equal [2, 4], changes("a\nb\n\nc\nd\ne\n", "a\n\nc\nd\n").removed
+  end
+
+  def test_only_removed_lines_still_expire
+    removed = changes("a\nb\n", "a\n")
+
+    assert_equal [true, false, true], [removed.lines.empty?, removed.expired?(10_999), removed.expired?(11_000)]
+  end
+
   def test_marks_expire_after_ten_seconds
     marked = changes("a\n", "b\n")
 
@@ -40,13 +52,19 @@ class HighlightsTest < Minitest::Test
   def test_dates_before_today_are_overdue
     highlights = Shipinel::Highlights.new(SUNDAY, Shipinel::LineChanges.none)
 
-    assert highlights.overdue?("(2026-11-07)")
-    refute highlights.overdue?("2026-11-08")
-    refute highlights.overdue?("Monday")
+    dates = ["(2026-11-07).", "2026-11-08", "Monday"].map { |word| highlights.overdue_parts(word).date }
+
+    assert_equal ["2026-11-07", "", ""], dates
   end
 
   def test_no_date_known_nothing_is_overdue
-    refute Shipinel::Highlights.none.overdue?("1999-01-01")
+    assert_equal "", Shipinel::Highlights.none.overdue_parts("1999-01-01").date
+  end
+
+  def test_a_dated_word_is_cut_around_its_date
+    parts = Shipinel::DatedWord.around("(2026-11-07).", "2026-11-07")
+
+    assert_equal ["(", "2026-11-07", ")."], [parts.before, parts.date, parts.after]
   end
 
   def poll_marks(highlighter, after, now)

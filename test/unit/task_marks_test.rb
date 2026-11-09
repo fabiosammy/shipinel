@@ -18,7 +18,8 @@ class TaskMarksTest < Minitest::Test
   end
 
   def commands(page) = Array.new(page.size) { |position| page.at(position) }
-  def runs(page) = commands(page).grep(Shipinel::TextRun)
+  # Text runs that draw something (a space after a date is a run of its own).
+  def runs(page) = commands(page).grep(Shipinel::TextRun).reject { |run| run.text.strip.empty? }
   def looks(page) = runs(page).map { |run| [run.text.strip, run.style.font_slot, run.style.color] }
 
   def marks(page)
@@ -59,6 +60,16 @@ class TaskMarksTest < Minitest::Test
     marks(page(after, highlights: Shipinel::Highlights.new(Shipinel::Day.none, changes), width: 200.0))
   end
 
+  # The word "(2026-11-07)," is drawn in three pieces: only the date is
+  # overdue.
+  def test_only_the_date_is_in_the_overdue_color
+    colors = runs(page("- [ ] ship (2026-11-07), soon", highlights: Shipinel::Highlights.new(TODAY, Shipinel::LineChanges.none)))
+             .map { |run| [run.text.strip, run.style.color] }
+
+    assert_equal [["(", Shipinel::Theme::Ink::BODY], ["2026-11-07", Shipinel::Theme::Accent::OVERDUE],
+                  ["),", Shipinel::Theme::Ink::BODY]], colors[1, 3]
+  end
+
   # One mark per text line of a changed block, in the left margin.
   def test_lines_changed_outside_are_marked_in_the_margin
     rects = changed_paragraph_marks
@@ -73,6 +84,15 @@ class TaskMarksTest < Minitest::Test
              .map { |run| run.style.color }.uniq
 
     assert_equal [Shipinel::Theme::Accent::TODAY, Shipinel::Theme::Ink::HEADING], colors
+  end
+
+  # "- [ ] gone" was removed: the task now after it gets one notch over its
+  # first line, 9 px wide and 3 px high.
+  def test_removed_lines_leave_a_notch_over_the_next_block
+    changes = Shipinel::LineChanges.between("- [ ] a\n- [ ] gone\n- [ ] b\n", "- [ ] a\n- [ ] b\n", 0)
+    rects = marks(page("- [ ] a\n- [ ] b\n", highlights: Shipinel::Highlights.new(Shipinel::Day.none, changes)))
+
+    assert_equal([[5.0, 43.0, 9.0, 3.0]], rects.map { |rect| [rect.left, rect.top, rect.width, rect.height] })
   end
 
   def test_nothing_changed_nothing_marked

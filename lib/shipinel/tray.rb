@@ -36,6 +36,20 @@ module Shipinel
       UI.ui_show_window(0)
     end
 
+    # A tray host took the icon (Tray is only kept then).
+    #: () -> bool
+    def open?
+      true
+    end
+
+    # Shows the window (it may be hidden in the icon) and removes the icon.
+    #: () -> void
+    def close
+      UI.ui_show_window(1)
+      UI.tray_close
+      nil
+    end
+
     #: () -> bool
     def window_shown?
       UI.ui_window_shown
@@ -63,6 +77,16 @@ module Shipinel
 
     #: () -> void
     def hide_window
+      nil
+    end
+
+    #: () -> bool
+    def open?
+      false
+    end
+
+    #: () -> void
+    def close
       nil
     end
 

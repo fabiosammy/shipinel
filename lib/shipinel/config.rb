@@ -141,9 +141,15 @@ module Shipinel
     # The settings, all defaults when the file is missing or unreadable.
     #: () -> Config
     def self.read
-      Config.new(File.read(path))
+      Config.new(text)
+    end
+
+    # The file's text, "" when it is missing or unreadable.
+    #: () -> String
+    def self.text
+      File.read(path)
     rescue SystemCallError
-      Config.new("")
+      ""
     end
   end
 end

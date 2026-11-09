@@ -33,7 +33,8 @@
   …)") steps back in quieter italics, so the ones you can pick up stand out;
   a date that has passed in an open task (`due 2026-11-06`) turns amber.
 - **Changes noticed.** Lines edited outside Shipinel (by you in your editor,
-  or an assistant) get a mark beside them for ten seconds.
+  or an assistant) get a mark beside them for ten seconds, and a short
+  notch shows where lines were deleted.
 - **Keyboard**: `j`/`k`, the arrows, Page Up/Down and Home/End scroll; `+`,
   `-` and `0` zoom; `h` hides the header; `u` undoes the last tick.
 - **Notifications**: a daily nudge with the number of tasks still open and
@@ -88,7 +89,7 @@ quits (or hides it in the tray, see `close_to_tray`).
 | `#`, `##`, `###` (up to `######`) headings, optional closing `#`s | Bold, sized by level |
 | `- [ ] task`, `- [x] task`, `- [X] task`, also with `*` or `+` | A checkbox you can click; done tasks are dimmed |
 | An open task with `⏳`, or `(waiting` in any case (`(Waiting on Ana)`) | Waiting: quieter italics. It still counts in the progress |
-| A date `YYYY-MM-DD` in an open task, before today | The word holding it in amber. Done tasks and other text are left as they are |
+| A date `YYYY-MM-DD` in an open task, before today | The date in amber (not the punctuation around it). Done tasks and other text are left as they are |
 | `- item`, `* item`, `+ item` | A bullet |
 | `1. item`, `2) item` | A numbered item, with its own number; `1. [ ] task` is a task |
 | Indented items (2 or 4 spaces, or tabs) | Nested, indented by depth |
@@ -112,6 +113,9 @@ missing final newline are kept exactly when a checkbox is toggled.
 Optional: `~/.config/shipinel/config` (or `$XDG_CONFIG_HOME/shipinel/config`),
 one `key=value` per line, `#` starts a comment line. Everything has a
 default; a value that does not fit keeps it and is reported on stderr.
+Changes apply to the open window within a second (the tray icon comes or
+goes, notifications follow the new settings), except `file`, which applies
+at the next start.
 
 | Setting | Default | Does |
 |---|---|---|
@@ -232,7 +236,8 @@ rules by title (for example "Auto Move Windows" for the workspace part).
   not be saved has nothing to undo.
 - **Changed lines** are compared by content with the file as it was half a
   second earlier, so a line that only moved is not marked, and your own
-  ticks never are.
+  ticks never are. Deleted lines leave a notch over the first line that
+  now follows them (blank lines aside).
 - **The pace** assumes the tasks are spread evenly from Monday 00:00 to
   Friday 24:00; at the weekend the week is over. More than a workday's share
   behind (20% of the tasks) turns the bar amber. Tasks inside code fences
@@ -242,6 +247,9 @@ rules by title (for example "Auto Move Windows" for the workspace part).
   tray, Shipinel says so on stderr and closing quits as usual.
 - **Notifications** go through `notify-send` (libnotify), which the Nix package
   brings.
+- **Stopping it from outside.** `kill`, Ctrl+C in the terminal it runs in,
+  or the terminal closing (TERM, INT, HUP) end Shipinel like the close
+  button, within half a second, saving where the window was.
 - **Idle cost.** The window is drawn 60 times a second only while you scroll,
   click or point at it; otherwise it sleeps until input arrives, waking twice
   a second to check the file (by content, so editors that save by renaming

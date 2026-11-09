@@ -4,12 +4,14 @@
 # cannot follow a value on the same line. Every setting has a default, and a
 # value that does not fit keeps the default and is reported on stderr.
 #
+# Shipinel reads this file again about every half second: a change applies
+# to the open window at once, except `file`, which applies at the next start.
+#
 # Yes/no settings take on/off, yes/no, true/false or 1/0.
 
 # The plan to open when shipinel is run without a path; ~ is your home.
-# A path on the command line still wins. The runbook is a new file each
-# week, so this line changes every Monday.
-file=~/Desenvolvimento/clausea/todo_list/week-2026-11-09-runbook.md
+# A path on the command line still wins.
+file=~/notes/week.md
 
 # A daily notification with the number of tasks still open and one of them
 # that is not waiting, at this time (24-hour HH:MM). Sent once a day, also

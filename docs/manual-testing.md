@@ -106,7 +106,8 @@ cp test/fixtures/semana.md /tmp/semana.md
 23. **Changed lines.** Edit two lines in your editor and save: within a
     second a teal mark appears in the left margin beside each of their
     lines (a wrapped task gets one per line), and it is gone ten seconds
-    later. Ticking a box in Shipinel marks nothing.
+    later. Delete a task: a short notch appears over the task that now
+    follows it. Ticking a box in Shipinel marks nothing.
 24. **Undo.** Tick a box, press `u`: it is open again in the window and in
     the file. A second `u` does nothing. Tick, edit that line in your
     editor, press `u`: the file keeps your edit.
@@ -118,6 +119,13 @@ cp test/fixtures/semana.md /tmp/semana.md
     today's date: that heading is light blue. Close the window, set
     `day=` in its state file to yesterday, open it: it opens at that
     heading. Open it again: it stays where you left it.
+28. **Config while running.** With the window open, set `tray=on` in the
+    config: the icon appears within a second. Click it to hide the window,
+    then set `tray=off`: the icon goes and the window comes back. A value
+    like `tray=maybe` is reported on stderr.
+29. **Stopping from outside.** `kill <pid>` (or Ctrl+C in its terminal): the
+    window closes within half a second, nothing is printed, and reopening
+    the plan puts it where it was.
 
 ## Per desktop
 

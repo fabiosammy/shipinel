@@ -101,4 +101,13 @@ class ReminderTest < Minitest::Test
     assert_match(/\A\d{4}-\d\d-\d\d \d\d:\d\d\z/, "#{now.date} #{now.time}")
     assert_includes 0.0..1.0, now.week_share
   end
+
+  # The config changed: no daily time now, so no nudge.
+  def test_new_settings_apply_from_now_on
+    nudger = reminder
+    nudger.use(Shipinel::NotifySettings.new("", true))
+    nudger.tick(at("18:00"), blocks(OPEN), "week.md")
+
+    assert_empty @notifier.shown
+  end
 end

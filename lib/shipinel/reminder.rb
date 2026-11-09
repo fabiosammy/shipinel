@@ -38,6 +38,14 @@ module Shipinel
       tell(progress.open_label, progress.nudge_body(name, blocks.open_example.text)) unless progress.complete?
     end
 
+    # The config changed: the new daily time and save-failed setting apply
+    # from now on (a nudge already sent today stays sent).
+    #: (NotifySettings settings) -> void
+    def use(settings)
+      @settings = settings
+      nil
+    end
+
     # After a click on a checkbox: `problem` is "" when it was saved.
     #: (String problem) -> void
     def save_failed(problem)

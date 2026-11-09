@@ -91,6 +91,9 @@ module Shipinel
     module ChangeMark
       LEFT = 5.0
       WIDTH = 3.0
+      # Lines removed just before a block: a short horizontal notch, as
+      # thick as the bar is wide.
+      NOTCH_WIDTH = 9.0
     end
 
     # Text sizes relative to the body font size.

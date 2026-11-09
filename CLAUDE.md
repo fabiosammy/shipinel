@@ -41,8 +41,9 @@ contribution process. This file is how you (Claude) work on the project.
   open window at midnight (Day, Highlighter).
 - Focus marks: an open task with `⏳` or "(waiting" is waiting (italic,
   quieter; still counted); a `YYYY-MM-DD` before today in an open task is
-  amber; lines changed outside get a margin mark for 10 s (Highlights,
-  compared by content per poll, so own ticks never mark).
+  amber; lines changed outside get a margin mark for 10 s, deleted ones a
+  notch over the line that follows them (Highlights, LineChanges,
+  RemovedLines; compared by content per poll, so own ticks never mark).
 - Keys: `j`/`k`, arrows, Page Up/Down, Home/End, `+`/`-`/`0` zoom, `h`,
   `u` (undo the last tick once, through the same safe toggle).
 - Scrollbar (wheel, drag, track click).
@@ -50,12 +51,16 @@ contribution process. This file is how you (Claude) work on the project.
   header, window size; position only on X11; the day it was saved) from
   `~/.local/state/shipinel/`.
 - Config `~/.config/shipinel/config`: `file`, `notify_daily`,
-  `notify_save_failed`, `tray`, `close_to_tray` (docs/config.example).
+  `notify_save_failed`, `tray`, `close_to_tray` (docs/config.example). Read
+  again every chore (Desktop#follow_config): changes apply at once, the tray
+  icon opening or closing; `file` only at the next start.
 - Notifications through `notify-send`: a daily open-tasks nudge naming one
   open task that is not waiting, and a failed save.
 - Tray icon (StatusNotifierItem + dbusmenu over sd-bus): progress ring and
   tooltip, click shows/hides the window, menu with Quit, optional close to
   tray; without a tray host, closing quits.
+- TERM, INT and HUP end it like the close button (StopSignals: the trap
+  sets a flag the loop reads), saving the state.
 - Idle costs next to no CPU (§3, Frames).
 
 ### What it is not (decided)

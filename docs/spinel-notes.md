@@ -354,6 +354,12 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
      AnchorList has `add_block`, SectionLine `tasks`. Predicates too: a
      `TaskClick#none?` (2026-11-08) brought the Enumerator builtins in (42
      warnings); it is `nothing?`.
+   - `Signal.trap("TERM") { object.method }` compiles without widening, in
+     a method too (a block over `each` that calls `self`), and runs the
+     block on TERM, INT and HUP while the program sleeps or waits in C
+     (probe 2026-11-08). Without a trap, Spinel raises `SignalException`
+     and prints `SIGTERM (SignalException)`. **Rule:** traps only set a
+     flag the loop reads (StopSignals).
    - `String#partition` resolves to the widening `Enumerable#partition`
      builtin (checked with a probe, 2026-11-08). **Rule:** split key=value
      lines with `split("=", 2)` (StateReader).
