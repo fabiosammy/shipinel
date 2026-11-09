@@ -100,3 +100,16 @@ DISPLAY=:99 build/bin/shipinel test/fixtures/semana.md
 
 Never drive the real display with XTest or similar: synthetic clicks go to
 whatever window is on top there.
+
+## The README's animation
+
+`docs/demo/record.sh PATH/TO/shipinel docs/demo.gif` records the example
+week in its own Xvfb: it builds `docs/demo/clock.c` (an `LD_PRELOAD` that
+moves the wall clock to Wednesday 2026-11-11 15:30), ticks a task, edits a
+line as another editor would, scrolls, presses `u` and `h`, and turns the
+recording into a GIF with a small palette. It needs xdotool and an ffmpeg
+with x11grab (Debian's `ffmpeg`, or `nixpkgs#ffmpeg-full`; plain
+`nixpkgs#ffmpeg` has no X11 capture). Use the fonts of the still image
+(Liberation Sans through `FONTCONFIG_FILE`) so the two match. The pointer
+is not recorded: Xvfb has only its bare "X" cursor.
+
