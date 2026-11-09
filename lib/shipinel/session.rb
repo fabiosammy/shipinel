@@ -37,7 +37,7 @@ module Shipinel
       file = StateFile.for(plan_path)
       saved = StateReader.new(file.read).state(defaults)
       reminder = Reminder.new(config.notify, Notifier.new(Notifier::COMMAND), saved.days.nudged)
-      Session.new(file, saved, Desktop.new(reminder, TrayIcon.new(config.tray)))
+      Session.new(file, saved, Desktop.new(reminder, TrayIcon.new(config.tray), StopSignals.new))
     end
 
     #: (Integer now) -> bool

@@ -56,6 +56,8 @@ contribution process. This file is how you (Claude) work on the project.
 - Tray icon (StatusNotifierItem + dbusmenu over sd-bus): progress ring and
   tooltip, click shows/hides the window, menu with Quit, optional close to
   tray; without a tray host, closing quits.
+- TERM, INT and HUP end it like the close button (StopSignals: the trap
+  sets a flag the loop reads), saving the state.
 - Idle costs next to no CPU (§3, Frames).
 
 ### What it is not (decided)

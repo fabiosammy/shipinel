@@ -242,6 +242,9 @@ rules by title (for example "Auto Move Windows" for the workspace part).
   tray, Shipinel says so on stderr and closing quits as usual.
 - **Notifications** go through `notify-send` (libnotify), which the Nix package
   brings.
+- **Stopping it from outside.** `kill`, Ctrl+C in the terminal it runs in,
+  or the terminal closing (TERM, INT, HUP) end Shipinel like the close
+  button, within half a second, saving where the window was.
 - **Idle cost.** The window is drawn 60 times a second only while you scroll,
   click or point at it; otherwise it sleeps until input arrives, waking twice
   a second to check the file (by content, so editors that save by renaming

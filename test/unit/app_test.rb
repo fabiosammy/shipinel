@@ -80,8 +80,11 @@ class AppTest < Minitest::Test
     File.write(@path, "# Semana\n- [ ] Reunião\n")
   end
 
+  # Running the app installs the stop signals' traps (StopSignals); the
+  # test runner gets Ruby's own handlers back.
   def teardown
     FileUtils.remove_entry(@dir)
+    Shipinel::StopSignals.names.each { |name| Signal.trap(name, "DEFAULT") }
   end
 
   # No notifications: the tests never run notify-send.
@@ -189,6 +192,21 @@ class AppTest < Minitest::Test
     screen = run_app(FakeScreen.new(frames: 1))
 
     assert_equal [[:open, 500.0, 700.0, "shipinel"], 38], [screen.calls.first, screen.font_shim.calls[1].last]
+  end
+
+  # A real SIGTERM to this process after the first frame of a window that
+  # would otherwise stay open for a thousand.
+  def run_until_signalled
+    screen = FakeScreen.new(frames: 1_000)
+    screen.on_frame_end = ->(frame) { Process.kill("TERM", Process.pid) if frame.zero? }
+    run_app(screen)
+  end
+
+  # The loop ends within a few frames, the way the close button ends it.
+  def test_a_stop_signal_closes_the_window_and_saves
+    calls = run_until_signalled.calls
+
+    assert_equal [[:close], true, true], [calls.last, File.exist?(state_file.path), calls.count([:end_frame]) < 10]
   end
 
   def test_remembers_where_it_was_on_closing
