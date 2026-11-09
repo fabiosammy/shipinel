@@ -154,13 +154,20 @@ static void sleep_milliseconds(long milliseconds) {
 /* Waits up to half a second for the stop pipe or the tray's bus, then posts
  * an empty event: glfwPostEmptyEvent is the one GLFW call any thread may
  * make, and it ends the main thread's glfwWaitEvents, which then reads the
- * bus (tray_next_event). A bus that fails is left out from then on. */
+ * bus (tray_next_event). A bus that fails is left out until the tray opens
+ * a new one (the config can turn the icon off and on again). */
 static int wake_loop(void *unused) {
     (void)unused;
     bool bus_usable = true;
+    int last_bus = -1;
     for (;;) {
+        const int bus_now = tray_bus_fd();
+        if (bus_now != last_bus) {
+            last_bus = bus_now;
+            bus_usable = true;
+        }
         struct pollfd watched[2] = {{waker_stop[0], POLLIN, 0},
-                                    {bus_usable ? tray_bus_fd() : -1, POLLIN, 0}};
+                                    {bus_usable ? bus_now : -1, POLLIN, 0}};
         poll(watched, 2, WAKE_MILLISECONDS);
         if (watched[0].revents != 0) {
             return 0;

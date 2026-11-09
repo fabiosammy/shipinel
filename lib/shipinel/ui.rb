@@ -27,6 +27,7 @@ module Shipinel
     ffi_func :tray_open, %i[str], :bool
     ffi_func :tray_show_progress, %i[str int], :void
     ffi_func :tray_next_event, [], :int
+    ffi_func :tray_close, [], :void
     ffi_func :ui_screen_width, [], :int
     ffi_func :ui_screen_height, [], :int
     ffi_func :ui_begin_frame, %i[uint32], :void

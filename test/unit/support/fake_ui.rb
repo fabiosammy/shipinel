@@ -25,6 +25,7 @@ module Shipinel
     def self.tray_open(*) = record(:tray_open, *, answer: true)
     def self.tray_show_progress(*) = record(:tray_progress, *)
     def self.tray_next_event = record(:tray_event, answer: 1)
+    def self.tray_close = record(:tray_close)
     def self.ui_set_extra_codepoints(*) = record(:extra_codepoints, *)
     def self.ui_load_font(*) = record(:load_font, *)
     def self.ui_font_loaded(*) = record(:font_loaded, *, answer: false)

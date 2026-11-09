@@ -118,6 +118,13 @@ cp test/fixtures/semana.md /tmp/semana.md
     today's date: that heading is light blue. Close the window, set
     `day=` in its state file to yesterday, open it: it opens at that
     heading. Open it again: it stays where you left it.
+28. **Config while running.** With the window open, set `tray=on` in the
+    config: the icon appears within a second. Click it to hide the window,
+    then set `tray=off`: the icon goes and the window comes back. A value
+    like `tray=maybe` is reported on stderr.
+29. **Stopping from outside.** `kill <pid>` (or Ctrl+C in its terminal): the
+    window closes within half a second, nothing is printed, and reopening
+    the plan puts it where it was.
 
 ## Per desktop
 

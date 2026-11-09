@@ -98,7 +98,8 @@ class SavedStateTest < Minitest::Test
   def session(file)
     reminder = Shipinel::Reminder.new(Shipinel::NotifySettings.new("", false), Shipinel::Notifier.new("false"), "")
     tray_icon = Shipinel::TrayIcon.new(Shipinel::TraySettings.new(false, false))
-    Shipinel::Session.new(file, read("day=#{TODAY}\n"), Shipinel::Desktop.new(reminder, tray_icon, Shipinel::StopSignals.new))
+    desktop = Shipinel::Desktop.new(reminder, tray_icon, Shipinel::StopSignals.new, "")
+    Shipinel::Session.new(file, read("day=#{TODAY}\n"), desktop)
   end
 
   def save(session, state) = session.save(state.spot, state.view, state.place)
