@@ -39,7 +39,8 @@ module Shipinel
 
       old_lines = before.lines.map(&:chomp)
       new_lines = after.lines.map(&:chomp)
-      LineChanges.new(new_lines(old_lines, new_lines), RemovedLines.new(new_lines).after(old_lines), now)
+      added = new_lines(old_lines, new_lines)
+      LineChanges.new(added, RemovedLines.new(new_lines).after(old_lines, added), now)
     end
 
     # The indexes of the lines in `after` that are nowhere in `before`.
@@ -84,7 +85,9 @@ module Shipinel
   # Where lines went missing: walking the old lines, a run of lines the new
   # file lacks ends at the next old line it still has, and the run is
   # placed before that line's index in the new file. Blank lines are
-  # everywhere, so they neither end a run nor place it.
+  # everywhere, so they neither end a run nor place it. A run that new
+  # lines took the place of is an edit, not a removal: its changed lines
+  # are marked already.
   class RemovedLines
     # @rbs @after: Array[String]
     # @rbs @places: Array[Integer]
@@ -98,14 +101,30 @@ module Shipinel
       @missing = false
     end
 
-    # The places of the runs of `before` (the old lines) that are gone.
-    #: (Array[String] before) -> Array[Integer]
-    def after(before)
+    # The places of the runs of `before` (the old lines) that are gone,
+    # given the `added` lines of the new file.
+    #: (Array[String] before, Array[Integer] added) -> Array[Integer]
+    def after(before, added)
       before.each { |line| note(line) unless line.strip.empty? }
-      @missing ? @places + [@after.size] : @places
+      gone.reject { |place| added.include?(RemovedLines.text_line_before(@after, place)) }
+    end
+
+    # The last line of `lines` above `place` that is not blank (-1 for
+    # none).
+    #: (Array[String] lines, Integer place) -> Integer
+    def self.text_line_before(lines, place)
+      line_index = place - 1
+      line_index -= 1 while line_index >= 0 && lines[line_index].to_s.strip.empty?
+      line_index
     end
 
     private
+
+    # Every run's place, with the one at the end of the file.
+    #: () -> Array[Integer]
+    def gone
+      @missing ? @places + [@after.size] : @places
+    end
 
     # A kept line ends a run of missing ones, which goes before it.
     #: (String line) -> void
