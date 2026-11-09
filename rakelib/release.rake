@@ -4,11 +4,13 @@
 # number written in flake.nix (the Nix package), spin.toml (the spin
 # package) and lib/shipinel/version.rb (`shipinel --version`), and the
 # GitHub workflows and issue forms. `rake version` prints the version for
-# the "20 · Release" workflow, and `rake release_notes` its notes;
+# the "20 · Release" workflow, and `rake release_notes` its notes; `rake
+# bump[x.y.z]` sets a new one in all three files;
 # `rake check_version` fails when they differ; `rake yaml_checks` lints the
 # YAML (.yamllint) and `rake shell_checks` the shell scripts.
 
 require_relative "support/release_notes"
+require_relative "support/version_bump"
 
 # Example match: `version = "0.1.0";` in flake.nix's package, or
 # `version = "0.1.0"` in spin.toml.
@@ -36,6 +38,21 @@ end
 desc "Print the release version"
 task :version do
   puts flake_version
+end
+
+# Writes `file` back with what the block makes of its text.
+def rewrite(file)
+  File.write(file, yield(File.read(file)))
+end
+
+desc "Set the release version in flake.nix, spin.toml and lib/shipinel/version.rb: rake bump[0.3.0]"
+task :bump, [:version] do |_task, args|
+  version = args[:version].to_s
+  VersionBump.check(version)
+  rewrite("flake.nix") { |text| VersionBump.flake(text, version) }
+  rewrite("spin.toml") { |text| VersionBump.spin(text, version) }
+  rewrite("lib/shipinel/version.rb") { |text| VersionBump.ruby(text, version) }
+  Rake::Task[:check_version].invoke
 end
 
 # The git output of `command` (no shell: the arguments are passed as they are).

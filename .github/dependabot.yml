@@ -1,0 +1,19 @@
+# Weekly pull requests for newer versions of the GitHub Actions the
+# workflows use (actions/checkout, cache-nix-action, ...). flake.lock has
+# its own weekly pull request (30 · Update flake), and the gems are pinned
+# in the flake, so this is the only ecosystem here.
+#
+# The prefix makes the titles lowercase Conventional Commits, such as
+# "ci(deps): bump actions/checkout from 7 to 8", as 11 · PR title wants.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "ci(deps)"
+    groups:
+      actions:
+        patterns: ["*"]
