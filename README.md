@@ -291,10 +291,11 @@ rules by title (for example "Auto Move Windows" for the workspace part).
 - **Stopping it from outside.** `kill`, Ctrl+C in the terminal it runs in,
   or the terminal closing (TERM, INT, HUP) end Shipinel like the close
   button, within half a second, saving where the window was.
-- **Idle cost.** The window is drawn 60 times a second only while you scroll,
-  click or point at it; otherwise it sleeps until input arrives, waking twice
-  a second to check the file (by content, so editors that save by renaming
-  are caught too).
+- **CPU.** A frame is drawn only when what it shows changed: the page moved,
+  the pointer entered or left a checkbox or link, or the file changed.
+  Otherwise the window sleeps until input arrives, waking twice a second to
+  check the file (by content, so editors that save by renaming are caught
+  too). Scrolling costs about as little as sitting idle.
 - **Wayland or X11.** raylib uses GLFW, which picks its Wayland backend
   when `WAYLAND_DISPLAY` is set. `WAYLAND_DEBUG=1 shipinel 2>&1 | head`
   prints `wl_display` / `wl_registry` messages on a native Wayland window and

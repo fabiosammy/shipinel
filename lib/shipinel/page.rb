@@ -97,7 +97,7 @@ module Shipinel
       key = LayoutKey.new(document.blocks, document.action_problem, @highlighter.highlights, area)
       return unless wanted?(input, key)
 
-      build(input, key, document)
+      @typesetter.fresh(build(input, key, document), input)
     end
 
     private
@@ -138,15 +138,8 @@ module Shipinel
     def build(input, key, document)
       header = Header.for(@view, key)
       content = @typesetter.page_for(key, @view.styles, document)
-      bar = scroll(input, content, key.area.below(header.height))
+      bar = @scroll.bar_for(input, content, key.area.below(header.height))
       Frame.of(content, header.titled(content.section_at(bar.offset, document.name), @typesetter.fonts), bar)
-    end
-
-    # Applies this frame's input; returns the bar where the page ended up.
-    #: (Input input, DrawList content, Rect area) -> Scrollbar
-    def scroll(input, content, area)
-      bar = Scrollbar.new(content.height, area, @scroll.offset)
-      bar.moved_to(@scroll.apply(input, bar, content.anchors))
     end
   end
 end

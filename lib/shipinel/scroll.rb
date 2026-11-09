@@ -9,6 +9,7 @@
 require_relative "activity"
 require_relative "input"
 require_relative "scroll_spot"
+require_relative "draw_list"
 require_relative "scrollbar"
 
 module Shipinel
@@ -53,6 +54,14 @@ module Shipinel
     #: () -> bool
     def due?
       @activity.due?
+    end
+
+    # Applies this frame's input to `content` shown in `area`; returns the
+    # bar where the page ended up.
+    #: (Input input, DrawList content, Rect area) -> Scrollbar
+    def bar_for(input, content, area)
+      bar = Scrollbar.new(content.height, area, @offset)
+      bar.moved_to(apply(input, bar, content.anchors))
     end
 
     # Keeps the page between its top and where its end reaches the bottom

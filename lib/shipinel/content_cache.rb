@@ -6,6 +6,7 @@
 # layout.
 
 require_relative "draw_list"
+require_relative "frame"
 require_relative "geometry"
 require_relative "highlights"
 require_relative "markdown/block"
@@ -57,11 +58,25 @@ module Shipinel
     attr_reader :list #: DrawList
 
     # @rbs @key: LayoutKey
+    # @rbs @shown: Look
 
     #: () -> void
     def initialize
       @list = DrawList.new
       @key = LayoutKey.none
+      @shown = Look.none
+    end
+
+    # Whether the last frame drawn looked like this.
+    #: (Look look) -> bool
+    def shown?(look)
+      @shown.same_as?(look)
+    end
+
+    #: (Look look) -> void
+    def show(look)
+      @shown = look
+      nil
     end
 
     #: (LayoutKey key) -> bool
@@ -79,6 +94,7 @@ module Shipinel
     #: () -> void
     def clear
       @key = LayoutKey.none
+      @shown = Look.none
       nil
     end
   end

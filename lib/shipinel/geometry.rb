@@ -127,6 +127,13 @@ module Shipinel
       @bottom = top + area.height
     end
 
+    # The same page position under the same header: frames that agree
+    # draw the page in the same place.
+    #: (Viewport other) -> bool
+    def same_as?(other)
+      @shift == other.shift && @top == other.top
+    end
+
     # Whether any of `rect`, in window position, is inside the area.
     #: (Rect rect) -> bool
     def shows?(rect)
