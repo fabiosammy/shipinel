@@ -90,7 +90,9 @@ test it. Two checks run on every pull request and must be green:
 
 Every Monday, **30 · Update flake** opens (or refreshes) the pull request
 `chore(flake): update flake.lock` with the newest nixpkgs. When a newer
-tool rejects the code there, the fix goes on that branch.
+tool rejects the code there, the fix goes on that branch. Dependabot opens
+one `ci(deps): bump ...` pull request a week for newer GitHub Actions
+(`.github/dependabot.yml`).
 
 A maintainer reviews, may ask for changes, and squash-merges.
 
@@ -98,9 +100,10 @@ A maintainer reviews, may ask for changes, and squash-merges.
 
 Maintainers release from `main`, with [semantic versions](https://semver.org):
 
-1. Open a pull request `chore(release): 0.2.0` that sets the same version in
+1. Open a pull request `chore(release): 0.2.0` that sets the version in
    `flake.nix` (the `shipinel` package), `spin.toml` and
-   `lib/shipinel/version.rb`. `rake check` fails when they differ.
+   `lib/shipinel/version.rb`: `bundle exec rake bump[0.2.0]` writes all
+   three. `rake check` fails when they differ.
 2. Merge it once **10 · Validate** passes.
 3. In the Actions tab, run **20 · Release** on `main`. It runs every gate
    again, builds the package, and creates the GitHub Release `v0.2.0`. Its

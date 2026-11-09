@@ -188,7 +188,8 @@ CI runs the same: `10 · Validate` (flake check, build, binary start, and
 window test `test/window/run.sh` in Xvfb) and `11 · PR title` on every pull
 request; `20 · Release` by hand (attaches the bundle); `30 · Update
 flake` opens the weekly flake.lock pull request (and starts 10 on it, since
-the workflow token's pull requests start no workflows). `main` is protected:
+the workflow token's pull requests start no workflows), and Dependabot one
+for newer actions. `main` is protected:
 the `validate`, `linux-bundle / bundle` (both from 10) and `title` (11)
 checks must pass, squash merges only; I (admin) may still push directly.
 
@@ -274,9 +275,11 @@ Keep in step with every change:
 4. Do not push unless I ask in that message; I usually push from my host.
 5. Pull requests follow `.github/pull_request_template.md` and are
    squash-merged, so the title is the commit.
-6. Releases: bump the version in `flake.nix`, `spin.toml` and
-   `lib/shipinel/version.rb` in a `chore(release): x.y.z` PR, merge, run
-   `20 · Release` (CONTRIBUTING.md).
+6. Releases: `rake bump[x.y.z]` (flake.nix, spin.toml,
+   lib/shipinel/version.rb) in a `chore(release): x.y.z` PR, merge, run
+   `20 · Release` (CONTRIBUTING.md). Its notes come from `rake
+   release_notes` (commit subjects since the last tag; tested in
+   test/unit/release_notes_test.rb).
 7. If Spinel cannot compile something, do not hack around it: probe, record
    it in `docs/spinel-notes.md`, pick the simplest supported construct.
 
