@@ -28,6 +28,14 @@ class HighlightsTest < Minitest::Test
     assert_equal [2, 4], changes("a\nb\n\nc\nd\ne\n", "a\n\nc\nd\n").removed
   end
 
+  # An edited line is a changed line, not a removal plus an addition: no
+  # notch over the heading below it.
+  def test_an_edited_line_is_not_a_removal
+    edited = changes("- [ ] retro\n\n## Goal\n", "- [ ] retro and demo\n\n## Goal\n")
+
+    assert_equal [[0], []], [edited.lines, edited.removed]
+  end
+
   def test_only_removed_lines_still_expire
     removed = changes("a\nb\n", "a\n")
 
