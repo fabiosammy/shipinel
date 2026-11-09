@@ -18,7 +18,8 @@ class TaskMarksTest < Minitest::Test
   end
 
   def commands(page) = Array.new(page.size) { |position| page.at(position) }
-  def runs(page) = commands(page).grep(Shipinel::TextRun)
+  # Text runs that draw something (a space after a date is a run of its own).
+  def runs(page) = commands(page).grep(Shipinel::TextRun).reject { |run| run.text.strip.empty? }
   def looks(page) = runs(page).map { |run| [run.text.strip, run.style.font_slot, run.style.color] }
 
   def marks(page)
@@ -57,6 +58,16 @@ class TaskMarksTest < Minitest::Test
     after = "# a\n\nnew text that wraps around\n"
     changes = Shipinel::LineChanges.between("# a\n\nold\n", after, 0)
     marks(page(after, highlights: Shipinel::Highlights.new(Shipinel::Day.none, changes), width: 200.0))
+  end
+
+  # The word "(2026-11-07)," is drawn in three pieces: only the date is
+  # overdue.
+  def test_only_the_date_is_in_the_overdue_color
+    colors = runs(page("- [ ] ship (2026-11-07), soon", highlights: Shipinel::Highlights.new(TODAY, Shipinel::LineChanges.none)))
+             .map { |run| [run.text.strip, run.style.color] }
+
+    assert_equal [["(", Shipinel::Theme::Ink::BODY], ["2026-11-07", Shipinel::Theme::Accent::OVERDUE],
+                  ["),", Shipinel::Theme::Ink::BODY]], colors[1, 3]
   end
 
   # One mark per text line of a changed block, in the left margin.

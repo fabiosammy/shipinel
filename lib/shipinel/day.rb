@@ -39,6 +39,13 @@ module Shipinel
          domingo segunda terça quarta quinta sexta sábado]
     end
 
+    # Whether `date` (YYYY-MM-DD) is an earlier day; never for "" or for
+    # Day.none. ISO dates compare in time order as text.
+    #: (String date) -> bool
+    def later_than?(date)
+      !date.empty? && !@date.empty? && date < @date
+    end
+
     # A heading's plain title is about this day when it holds the date
     # ("Friday 2026-11-13 — housekeeping") or starts with the weekday's
     # name as a word ("Monday — push", "Segunda-feira").

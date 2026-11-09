@@ -88,7 +88,7 @@ quits (or hides it in the tray, see `close_to_tray`).
 | `#`, `##`, `###` (up to `######`) headings, optional closing `#`s | Bold, sized by level |
 | `- [ ] task`, `- [x] task`, `- [X] task`, also with `*` or `+` | A checkbox you can click; done tasks are dimmed |
 | An open task with `⏳`, or `(waiting` in any case (`(Waiting on Ana)`) | Waiting: quieter italics. It still counts in the progress |
-| A date `YYYY-MM-DD` in an open task, before today | The word holding it in amber. Done tasks and other text are left as they are |
+| A date `YYYY-MM-DD` in an open task, before today | The date in amber (not the punctuation around it). Done tasks and other text are left as they are |
 | `- item`, `* item`, `+ item` | A bullet |
 | `1. item`, `2) item` | A numbered item, with its own number; `1. [ ] task` is a task |
 | Indented items (2 or 4 spaces, or tabs) | Nested, indented by depth |

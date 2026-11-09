@@ -100,10 +100,10 @@ module Shipinel
       style.with_color(Theme::Accent::TODAY)
     end
 
-    # A word holding a past date, in an open task.
-    #: (String word) -> bool
-    def overdue?(word)
-      @open_task && @highlights.overdue?(word)
+    # A word cut around the past date it holds, in an open task only.
+    #: (String word) -> DatedWord
+    def overdue_parts(word)
+      @open_task ? @highlights.overdue_parts(word) : DatedWord.plain(word)
     end
 
     # The block that starts here and ends on line `last` is placed next.
