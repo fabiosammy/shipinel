@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshot.png" width="440" alt="Shipinel showing an example week: 4 of 12 tasks done, a tick on the bar where Wednesday afternoon is, and the tasks of Goal 1" />
+  <img src="docs/screenshot.png" width="440" alt="Shipinel on a Wednesday afternoon of an example week: 4 of 14 tasks done with an amber bar (behind the week's pace tick), today's heading in blue, a mark beside a line just edited elsewhere, an overdue date in amber, done tasks dimmed and a task waiting on someone in italics" />
 </p>
 
 ## Features
@@ -382,7 +382,8 @@ raygui and GLFW call, with signatures from the headers) and
 [docs/tray-notes.md](docs/tray-notes.md) (the tray's D-Bus interfaces).
 
 The screenshot above is of [docs/example-week.md](docs/example-week.md), a
-made-up plan.
+made-up plan, on Wednesday 2026-11-11 at 15:30, a second after one of its
+lines was edited in another editor.
 
 ## License
 
