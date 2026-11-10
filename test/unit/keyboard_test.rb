@@ -11,7 +11,7 @@ class KeyboardTest < Minitest::Test
   # A KeyPress with these watched keys pressed.
   def press(*codes)
     watched = K.watched
-    Shipinel::KeyPress.new(codes.sum { |code| 1 << watched.find_index(code) })
+    Shipinel::KeyPress.new(codes.sum { |code| 1 << watched.find_index(code) }, "")
   end
 
   def scrolled(*codes) = press(*codes).scrolled(100.0, BAR)
@@ -42,7 +42,7 @@ class KeyboardTest < Minitest::Test
     assert_equal [true, false], [press(K::UNDO).undo?, press(K::HEADER).undo?]
   end
 
-  def with_control(code) = Shipinel::KeyPress.new(watched_bit(code) | Shipinel::KeyPress::Selecting::CONTROL)
+  def with_control(code) = Shipinel::KeyPress.new(watched_bit(code) | Shipinel::KeyPress::Selecting::CONTROL, "")
 
   # Ctrl+C and Ctrl+A need Control; Control alone is not a key press.
   def test_copy_and_select_all_need_control
@@ -52,6 +52,47 @@ class KeyboardTest < Minitest::Test
   end
 
   def test_control_alone_is_not_a_key_press
-    refute_predicate Shipinel::KeyPress.new(Shipinel::KeyPress::Selecting::CONTROL), :pressed?
+    refute_predicate Shipinel::KeyPress.new(Shipinel::KeyPress::Selecting::CONTROL, ""), :pressed?
+  end
+
+  F = K::Finding
+
+  def finding(bits, typed = "") = Shipinel::KeyPress.new(bits, typed).for_finding
+
+  def find_bit(code) = watched_bit(code)
+
+  def test_ctrl_f_opens_the_find_bar
+    control = Shipinel::KeyPress::Selecting::CONTROL
+
+    assert_equal [true, false], [finding(find_bit(F::F) | control).open?, finding(find_bit(F::F)).open?]
+  end
+
+  def test_escape_closes_and_backspace_erases
+    assert_equal [true, true], [finding(find_bit(F::ESCAPE)).close?, finding(find_bit(F::BACKSPACE)).erase?]
+  end
+
+  # Either Enter: the next match; with Shift: the previous; Shift alone: none.
+  def test_enter_steps
+    shift = Shipinel::FindKeys::SHIFT
+
+    assert_equal [1, 1, -1, 0], [finding(find_bit(F::ENTER)).step, finding(find_bit(F::KEYPAD_ENTER)).step,
+                                 finding(find_bit(F::ENTER) | shift).step, finding(shift).step]
+  end
+
+  # Typing is a key press; Shift alone is not.
+  def test_typing_is_a_key_press
+    shift_alone = Shipinel::KeyPress.new(Shipinel::FindKeys::SHIFT, "")
+
+    assert_equal [true, false, "ab"],
+                 [Shipinel::KeyPress.new(0, "ab").pressed?, shift_alone.pressed?, finding(0, "ab").typed]
+  end
+
+  # While the find bar is open, j, k, the zoom keys, h and u are typed, not
+  # obeyed; the arrows and Page keys still scroll.
+  def test_letters_are_left_out_while_finding
+    letters = press(K::Lines::J, K::Lines::K, K::Zoom::EQUAL, K::Zoom::ZERO, K::HEADER, K::UNDO).while_finding
+    arrows = press(K::Lines::DOWN, K::Jumps::PAGE_DOWN).while_finding
+
+    assert_equal [false, 100.0 + 48.0 + 300.0], [letters.pressed?, arrows.scrolled(100.0, BAR)]
   end
 end

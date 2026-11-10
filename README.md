@@ -102,8 +102,11 @@
 | `u` | Undo the last tick (once), as long as that line has not changed since |
 | Drag over the text, Ctrl+A | Select text (a click elsewhere clears it) |
 | Ctrl+C | Copy the selected text, a line for each line on the page |
+| Ctrl+F | Find: type to highlight every match (any case) and go to the first one below; Enter / Shift+Enter for the next / previous; Backspace; Escape closes it |
 
-Keys repeat while held. Escape does nothing; only the window's close button
+While the find bar is open, letters are typed into it: `j`, `k`, `h`, `u`,
+`+`, `-` and `0` do not act until Escape closes it (the arrows, Page
+Up/Down, Home and End still scroll). Keys repeat while held. Escape does nothing; only the window's close button
 quits (or hides it in the tray, see `close_to_tray`).
 
 ### Supported Markdown
@@ -319,7 +322,8 @@ deliver it. These are left out by design, not by lack of time:
   editor (or an assistant) writes the plan; Shipinel only flips checkboxes.
   Two writers on one file is how plans get lost.
 - **Not a filter or a task manager.** It shows the whole plan as you wrote it:
-  no views, tags, priorities, assignees or due-date engine.
+  no views, tags, priorities, assignees or due-date engine. Find (Ctrl+F)
+  only highlights; it never hides a line.
 - **Not a timer.** No pomodoros, time tracking or focus sessions; they compete
   for attention instead of directing it.
 - **No history, stats or streaks.** It is about this week, not about the
@@ -399,7 +403,8 @@ strings.
 | `bin/shipinel.rb` | Entry point: command line, config, fonts, then `App` |
 | `lib/shipinel/markdown/` | The parser: lines to blocks (each with its source line), inline spans |
 | `lib/shipinel/layout.rb`, `flow.rb`, `line_wrap.rb`, `*_layout.rb` | Blocks to positioned draw commands for a window width |
-| `lib/shipinel/page.rb`, `typesetter.rb`, `header.rb`, `painter.rb` | One frame: the cached layout, the header and scrollbar, drawing and clicks |
+| `lib/shipinel/page.rb`, `frame_maker.rb`, `typesetter.rb`, `header.rb`, `painter.rb` | One frame: the cached layout, the header and scrollbar, drawing and clicks |
+| `lib/shipinel/selection.rb`, `search.rb`, `matches.rb`, `find_bar.rb` | Selecting and copying text; the find bar and its matches |
 | `lib/shipinel/app.rb`, `session.rb`, `desktop.rb` | The loop, the file poll, the saved state, notifications and the tray |
 | `lib/shipinel/task_toggler.rb`, `document_file.rb` | Flipping one checkbox safely and writing the file atomically |
 | `lib/shipinel/ui.rb` | Spinel FFI declarations for the C side |

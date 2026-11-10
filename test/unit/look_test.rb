@@ -18,7 +18,7 @@ class LookTest < Minitest::Test
   end
 
   def input(left, top, buttons = 0)
-    Shipinel::Input.new(Shipinel::Point.new(left, top), buttons, 0.0, Shipinel::KeyPress.new(0))
+    Shipinel::Input.new(Shipinel::Point.new(left, top), buttons, 0.0, Shipinel::KeyPress.new(0, ""))
   end
 
   # At offset 0 the checkbox is drawn 50 px lower, under the header.

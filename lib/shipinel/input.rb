@@ -40,6 +40,13 @@ module Shipinel
       @buttons.anybits?(PRESSED)
     end
 
+    # The same input without the letter commands, which the open find bar
+    # takes as text (KeyPress#while_finding).
+    #: () -> Input
+    def while_finding
+      Input.new(@at, @buttons, @wheel, @keys.while_finding)
+    end
+
     # The wheel turned, the button is held or pressed, or a key was pressed.
     #: () -> bool
     def active?

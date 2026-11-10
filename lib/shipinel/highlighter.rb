@@ -2,15 +2,20 @@
 
 # Keeps what the page points out (Highlights) up to date with every file
 # poll and with the date, and says where a new day opens; also the text
-# selected with the mouse.
+# selected with the mouse and the find bar.
 
 require_relative "clipboard"
 require_relative "highlights"
 require_relative "markdown/block"
 require_relative "poller"
+require_relative "find_bar"
+require_relative "font_set"
+require_relative "marks"
 require_relative "saved_state"
 require_relative "scroll_spot"
+require_relative "search"
 require_relative "selection"
+require_relative "view"
 
 module Shipinel
   # Keeps the Highlights up to date on every file poll: marks the lines an
@@ -21,20 +26,47 @@ module Shipinel
     attr_reader :highlights #: Highlights
     # The text selected with the mouse (Selection).
     attr_reader :selection #: Selection
+    # The find bar (Search).
+    attr_reader :search #: Search
 
-    #: (Day day) -> void
-    def initialize(day)
+    # @rbs @fonts: FontSet
+
+    # `fonts` measure the matches, as the page is drawn.
+    #: (Day day, FontSet fonts) -> void
+    def initialize(day, fonts)
       @highlights = Highlights.new(day, LineChanges.none)
       @selection = Selection.none
+      @search = Search.none
+      @fonts = fonts
     end
 
-    # `frame`, showing the selection as this frame's input leaves it;
-    # Ctrl+C puts its text on the clipboard.
-    #: (Input input, Frame frame) -> Frame
-    def selecting(input, frame)
+    # The find bar after this frame's keys, on `content` shown in `view`:
+    # where the window goes to show the match it is on, when it moved to
+    # another one (ScrollSpot.none otherwise).
+    #: (KeyPress keys, DrawList content, Viewport view) -> ScrollSpot
+    def searching(keys, content, view)
+      steps = keys.for_finding
+      before = @search
+      @search = before.after(steps, content, @fonts).placed(before, view)
+      @search.found_anew?(before) || !steps.step.zero? ? @search.aim(view) : ScrollSpot.none
+    end
+
+    # The find bar as it is, in `view`'s status text, at the bottom of
+    # `window`.
+    #: (View view, Rect window) -> FindBar
+    def find_bar(view, window)
+      FindBar.new(@search, view.styles.status, window, @fonts)
+    end
+
+    # `frame`, showing the selection as this frame's input leaves it and
+    # the matches, with `bar` in its overlay; Ctrl+C puts the selected text
+    # on the clipboard.
+    #: (Input input, Frame frame, FindBar bar) -> Frame
+    def selecting(input, frame, bar)
       @selection = @selection.after(input, frame)
       Clipboard.copy(@selection.text) if input.keys.copy?
-      frame.showing(@selection)
+      bar.add_to(frame.overlay)
+      frame.showing(Marks.new(@selection, @search))
     end
 
     # `before` and `after`: the file's content around this poll's reload.

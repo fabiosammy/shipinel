@@ -136,6 +136,13 @@ cp test/fixtures/semana.md /tmp/semana.md
     Ctrl+C copies the whole plan. A click on a checkbox ticks it and clears
     the selection; releasing a drag over a checkbox or link does not click
     it.
+32. **Find.** Ctrl+F: a bar opens at the bottom. Type "ação" (or any word
+    the plan has twice): every match gets an amber background, the first
+    one below the top brighter, "1 of 2" on the right; typing "AÇÃO" finds
+    the same. Enter goes to the next (scrolling to it), Shift+Enter back,
+    round the ends. Typing `h` or `j` goes into the bar; the arrows still
+    scroll. "zzz" says "no matches" in amber. Escape closes it and the
+    highlights go.
 
 ## Per desktop
 

@@ -48,6 +48,14 @@ module Shipinel
 
     def self.ui_set_hand_cursor(*) = record(:hand_cursor, *)
     def self.ui_control_down = record(:control_down, answer: false)
+    def self.ui_shift_down = record(:shift_down, answer: false)
+
+    # The codepoints ui_char_pressed answers, one per call, then 0.
+    def self.typed=(codepoints)
+      @typed = codepoints.dup
+    end
+
+    def self.ui_char_pressed = record(:char_pressed, answer: (@typed ||= []).shift || 0)
     def self.ui_set_clipboard(*) = record(:clipboard, *)
   end
 end

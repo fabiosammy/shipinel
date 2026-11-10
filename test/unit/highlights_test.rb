@@ -3,6 +3,7 @@
 require_relative "test_helper"
 require_relative "../../lib/shipinel/highlighter"
 require_relative "../../lib/shipinel/markdown/parser"
+require_relative "support/fake_fonts"
 
 class HighlightsTest < Minitest::Test
   SUNDAY = Shipinel::Day.new("2026-11-08", 0)
@@ -83,7 +84,7 @@ class HighlightsTest < Minitest::Test
   # Marked on the poll that sees the edit, kept on the next ones while
   # nothing changes, gone after ten seconds.
   def test_highlighter_keeps_the_marks_for_a_while
-    highlighter = Shipinel::Highlighter.new(SUNDAY)
+    highlighter = Shipinel::Highlighter.new(SUNDAY, fake_font_set)
     after = "- [ ] a\n- [ ] b\n"
 
     assert_equal [[1], [1], []],
@@ -92,7 +93,7 @@ class HighlightsTest < Minitest::Test
   end
 
   def test_highlighter_moves_the_date_on_and_says_when_it_is_a_new_day
-    highlighter = Shipinel::Highlighter.new(SUNDAY)
+    highlighter = Shipinel::Highlighter.new(SUNDAY, fake_font_set)
 
     assert_equal [false, true, "2026-11-09"],
                  [highlighter.turned_to?(SUNDAY), highlighter.turned_to?(MONDAY), highlighter.highlights.today]
@@ -103,7 +104,7 @@ class HighlightsTest < Minitest::Test
   def test_after_midnight_the_page_goes_to_todays_heading
     today = Shipinel::Day.today
     blocks = Shipinel::Markdown::Parser.parse("# Week\n## Plan for #{today.date}\n")
-    highlighter = Shipinel::Highlighter.new(SUNDAY.date == today.date ? MONDAY : SUNDAY)
+    highlighter = Shipinel::Highlighter.new(SUNDAY.date == today.date ? MONDAY : SUNDAY, fake_font_set)
 
     assert_equal ["plan-for-#{today.date}", false],
                  [highlighter.reloaded("", "", blocks).slug, highlighter.reloaded("", "", blocks).aimed?]

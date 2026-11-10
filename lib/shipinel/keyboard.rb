@@ -3,7 +3,8 @@
 # The keys Shipinel answers to, and what was pressed in one frame. The C
 # shim reports, for the watched keys in order, which went down (or repeated
 # while held) this frame, as one bit each; this file gives the bits their
-# meaning. Codes are raylib's (raylib.h KeyboardKey, docs/raylib-notes.md).
+# meaning, and keeps what was typed for the find bar. Codes are raylib's
+# (raylib.h KeyboardKey, docs/raylib-notes.md).
 
 require_relative "scrollbar"
 
@@ -47,12 +48,23 @@ module Shipinel
       A = 65
     end
 
+    # Ctrl+F opens the find bar; Enter goes to the next match (with Shift,
+    # the previous), Backspace takes back a character, Escape closes it.
+    module Finding
+      F = 70
+      ESCAPE = 256
+      ENTER = 257
+      KEYPAD_ENTER = 335
+      BACKSPACE = 259
+    end
+
     # Bit n of a KeyPress is the n-th key here.
     #: () -> Array[Integer]
     def self.watched
       [Lines::J, Lines::DOWN, Lines::K, Lines::UP, Jumps::PAGE_DOWN, Jumps::PAGE_UP, Jumps::HOME, Jumps::END_KEY,
        Zoom::EQUAL, Zoom::KEYPAD_PLUS, Zoom::MINUS, Zoom::KEYPAD_MINUS, Zoom::ZERO, HEADER, UNDO,
-       Selecting::C, Selecting::A]
+       Selecting::C, Selecting::A, Finding::F, Finding::ESCAPE, Finding::ENTER, Finding::KEYPAD_ENTER,
+       Finding::BACKSPACE]
     end
   end
 
@@ -88,19 +100,40 @@ module Shipinel
       # Not a watched key: Screen sets it while Control is held, so it says
       # nothing on its own (`pressed?` leaves it out).
       CONTROL = 0x4000_0000
+      # j, k, the zoom keys, h and u: while the find bar is open they are
+      # typed, not obeyed (`while_finding`).
+      LETTERS = 0x7F05
     end
+
+    # What was typed this frame (for the find bar), "" for nothing.
+    attr_reader :typed #: String
 
     # @rbs @bits: Integer
 
-    #: (Integer bits) -> void
-    def initialize(bits)
+    #: (Integer bits, String typed) -> void
+    def initialize(bits, typed)
       @bits = bits
+      @typed = typed
     end
 
-    # A watched key went down (Control alone does not count).
+    # A watched key went down or something was typed (Control or Shift
+    # alone does not count).
     #: () -> bool
     def pressed?
-      @bits.anybits?(~Selecting::CONTROL)
+      @bits.anybits?(~(Selecting::CONTROL | FindKeys::SHIFT)) || !@typed.empty?
+    end
+
+    # The same keys with the letter commands left out, while the find bar
+    # takes the letters.
+    #: () -> KeyPress
+    def while_finding
+      KeyPress.new(@bits & ~Selecting::LETTERS, @typed)
+    end
+
+    # What these keys do to the find bar.
+    #: () -> FindKeys
+    def for_finding
+      FindKeys.new(@bits, @typed)
     end
 
     # Where these keys move a page scrolled to `offset`: a line (j, k, the
@@ -160,6 +193,52 @@ module Shipinel
     #: (Integer forward, Integer back) -> Integer
     def step(forward, back)
       (on?(forward) ? 1 : 0) - (on?(back) ? 1 : 0)
+    end
+  end
+
+  # The find bar's keys in one frame (Keyboard::Finding), and what was typed.
+  class FindKeys
+    OPEN = 0b10_0000_0000_0000_0000
+    CLOSE = 0b100_0000_0000_0000_0000
+    ENTER = 0b1_1000_0000_0000_0000_0000
+    ERASE = 0b10_0000_0000_0000_0000_0000
+    # Not a watched key: Screen sets it while Shift is held.
+    SHIFT = 0x2000_0000
+
+    attr_reader :typed #: String
+
+    # @rbs @bits: Integer
+
+    #: (Integer bits, String typed) -> void
+    def initialize(bits, typed)
+      @bits = bits
+      @typed = typed
+    end
+
+    # Ctrl+F.
+    #: () -> bool
+    def open?
+      @bits.allbits?(OPEN | KeyPress::Selecting::CONTROL)
+    end
+
+    # Escape.
+    #: () -> bool
+    def close?
+      @bits.anybits?(CLOSE)
+    end
+
+    # Backspace.
+    #: () -> bool
+    def erase?
+      @bits.anybits?(ERASE)
+    end
+
+    # 1: the next match (Enter), -1: the previous one (Shift+Enter), 0.
+    #: () -> Integer
+    def step
+      return 0 unless @bits.anybits?(ENTER)
+
+      @bits.anybits?(SHIFT) ? -1 : 1
     end
   end
 end

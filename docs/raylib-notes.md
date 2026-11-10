@@ -391,3 +391,20 @@ a no-op once `data` is `NULL`.
 
 `ui_load_font` drops the glyph images after loading: about 1 MB for the
 five fonts at 20 px (Latin ranges plus the document's characters).
+
+## Typed characters and Shift (2026-11-10)
+
+From `raylib.h` (6.2):
+
+- `RLAPI int GetCharPressed(void);` (line 1208): the next Unicode
+  codepoint typed, 0 when the queue is empty. GLFW's character callback
+  fills the queue (`rcore_desktop_glfw.c:2123`); `PollInputEvents` empties
+  it (line 1288), so each frame reads what was typed since the last one.
+- `KEY_F = 70` (line 614), `KEY_ESCAPE = 256` (641), `KEY_ENTER = 257`
+  (642), `KEY_BACKSPACE = 259` (644), `KEY_KP_ENTER = 335` (697),
+  `KEY_LEFT_SHIFT = 340` (672), `KEY_RIGHT_SHIFT = 344` (676).
+
+`ui_char_pressed` hands the codepoints to the find bar one by one;
+`ui_shift_down` makes Shift+Enter go to the previous match. Escape does not
+close the window (`SetExitKey(KEY_NULL)` in `ui_open_window`), so it can
+close the find bar.

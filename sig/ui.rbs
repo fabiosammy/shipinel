@@ -38,6 +38,8 @@ module Shipinel
     def self.ui_pointer_on: (Float left, Float top, Float width, Float height) -> Integer
     def self.ui_set_hand_cursor: (bool hand) -> void
     def self.ui_control_down: () -> bool
+    def self.ui_shift_down: () -> bool
+    def self.ui_char_pressed: () -> Integer
     def self.ui_set_clipboard: (String text) -> void
   end
 end

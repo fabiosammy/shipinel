@@ -438,6 +438,14 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
   initialised with `{}` compiles without widening (CliOptions' flag values).
 - `Integer#anybits?` / `nobits?`, `String#codepoints`, `String#delete` with
   non-ASCII characters, `Array#-` and `Integer#times` all compile cleanly.
+- For the find bar (2026-11-10): `String#downcase` (it folds non-ASCII
+  letters, "AÇÃO" → "ação", as CRuby does), `Integer#chr(Encoding::UTF_8)`,
+  `String#<<` with an Integer codepoint, `String#[](start, length)`,
+  `String#end_with?`, `String#strip`, `Integer#allbits?`, `Array#each` and
+  `while (x = call).positive?` compile cleanly. **`String#index(str,
+  from)` widens** (35 warnings, the Enumerable builtins), and so does
+  **calling `Integer#clamp`** (4): PageText.next_in compares slices, and
+  offsets are cut with `negative?` and `min` (Span#within).
 
 ## Reproducers
 

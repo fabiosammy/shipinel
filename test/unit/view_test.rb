@@ -6,7 +6,7 @@ require_relative "../../lib/shipinel/view"
 class ViewTest < Minitest::Test
   K = Shipinel::Keyboard
 
-  def press(code) = Shipinel::KeyPress.new(1 << K.watched.find_index(code))
+  def press(code) = Shipinel::KeyPress.new(1 << K.watched.find_index(code), "")
   def size_after(size, code) = Shipinel::View.new(size, 20, true).after(press(code)).size
 
   def test_zoom_steps_two_pixels

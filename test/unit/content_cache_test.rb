@@ -17,7 +17,7 @@ class ContentCacheTest < Minitest::Test
     def placement = Shipinel::WindowPlace.new(Shipinel::Rect.new(0.0, 0.0, @width, 300.0), false)
     attr_writer :keys
 
-    def input = Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, 0.0, Shipinel::KeyPress.new(@keys || 0))
+    def input = Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, 0.0, Shipinel::KeyPress.new(@keys || 0, ""))
   end
 
   def setup

@@ -30,7 +30,7 @@ class SelectionTest < Minitest::Test
   def point(left, top) = Shipinel::Point.new(left, top)
 
   def input(left, top, buttons, keys = 0)
-    Shipinel::Input.new(point(left, top), buttons, 0.0, Shipinel::KeyPress.new(keys))
+    Shipinel::Input.new(point(left, top), buttons, 0.0, Shipinel::KeyPress.new(keys, ""))
   end
 
   # From the middle of "the" on the first line to the middle of "the" on
@@ -102,6 +102,7 @@ class SelectionTest < Minitest::Test
     page = frame
     rest = page.look(input(300.0, 300.0, 0))
 
-    refute rest.same_as?(page.showing(Shipinel::Selection.all(content)).look(input(300.0, 300.0, 0)))
+    refute rest.same_as?(page.showing(Shipinel::Marks.new(Shipinel::Selection.all(content),
+                                                          Shipinel::Search.none)).look(input(300.0, 300.0, 0)))
   end
 end

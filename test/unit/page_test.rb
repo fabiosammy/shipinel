@@ -11,10 +11,13 @@ require "tmpdir"
 # far enough down to scroll to.
 class PageTest < Minitest::Test
   class FakeScreen
-    attr_accessor :keys
+    attr_accessor :keys, :typed
 
     def placement = Shipinel::WindowPlace.new(Shipinel::Rect.new(0.0, 0.0, 400.0, 300.0), false)
-    def input = Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, 0.0, Shipinel::KeyPress.new(@keys || 0))
+
+    def input
+      Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, 0.0, Shipinel::KeyPress.new(@keys || 0, @typed || ""))
+    end
   end
 
   SOURCE = "# Goal 1\n\n#{"linha\n\n" * 12}# Goal 2\n\n#{"mais\n\n" * 12}".freeze
@@ -87,5 +90,39 @@ class PageTest < Minitest::Test
     @page.prepare(@document, saved(Shipinel::Day.today.date))
 
     assert_equal "Goal 1", title(frame)
+  end
+
+  def open_find
+    @screen.keys = press(Shipinel::Keyboard::Finding::F) | Shipinel::KeyPress::Selecting::CONTROL
+    frame
+    @screen.keys = 0
+  end
+
+  # Ctrl+F, then "mais": the window moves down to the first match, which
+  # it then shows whole, above the find bar.
+  def test_typing_in_the_find_bar_goes_to_the_first_match
+    open_find
+    @screen.typed = "mais"
+    found = frame
+    search = found.marks.search
+
+    assert_equal [12, true], [search.total, found.view.holds?(search.matches.rect_of(search.current))]
+  end
+
+  # While the find bar is open, h is typed: the header stays.
+  def test_letters_go_into_the_find_bar
+    open_find
+    @screen.keys = press(Shipinel::Keyboard::HEADER)
+    @screen.typed = "h"
+    frame
+
+    assert_equal [true, "h"], [@page.view.header?, frame_search.query]
+  end
+
+  def frame_search
+    @screen.keys = 0
+    @screen.typed = ""
+    @page.redraw
+    frame.marks.search
   end
 end

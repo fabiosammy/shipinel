@@ -49,6 +49,12 @@ contribution process. This file is how you (Claude) work on the project.
 - Select and copy: dragging over the page (or Ctrl+A) selects text in
   reading order (Selection, page positions, so it survives scrolling; a
   new layout drops it); Ctrl+C copies it, a line per laid-out line.
+- Find: Ctrl+F opens a bar at the bottom; what is typed (raylib's typed
+  characters) is found case-insensitively in the laid-out text, lines
+  joined by a space (PageText, Matches); every match is highlighted, the
+  current one brighter, with "2 of 7"; Enter / Shift+Enter step round,
+  Escape closes. While open, letter commands are typed, not obeyed
+  (KeyPress#while_finding).
 - Scrollbar (wheel, drag, track click).
 - Reopens each plan where it was left (section by heading slug, zoom,
   header, window size; position only on X11; the day it was saved) from
@@ -76,7 +82,7 @@ These are settled (README, "What Shipinel is not"). Do not propose or build
 them; if an idea crosses one, say so:
 
 - **Not an editor**: no typing, adding, moving or deleting tasks. The only
-  write is a checkbox flip.
+  write is a checkbox flip. (Typing into the find bar changes no file.)
 - **No filtering or views**: the whole plan is shown as written. No tags,
   priorities, assignees, due-date engine, "open tasks only".
 - **No timers**: no pomodoros, time tracking, focus sessions.
@@ -85,6 +91,9 @@ them; if an idea crosses one, say so:
   links I click and notifications).
 
 ### Decided
+
+- Find highlights and never hides (2026-11-10): it is not filtering. It
+  searches what is drawn, not the Markdown source.
 
 - Tasks are not done in order, and some wait on others: no "next task"
   marker. Waiting is marked per task (`⏳`, "(waiting"), not by heading;
@@ -128,9 +137,10 @@ apart from the thin native layer.
 | `bin/shipinel.rb` | Entry point: CLI, config, fonts, `App` (the only file requiring `ui.rb`) |
 | `lib/shipinel/markdown/` | Parser: lines → blocks with source line index; inline spans |
 | `layout.rb`, `flow.rb`, `line_wrap.rb`, `*_layout.rb`, `anchor.rb` | Blocks → draw commands for a width; heading anchors with task counts |
-| `page.rb`, `typesetter.rb`, `content_cache.rb`, `header.rb`, `progress_bar.rb`, `painter.rb` | One frame: cached layout, header, scrollbar, drawing, clicks |
+| `page.rb`, `frame_maker.rb`, `typesetter.rb`, `content_cache.rb`, `header.rb`, `progress_bar.rb`, `painter.rb` | One frame: cached layout, header, scrollbar, drawing, clicks |
 | `day.rb`, `line_changes.rb`, `highlights.rb`, `highlighter.rb`, `ChangeMarks` in `draw_list.rb` | Today's heading, past dates, lines changed outside: kept per poll, marked while laying out |
 | `selection.rb`, `reading_order.rb`, `selected_lines.rb`, `clipboard.rb` | Text selected with the mouse or Ctrl+A, and Ctrl+C |
+| `search.rb`, `page_text.rb`, `matches.rb`, `match_maker.rb`, `span.rb`, `find_bar.rb`, `marks.rb` | The find bar (Ctrl+F): query, matches, the strip, marks drawn under the text |
 | `app.rb`, `session.rb`, `desktop.rb`, `reminder.rb`, `tray_icon.rb` | Loop, file poll, saved state, notifications, tray |
 | `task_toggler.rb`, `document_file.rb` | Safe toggle, atomic write |
 | `config.rb`, `state_file.rb`, `key_values.rb` | Config and saved state (key=value) |

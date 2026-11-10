@@ -428,6 +428,16 @@ int ui_control_down(void) {
     return IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL) ? 1 : 0;
 }
 
+int ui_shift_down(void) {
+    return IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT) ? 1 : 0;
+}
+
+/* raylib queues what GLFW's character callback typed since the last
+ * frame; reading takes it off the queue. */
+int ui_char_pressed(void) {
+    return GetCharPressed();
+}
+
 /* GLFW keeps a copy and answers other programs' requests for it while the
  * window runs (X11 selection, Wayland data offer). */
 void ui_set_clipboard(const char *text) {
