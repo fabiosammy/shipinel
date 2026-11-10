@@ -378,6 +378,20 @@ on. Ctrl+C and Ctrl+A are the C (67) and A (65) keys of `Keyboard.watched`
 while Control is down.
 
 
+## Glyph images (2026-11-10)
+
+From `raylib.h` (6.2): `GlyphInfo` (line 308) holds `Image image;` (line
+313), each glyph's bitmap in CPU memory, kept after `LoadFontEx` has built
+the atlas texture. `rtext.c` reads it only to draw text into an image
+(`ImageDrawText`) and to export a font; `DrawTextEx` uses the texture,
+`recs` and the offsets. `RLAPI void UnloadImage(Image image);` (line 1370)
+is `RL_FREE(image.data)` (`rtextures.c:650`), and `UnloadFont` →
+`UnloadFontData` (`rtext.c:1016`) unloads every glyph image again, which is
+a no-op once `data` is `NULL`.
+
+`ui_load_font` drops the glyph images after loading: about 1 MB for the
+five fonts at 20 px (Latin ranges plus the document's characters).
+
 ## Typed characters and Shift (2026-11-10)
 
 From `raylib.h` (6.2):

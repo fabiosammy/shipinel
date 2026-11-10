@@ -133,6 +133,16 @@ static int fill_codepoints(int *codepoints) {
     return count;
 }
 
+/* raylib keeps a CPU copy of every glyph's bitmap next to the atlas
+ * texture, for drawing text into images (ImageDrawText). Shipinel draws
+ * from the texture only, so the copies go (docs/raylib-notes.md). */
+static void drop_glyph_images(Font font) {
+    for (int glyph = 0; glyph < font.glyphCount; glyph++) {
+        UnloadImage(font.glyphs[glyph].image);
+        font.glyphs[glyph].image.data = NULL;
+    }
+}
+
 static void release_font(int slot) {
     if (font_owned[slot]) {
         UnloadFont(fonts[slot]);
@@ -366,6 +376,7 @@ void ui_load_font(int slot, const char *path, int pixel_size) {
         return;
     }
     SetTextureFilter(loaded.texture, TEXTURE_FILTER_BILINEAR);
+    drop_glyph_images(loaded);
     fonts[target] = loaded;
     font_owned[target] = true;
 }

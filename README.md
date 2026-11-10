@@ -301,6 +301,11 @@ rules by title (for example "Auto Move Windows" for the workspace part).
   Otherwise the window sleeps until input arrives, waking twice a second to
   check the file (by content, so editors that save by renaming are caught
   too). Scrolling costs about as little as sitting idle.
+- **Memory.** Shipinel's own data (the plan, its layout, the fonts) is a
+  few megabytes. Most of what `top` shows belongs to the OpenGL driver:
+  with Mesa's software renderer (llvmpipe, used when there is no GPU
+  driver, as in a VM) it is about 95 MB, most of it the LLVM shader
+  compiler, which other programs using it share.
 - **Wayland or X11.** raylib uses GLFW, which picks its Wayland backend
   when `WAYLAND_DISPLAY` is set. `WAYLAND_DEBUG=1 shipinel 2>&1 | head`
   prints `wl_display` / `wl_registry` messages on a native Wayland window and
