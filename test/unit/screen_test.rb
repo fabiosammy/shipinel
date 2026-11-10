@@ -69,7 +69,16 @@ class ScreenTest < Minitest::Test
   def test_input_keys
     keys = @screen.input.keys
 
-    assert_equal [true, [:keys, Shipinel::Keyboard.watched, 17]], [keys.pressed?, Shipinel::UI.calls.last]
+    read = Shipinel::UI.calls.find { |call| call.first == :keys }
+
+    assert_equal [true, [:keys, Shipinel::Keyboard.watched, 22]], [keys.pressed?, read]
+  end
+
+  # Typed characters are read until the shim answers 0.
+  def test_input_typed
+    Shipinel::UI.typed = ["a".ord, "ç".ord, "1".ord]
+
+    assert_equal "aç1", @screen.input.keys.typed
   end
 
   def test_checkbox

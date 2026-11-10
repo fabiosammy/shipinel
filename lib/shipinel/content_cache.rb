@@ -33,6 +33,12 @@ module Shipinel
       @area = area
     end
 
+    # The window area below the first `height` pixels (the header's).
+    #: (Float height) -> Rect
+    def below(height)
+      @area.below(height)
+    end
+
     # One that no layout matches: its blocks belong to no document.
     #: () -> LayoutKey
     def self.none

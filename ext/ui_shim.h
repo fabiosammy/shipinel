@@ -61,6 +61,11 @@ void ui_set_hand_cursor(int hand);
 
 /* 1 while either Control key is held (Ctrl+C copies, Ctrl+A selects). */
 int ui_control_down(void);
+/* 1 while either Shift key is held (Shift+Enter: the previous match). */
+int ui_shift_down(void);
+/* The next character typed this frame (a Unicode codepoint), or 0 when
+ * there is none left: called until 0 for what goes into the find bar. */
+int ui_char_pressed(void);
 
 /* Puts `text` on the clipboard, for the selection's Ctrl+C. */
 void ui_set_clipboard(const char *text);

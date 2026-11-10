@@ -19,7 +19,7 @@ class ScrollTest < Minitest::Test
   def bar(page_height = 1000.0) = Shipinel::Scrollbar.new(page_height, AREA, @scroll.offset)
 
   def mouse(top, buttons: 0, wheel: 0.0, left: TRACK_X)
-    Shipinel::Input.new(Shipinel::Point.new(left, top), buttons, wheel, Shipinel::KeyPress.new(0))
+    Shipinel::Input.new(Shipinel::Point.new(left, top), buttons, wheel, Shipinel::KeyPress.new(0, ""))
   end
 
   def test_starts_at_the_top
@@ -89,7 +89,7 @@ class ScrollTest < Minitest::Test
 
   # The pointer away from the bar, one key pressed.
   def key(code)
-    pressed = Shipinel::KeyPress.new(1 << Shipinel::Keyboard.watched.find_index(code))
+    pressed = Shipinel::KeyPress.new(1 << Shipinel::Keyboard.watched.find_index(code), "")
     Shipinel::Input.new(Shipinel::Point.new(100.0, 0.0), 0, 0.0, pressed)
   end
 

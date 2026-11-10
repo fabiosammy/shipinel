@@ -2,15 +2,16 @@
 
 # How the document is presented: its View (text size, header), where it is
 # scrolled to, and the fonts (with their warnings). Each frame it reads the
-# input and applies the zoom and header keys; a frame
-# that is due or shows a changed page applies the wheel and the scrollbar,
-# reuses the document's layout unless something it depends on changed, and
-# builds the overlay: progress header and scrollbar. Any other frame does
-# nothing more. It also keeps what the page points out (Highlighter).
+# input and applies the zoom and header keys; a frame that is due or shows
+# a changed page is built (FrameMaker), reusing the document's layout
+# unless something it depends on changed. Any other frame does nothing
+# more. It also keeps what the page points out (Highlighter), the
+# selection and the find bar among it.
 
 require_relative "document_view"
 require_relative "draw_list"
 require_relative "frame"
+require_relative "frame_maker"
 require_relative "header"
 require_relative "highlighter"
 require_relative "scroll_spot"
@@ -35,7 +36,7 @@ module Shipinel
       @view = view
       @scroll = Scroll.new
       @typesetter = Typesetter.new(fonts)
-      @highlighter = Highlighter.new(Day.today)
+      @highlighter = Highlighter.new(Day.today, fonts)
     end
 
     # After a file poll, given what the file held before it: the lines
@@ -93,11 +94,12 @@ module Shipinel
     # or nil when nothing is to be drawn.
     #: (Input input, Rect area, DocumentView document) -> Frame?
     def update(input, area, document)
+      input = input.while_finding if @highlighter.search.open?
       adjust(input.keys)
       key = LayoutKey.new(document.blocks, document.action_problem, @highlighter.highlights, area)
       return unless wanted?(input, key)
 
-      @typesetter.fresh(build(input, key, document), input)
+      @typesetter.fresh(FrameMaker.new(@view, @typesetter, @scroll, @highlighter).build(input, key, document), input)
     end
 
     private
@@ -130,17 +132,6 @@ module Shipinel
     def wanted?(input, key)
       @scroll.note(input)
       @scroll.due? || !@typesetter.holds?(key)
-    end
-
-    # The document scrolls in the window area below the header, which names
-    # the section the page ended up in.
-    #: (Input input, LayoutKey key, DocumentView document) -> Frame
-    def build(input, key, document)
-      header = Header.for(@view, key)
-      content = @typesetter.page_for(key, @view.styles, document)
-      bar = @scroll.bar_for(input, content, key.area.below(header.height))
-      title = header.titled(bar.section_in(content, document.name), @typesetter.fonts)
-      @highlighter.selecting(input, Frame.of(content, title, bar))
     end
   end
 end

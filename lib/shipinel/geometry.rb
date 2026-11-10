@@ -69,6 +69,12 @@ module Shipinel
       Rect.new(@left, @top + height, @width, @height - height)
     end
 
+    # What is left above the last `height` pixels.
+    #: (Float height) -> Rect
+    def shortened(height)
+      Rect.new(@left, @top, @width, @height - height)
+    end
+
     #: () -> Point
     def corner
       Point.new(@left, @top)
@@ -138,6 +144,25 @@ module Shipinel
     #: (Viewport other) -> bool
     def same_as?(other)
       @shift == other.shift && @top == other.top
+    end
+
+    # Where the page is scrolled to: the page position at the area's top.
+    #: () -> Float
+    def offset
+      @shift + @top
+    end
+
+    # How tall the area is.
+    #: () -> Float
+    def height
+      @bottom - @top
+    end
+
+    # Whether all of `rect`, a page position, is inside the area.
+    #: (Rect rect) -> bool
+    def holds?(rect)
+      top = rect.top - @shift
+      top >= @top && top + rect.height <= @bottom
     end
 
     # Whether any of `rect`, in window position, is inside the area.

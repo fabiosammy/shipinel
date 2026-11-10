@@ -30,7 +30,7 @@ class GeometryTest < Minitest::Test
     at = Shipinel::Point.new(0.0, 0.0)
 
     inputs = [[0, 0.0, 0], [1, 0.0, 0], [0, 1.0, 0], [0, 0.0, 4]].map do |buttons, wheel, keys|
-      Shipinel::Input.new(at, buttons, wheel, Shipinel::KeyPress.new(keys)).active?
+      Shipinel::Input.new(at, buttons, wheel, Shipinel::KeyPress.new(keys, "")).active?
     end
 
     assert_equal [false, true, true, true], inputs

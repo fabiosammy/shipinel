@@ -5,7 +5,7 @@ require_relative "../../lib/shipinel/activity"
 
 class ActivityTest < Minitest::Test
   def mouse(left, buttons: 0, wheel: 0.0, keys: 0)
-    Shipinel::Input.new(Shipinel::Point.new(left, 5.0), buttons, wheel, Shipinel::KeyPress.new(keys))
+    Shipinel::Input.new(Shipinel::Point.new(left, 5.0), buttons, wheel, Shipinel::KeyPress.new(keys, ""))
   end
 
   def due_after?(*mice)

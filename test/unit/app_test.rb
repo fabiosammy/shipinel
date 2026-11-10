@@ -32,7 +32,7 @@ class AppTest < Minitest::Test
     def closing? = @frame >= @frames
     def close = @calls << [:close]
     def placement = Shipinel::WindowPlace.sized(440, 640)
-    def input = Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, @wheel, Shipinel::KeyPress.new(0))
+    def input = Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, @wheel, Shipinel::KeyPress.new(0, ""))
     def font_shim = (@font_shim ||= FakeShim.new(failing: @broken == :font ? PATHS_FAILING : []))
     def begin_frame(_color) = @pointed = false
     def texts_on(frame) = @texts.select { |text_frame, _text| text_frame == frame }.map(&:last)

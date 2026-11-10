@@ -2,6 +2,7 @@
 
 require_relative "test_helper"
 require_relative "../../lib/shipinel/painter"
+require_relative "support/fake_fonts"
 
 class PainterTest < Minitest::Test
   # Records draws; the mouse is over the things whose top is in
@@ -121,7 +122,9 @@ class PainterTest < Minitest::Test
     overlay.add(Shipinel::TextRun.new("week.md", Shipinel::Rect.new(0.0, 0.0, 40.0, 20.0), STYLE))
     content = page
     view = Shipinel::Viewport.new(0.0, Shipinel::Rect.new(0.0, 0.0, 400.0, 600.0))
-    Shipinel::Painter.new(screen, Shipinel::Frame.new(content, overlay, view).showing(Shipinel::Selection.all(content))).paint
+    Shipinel::Painter.new(screen,
+                          Shipinel::Frame.new(content, overlay,
+                                              view).showing(Shipinel::Marks.new(Shipinel::Selection.all(content), Shipinel::Search.none))).paint
   end
 
   # The page's only text gets a background, drawn first (under it); the
@@ -144,5 +147,25 @@ class PainterTest < Minitest::Test
     assert_equal [5, [140.0, 160.0]], [click.line_index, screen.draws.select do |draw|
       draw.first == :pointer
     end.map(&:last)]
+  end
+
+  # "ação" (at 110) matches "ç": the match gets a background before
+  # anything else is drawn, in the current match's color.
+  def test_find_matches_get_a_background_under_them
+    content = page
+    screen = FakeScreen.new
+    Shipinel::Painter.new(screen, Shipinel::Frame.new(content, Shipinel::DrawList.new, WINDOW)
+      .showing(Shipinel::Marks.new(Shipinel::Selection.none, found_on(content, "Ç")))).paint
+
+    assert_equal [:rect, 110.0, Shipinel::Theme::Found::CURRENT], screen.draws.first
+  end
+
+  WINDOW = Shipinel::Viewport.new(0.0, Shipinel::Rect.new(0.0, 0.0, 400.0, 600.0))
+
+  # The find bar opened on `content`, with `typed` typed into it.
+  def found_on(content, typed)
+    open = Shipinel::FindKeys.new(Shipinel::FindKeys::OPEN | Shipinel::KeyPress::Selecting::CONTROL, "")
+    opened = Shipinel::Search.none.after(open, content, fake_font_set)
+    opened.after(Shipinel::FindKeys.new(0, typed), content, fake_font_set)
   end
 end

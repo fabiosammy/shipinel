@@ -60,6 +60,14 @@ module Shipinel
       BACKGROUND = 0x34456BFF
     end
 
+    # What the find bar found: every match, and the one it is on.
+    module Found
+      MATCH = 0x5A4A22FF
+      CURRENT = 0x9A6B12FF
+      # "no matches".
+      NONE = 0xE5A04BFF
+    end
+
     # Task checkboxes.
     module Checkbox
       BORDER = 0x6B7280FF

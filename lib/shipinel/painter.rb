@@ -29,7 +29,7 @@ module Shipinel
     # The checkbox or link clicked this frame, if any (the last one wins).
     #: () -> DrawCommand?
     def paint
-      paint_selection
+      paint_marks
       paint_contents
       paint_overlays
       @screen.use_hand_cursor(@hand)
@@ -45,6 +45,23 @@ module Shipinel
       return unless @frame.selection.active?
 
       @frame.content_size.times { |position| mark_selected(@frame.content_at(position)) }
+    end
+
+    # The find bar's matches get a background, the one it is on brighter;
+    # then the selection.
+    #: () -> void
+    def paint_marks
+      search = @frame.marks.search
+      search.matches.pieces.times { |piece| mark_found(search, piece) }
+      paint_selection
+    end
+
+    #: (Search search, Integer piece) -> void
+    def mark_found(search, piece)
+      view = @frame.view
+      area = search.matches.rect_at(piece).up(view.shift)
+      @screen.draw_rect(area, search.color_of(piece)) if view.shows?(area)
+      nil
     end
 
     #: (DrawCommand command) -> void

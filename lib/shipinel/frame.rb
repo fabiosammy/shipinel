@@ -2,7 +2,8 @@
 
 # What one frame shows: the laid-out document (drawn scrolled, only where
 # the window shows it), the overlay that stays put (header and
-# scrollbar), how the document sits in the window, and the text selected.
+# scrollbar), how the document sits in the window, and what is marked on
+# its text: the selection and the find bar's matches.
 
 require_relative "draw_list"
 require_relative "geometry"
@@ -10,7 +11,7 @@ require_relative "header"
 require_relative "input"
 require_relative "scrollbar"
 require_relative "look"
-require_relative "selection"
+require_relative "marks"
 
 module Shipinel
   # See the file comment.
@@ -18,8 +19,8 @@ module Shipinel
     attr_reader :content #: DrawList
     attr_reader :overlay #: DrawList
     attr_reader :view #: Viewport
-    # The text selected on this page (Selection.none until `select`).
-    attr_reader :selection #: Selection
+    # The selection and the matches (Marks.none until `showing`).
+    attr_reader :marks #: Marks
 
     # The frame for a page whose scrollbar is where this frame's input left
     # it: the header and the bar make the overlay.
@@ -36,15 +37,21 @@ module Shipinel
       @content = content
       @overlay = overlay
       @view = view
-      @selection = Selection.none
+      @marks = Marks.none
     end
 
-    # The frame shows `selection` (worked out from this frame, Selection#after).
-    # (Not `select`, an Enumerable name: docs/spinel-notes.md.)
-    #: (Selection selection) -> Frame
-    def showing(selection)
-      @selection = selection
+    # The frame shows `marks` (worked out from this frame: Selection#after,
+    # Search#after). (Not `select`, an Enumerable name: docs/spinel-notes.md.)
+    #: (Marks marks) -> Frame
+    def showing(marks)
+      @marks = marks
       self
+    end
+
+    # The text selected on this page.
+    #: () -> Selection
+    def selection
+      @marks.selection
     end
 
     # Where `at`, a window position, is on the page.
@@ -75,7 +82,7 @@ module Shipinel
     # How this frame looks with the pointer and button of `input`.
     #: (Input input) -> Look
     def look(input)
-      Look.new(@content, @view, PointerOn.new(clickable_at(input.at), input.down?), @selection)
+      Look.new(@content, @view, PointerOn.new(clickable_at(input.at), input.down?), @marks)
     end
 
     # The content position of the checkbox or link under `at` where the
