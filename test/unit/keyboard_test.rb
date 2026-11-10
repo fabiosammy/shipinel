@@ -15,6 +15,7 @@ class KeyboardTest < Minitest::Test
   end
 
   def scrolled(*codes) = press(*codes).scrolled(100.0, BAR)
+  def watched_bit(code) = 1 << K.watched.find_index(code)
 
   def test_nothing_pressed_moves_nothing
     assert_equal [false, 100.0, 0], [press.pressed?, scrolled, press.zoom_step]
@@ -39,5 +40,18 @@ class KeyboardTest < Minitest::Test
   def test_h_toggles_the_header
     assert_equal [true, false], [press(K::HEADER).header?, press(K::Lines::J).header?]
     assert_equal [true, false], [press(K::UNDO).undo?, press(K::HEADER).undo?]
+  end
+
+  def with_control(code) = Shipinel::KeyPress.new(watched_bit(code) | Shipinel::KeyPress::Selecting::CONTROL)
+
+  # Ctrl+C and Ctrl+A need Control; Control alone is not a key press.
+  def test_copy_and_select_all_need_control
+    assert_equal [false, true, true, false],
+                 [press(K::Selecting::C).copy?, with_control(K::Selecting::C).copy?,
+                  with_control(K::Selecting::A).select_all?, press(K::Selecting::A).select_all?]
+  end
+
+  def test_control_alone_is_not_a_key_press
+    refute_predicate Shipinel::KeyPress.new(Shipinel::KeyPress::Selecting::CONTROL), :pressed?
   end
 end

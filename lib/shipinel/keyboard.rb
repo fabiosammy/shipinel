@@ -41,11 +41,18 @@ module Shipinel
     # Undoes the last tick.
     UNDO = 85
 
+    # With Control: copy the selection (C), select everything (A).
+    module Selecting
+      C = 67
+      A = 65
+    end
+
     # Bit n of a KeyPress is the n-th key here.
     #: () -> Array[Integer]
     def self.watched
       [Lines::J, Lines::DOWN, Lines::K, Lines::UP, Jumps::PAGE_DOWN, Jumps::PAGE_UP, Jumps::HOME, Jumps::END_KEY,
-       Zoom::EQUAL, Zoom::KEYPAD_PLUS, Zoom::MINUS, Zoom::KEYPAD_MINUS, Zoom::ZERO, HEADER, UNDO]
+       Zoom::EQUAL, Zoom::KEYPAD_PLUS, Zoom::MINUS, Zoom::KEYPAD_MINUS, Zoom::ZERO, HEADER, UNDO,
+       Selecting::C, Selecting::A]
     end
   end
 
@@ -74,6 +81,15 @@ module Shipinel
     HEADER = 0b10_0000_0000_0000
     UNDO = 0b100_0000_0000_0000
 
+    # Bits of the selection keys, and of Control.
+    module Selecting
+      C = 0b1000_0000_0000_0000
+      A = 0b1_0000_0000_0000_0000
+      # Not a watched key: Screen sets it while Control is held, so it says
+      # nothing on its own (`pressed?` leaves it out).
+      CONTROL = 0x4000_0000
+    end
+
     # @rbs @bits: Integer
 
     #: (Integer bits) -> void
@@ -81,9 +97,10 @@ module Shipinel
       @bits = bits
     end
 
+    # A watched key went down (Control alone does not count).
     #: () -> bool
     def pressed?
-      @bits.positive?
+      @bits.anybits?(~Selecting::CONTROL)
     end
 
     # Where these keys move a page scrolled to `offset`: a line (j, k, the
@@ -119,6 +136,18 @@ module Shipinel
     #: () -> bool
     def undo?
       on?(UNDO)
+    end
+
+    # Ctrl+C: copy the selection.
+    #: () -> bool
+    def copy?
+      on?(Selecting::CONTROL) && on?(Selecting::C)
+    end
+
+    # Ctrl+A: select the whole page.
+    #: () -> bool
+    def select_all?
+      on?(Selecting::CONTROL) && on?(Selecting::A)
     end
 
     private

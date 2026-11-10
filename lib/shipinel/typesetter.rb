@@ -7,6 +7,7 @@
 require_relative "content_cache"
 require_relative "document_view"
 require_relative "font_set"
+require_relative "frame"
 require_relative "layout"
 require_relative "styles"
 
@@ -56,6 +57,18 @@ module Shipinel
     #: (LayoutKey key) -> bool
     def holds?(key)
       @cache.holds?(key)
+    end
+
+    # `frame`, unless it looks like the last one drawn (ContentCache): then
+    # nil, and the window waits for input as an idle one does, while the
+    # pointer moves over text or between wheel steps.
+    #: (Frame frame, Input input) -> Frame?
+    def fresh(frame, input)
+      look = frame.look(input)
+      return nil if @cache.shown?(look)
+
+      @cache.show(look)
+      frame
     end
 
     # The page laid out last.

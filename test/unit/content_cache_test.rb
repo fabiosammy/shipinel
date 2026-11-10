@@ -39,8 +39,19 @@ class ContentCacheTest < Minitest::Test
   def update = @page.update(@screen.input, @screen.placement.area, @document)
   def laid_out = update.content
 
+  # The second frame would look the same, so it is not drawn at all.
+  def test_an_unchanged_page_is_not_built_into_a_second_frame
+    laid_out
+
+    assert_nil update
+  end
+
+  # The layout is reused once something else changes the frame.
   def test_same_document_and_width_reuse_the_layout
-    assert_same laid_out, laid_out
+    first = laid_out
+    @page.redraw
+
+    refute_same first, laid_out
   end
 
   def test_a_new_width_lays_out_again

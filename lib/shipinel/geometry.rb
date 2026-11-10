@@ -16,6 +16,12 @@ module Shipinel
       @top = top
     end
 
+    # The same point `distance` further down (a window point on the page).
+    #: (Float distance) -> Point
+    def down(distance)
+      Point.new(@left, @top + distance)
+    end
+
     #: (Point other) -> bool
     def same_as?(other)
       @left == other.left && @top == other.top
@@ -125,6 +131,13 @@ module Shipinel
       @shift = offset - top
       @top = top
       @bottom = top + area.height
+    end
+
+    # The same page position under the same header: frames that agree
+    # draw the page in the same place.
+    #: (Viewport other) -> bool
+    def same_as?(other)
+      @shift == other.shift && @top == other.top
     end
 
     # Whether any of `rect`, in window position, is inside the area.

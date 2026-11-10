@@ -237,6 +237,13 @@ module Shipinel
       @commands[position]
     end
 
+    # Whether any command covers `point` (the header and scrollbar of an
+    # overlay, over the page). (Not any?: Spinel widens it.)
+    #: (Point point) -> bool
+    def covers?(point)
+      @commands.map { |command| command.rect.contains?(point) }.include?(true)
+    end
+
     # The heading the page is scrolled into at `offset`, with its count,
     # or `fallback` above the first heading.
     #: (Float offset, String fallback) -> SectionLine

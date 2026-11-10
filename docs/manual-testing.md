@@ -130,6 +130,12 @@ cp test/fixtures/semana.md /tmp/semana.md
     launcher with its ring icon, and opens the config's plan. Added to the
     session's autostart (README), it opens after logging in. On X11 the
     task bar shows the same icon.
+31. **Select and copy.** Drag over two lines of a paragraph: they get a blue
+    background (the header never does). Ctrl+C, then paste in a text
+    editor: the same words, one line per line on the window. Ctrl+A then
+    Ctrl+C copies the whole plan. A click on a checkbox ticks it and clears
+    the selection; releasing a drag over a checkbox or link does not click
+    it.
 
 ## Per desktop
 

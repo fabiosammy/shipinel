@@ -362,3 +362,18 @@ before `InitWindow` is reset and there is no hook between the two. The
 desktop entry's `StartupWMClass=shipinel` therefore matches on X11 only
 (GLFW sets WM_CLASS from the title there: `shipinel`/`shipinel`, read with
 XGetClassHint in Xvfb). Setting an app id would need a raylib patch.
+
+## Clipboard and Control (2026-11-09)
+
+From `raylib.h` (6.2):
+
+- `RLAPI void SetClipboardText(const char *text);` (line 1032). On desktop
+  it calls `glfwSetClipboardString`, which keeps its own copy, so the
+  string may be freed after the call.
+- `RLAPI bool IsKeyDown(int key);` with `KEY_LEFT_CONTROL = 341` (line 673)
+  and `KEY_RIGHT_CONTROL = 345`.
+
+`ui_control_down` reads both; `ui_set_clipboard` passes a selection's text
+on. Ctrl+C and Ctrl+A are the C (67) and A (65) keys of `Keyboard.watched`
+while Control is down.
+

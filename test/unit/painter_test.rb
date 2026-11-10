@@ -113,6 +113,28 @@ class PainterTest < Minitest::Test
     assert_equal [false, true], [away.hand, over.hand]
   end
 
+  SELECTED = Shipinel::Theme::Selected::BACKGROUND
+
+  # Everything selected, with "week.md" in the overlay at the top.
+  def paint_all_selected(screen)
+    overlay = Shipinel::DrawList.new
+    overlay.add(Shipinel::TextRun.new("week.md", Shipinel::Rect.new(0.0, 0.0, 40.0, 20.0), STYLE))
+    content = page
+    view = Shipinel::Viewport.new(0.0, Shipinel::Rect.new(0.0, 0.0, 400.0, 600.0))
+    Shipinel::Painter.new(screen, Shipinel::Frame.new(content, overlay, view).showing(Shipinel::Selection.all(content))).paint
+  end
+
+  # The page's only text gets a background, drawn first (under it); the
+  # overlay's text gets none.
+  def test_selected_text_gets_a_background_under_it
+    screen = FakeScreen.new
+    paint_all_selected(screen)
+
+    marks = screen.draws.select { |draw| draw.last == SELECTED }
+
+    assert_equal [[:rect, 110.0, SELECTED]] * 2, marks + [screen.draws.first]
+  end
+
   # The checkbox at 120 is under a header that ends at 125; the one at 140
   # is below it.
   def test_nothing_under_the_header_can_be_clicked

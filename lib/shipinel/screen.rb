@@ -86,12 +86,11 @@ module Shipinel
       UI.ui_draw_rect(rect.left, rect.top, rect.width, rect.height, color)
     end
 
-    # This frame's input: the mouse and the watched keys.
+    # This frame's input: the mouse, the watched keys, and Control.
     #: () -> Input
     def input
-      keys = Keyboard.watched
       Input.new(Point.new(UI.ui_mouse_x.to_f, UI.ui_mouse_y.to_f), UI.ui_mouse_buttons, UI.ui_wheel_move,
-                KeyPress.new(UI.ui_keys_pressed(keys, keys.size)))
+                KeyReader.read)
     end
 
     # A square checkbox filling `rect`. Clicks are read with pointer_on;
@@ -116,6 +115,16 @@ module Shipinel
     #: (bool hand) -> void
     def use_hand_cursor(hand)
       UI.ui_set_hand_cursor(hand)
+    end
+  end
+
+  # This frame's watched keys, with Control as its own bit.
+  module KeyReader
+    #: () -> KeyPress
+    def self.read
+      keys = Keyboard.watched
+      control = UI.ui_control_down ? KeyPress::Selecting::CONTROL : 0
+      KeyPress.new(UI.ui_keys_pressed(keys, keys.size) | control)
     end
   end
 end

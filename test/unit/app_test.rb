@@ -162,17 +162,17 @@ class AppTest < Minitest::Test
     screen = run_app(FakeScreen.new(click_on: 0))
 
     assert_equal "[topo](#topo)\n", File.read(@path)
-    assert_equal ["topo", "semana.md"], screen.texts_on(1)
+    assert_equal ["topo", "semana.md"], screen.texts_on(0)
   end
 
-  # Busy for half a second (30 frames) after the pointer first shows up,
-  # then idle: nothing changes, so nothing more is drawn.
-  def test_an_idle_unchanged_page_is_not_drawn_again
+  # Nothing changes after the first frame, busy or idle, so only that one
+  # is drawn: the others wait for input.
+  def test_an_unchanged_page_is_drawn_once
     screen = run_app(FakeScreen.new(frames: 40))
     drawn = screen.calls.count { |call| call.first == :end_frame } - screen.calls.count { |call| call.first == :skip }
 
-    assert_equal [30, ["Semana", "Reunião", "0 of 1 task done · 0%", "semana.md"]], [drawn, screen.texts_on(29)]
-    assert_empty screen.texts_on(30)
+    assert_equal [1, ["Semana", "Reunião", "0 of 1 task done · 0%", "semana.md"]], [drawn, screen.texts_on(0)]
+    assert_empty screen.texts_on(1)
   end
 
   def test_a_redraw_the_window_system_asks_for_is_drawn

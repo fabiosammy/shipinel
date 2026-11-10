@@ -46,6 +46,9 @@ contribution process. This file is how you (Claude) work on the project.
   RemovedLines; compared by content per poll, so own ticks never mark).
 - Keys: `j`/`k`, arrows, Page Up/Down, Home/End, `+`/`-`/`0` zoom, `h`,
   `u` (undo the last tick once, through the same safe toggle).
+- Select and copy: dragging over the page (or Ctrl+A) selects text in
+  reading order (Selection, page positions, so it survives scrolling; a
+  new layout drops it); Ctrl+C copies it, a line per laid-out line.
 - Scrollbar (wheel, drag, track click).
 - Reopens each plan where it was left (section by heading slug, zoom,
   header, window size; position only on X11; the day it was saved) from
@@ -127,6 +130,7 @@ apart from the thin native layer.
 | `layout.rb`, `flow.rb`, `line_wrap.rb`, `*_layout.rb`, `anchor.rb` | Blocks → draw commands for a width; heading anchors with task counts |
 | `page.rb`, `typesetter.rb`, `content_cache.rb`, `header.rb`, `progress_bar.rb`, `painter.rb` | One frame: cached layout, header, scrollbar, drawing, clicks |
 | `day.rb`, `line_changes.rb`, `highlights.rb`, `highlighter.rb`, `ChangeMarks` in `draw_list.rb` | Today's heading, past dates, lines changed outside: kept per poll, marked while laying out |
+| `selection.rb`, `reading_order.rb`, `selected_lines.rb`, `clipboard.rb` | Text selected with the mouse or Ctrl+A, and Ctrl+C |
 | `app.rb`, `session.rb`, `desktop.rb`, `reminder.rb`, `tray_icon.rb` | Loop, file poll, saved state, notifications, tray |
 | `task_toggler.rb`, `document_file.rb` | Safe toggle, atomic write |
 | `config.rb`, `state_file.rb`, `key_values.rb` | Config and saved state (key=value) |
@@ -147,12 +151,15 @@ apart from the thin native layer.
 - **Native layer is dumb.** C takes scalars and strings only and holds the
   window, font and tray state; every decision is Ruby. Carried `.c` files
   listed in `spin.toml`, not `ffi_source`.
-- **Frames.** Never `SetTargetFPS` (raylib's wait spins the CPU). Busy frames
-  (input, and 0.5 s after) are drawn and paced at 60/s with
-  `clock_nanosleep`; idle frames draw nothing and wait for input through
-  raylib's event waiting, woken every 500 ms (file poll) or by the tray's bus
-  by the waker thread. The layout is cached until blocks, window size,
-  notices or fonts change; only visible commands are drawn.
+- **Frames.** Never `SetTargetFPS` (raylib's wait spins the CPU). A frame
+  is drawn only when its Look (frame.rb: the laid-out page, where it sits,
+  the clickable under the pointer, the button) differs from the last one
+  drawn; drawn frames are paced at 60/s with `clock_nanosleep`. Any other
+  frame, busy or idle, draws nothing and waits for input through raylib's
+  event waiting, woken every 500 ms (file poll) or by the tray's bus by the
+  waker thread. The layout is cached until blocks, window size, notices or
+  fonts change; only visible commands are drawn. 20 wheel steps draw ~40
+  frames, not ~1,250 (2026-11-09).
 - **Window position** is only read/set on X11; on Wayland the compositor
   places windows (window rules in the README).
 - **Fonts and accents.** TTF/OTF loaded with Latin-1 + Latin Extended-A plus

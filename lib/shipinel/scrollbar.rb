@@ -69,6 +69,13 @@ module Shipinel
     end
 
     # The same bar, for the page scrolled to `offset`.
+    # The section of `content` the page is scrolled into, or `fallback`
+    # above its first heading.
+    #: (DrawList content, String fallback) -> SectionLine
+    def section_in(content, fallback)
+      content.section_at(@offset, fallback)
+    end
+
     #: (Float offset) -> Scrollbar
     def moved_to(offset)
       Scrollbar.new(@page_height, @area, offset)
