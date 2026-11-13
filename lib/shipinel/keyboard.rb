@@ -41,6 +41,8 @@ module Shipinel
     HEADER = 72
     # Undoes the last tick.
     UNDO = 85
+    # Opens or closes the outline (the list of sections to jump to).
+    OUTLINE = 71
 
     # With Control: copy the selection (C), select everything (A).
     module Selecting
@@ -71,7 +73,7 @@ module Shipinel
       [Lines::J, Lines::DOWN, Lines::K, Lines::UP, Jumps::PAGE_DOWN, Jumps::PAGE_UP, Jumps::HOME, Jumps::END_KEY,
        Zoom::EQUAL, Zoom::KEYPAD_PLUS, Zoom::MINUS, Zoom::KEYPAD_MINUS, Zoom::ZERO, HEADER, UNDO,
        Selecting::C, Selecting::A, Finding::F, Finding::ESCAPE, Finding::ENTER, Finding::KEYPAD_ENTER,
-       Finding::BACKSPACE, Focusing::TAB, Focusing::SPACE]
+       Finding::BACKSPACE, Focusing::TAB, Focusing::SPACE, OUTLINE]
     end
   end
 
@@ -107,9 +109,9 @@ module Shipinel
       # Not a watched key: Screen sets it while Control is held, so it says
       # nothing on its own (`pressed?` leaves it out).
       CONTROL = 0x4000_0000
-      # j, k, the zoom keys, h, u, Tab and Space: while the find bar is
+      # j, k, the zoom keys, h, u, Tab, Space and g: while the find bar is
       # open they are typed (or ignored), not obeyed (`while_finding`).
-      TYPED = 0xC0_7F05
+      TYPED = 0x1C0_7F05
     end
 
     # What was typed this frame (for the find bar), "" for nothing.
@@ -147,6 +149,12 @@ module Shipinel
     #: () -> FocusKeys
     def for_focus
       FocusKeys.new(@bits)
+    end
+
+    # What these keys do to the outline.
+    #: () -> OutlineKeys
+    def for_outline
+      OutlineKeys.new(@bits)
     end
 
     # Where these keys move a page scrolled to `offset`: a line (j, k, the
@@ -295,6 +303,40 @@ module Shipinel
 
       moved = page.line_after(line, step)
       Focus.new(moved, tick? && moved >= 0)
+    end
+  end
+
+  # The outline's keys in one frame: g opens or closes it, the line keys
+  # (j, k, the arrows) move its selection, Enter jumps, Escape closes.
+  class OutlineKeys
+    TOGGLE = 0x100_0000
+
+    # @rbs @bits: Integer
+
+    #: (Integer bits) -> void
+    def initialize(bits)
+      @bits = bits
+    end
+
+    #: () -> bool
+    def toggle?
+      @bits.anybits?(TOGGLE)
+    end
+
+    #: () -> bool
+    def close?
+      @bits.anybits?(FindKeys::CLOSE)
+    end
+
+    #: () -> bool
+    def jump?
+      @bits.anybits?(FindKeys::ENTER)
+    end
+
+    # 1: the next section (j, Down), -1: the previous one (k, Up), 0.
+    #: () -> Integer
+    def step
+      (@bits.anybits?(KeyPress::Moves::LINE_DOWN) ? 1 : 0) - (@bits.anybits?(KeyPress::Moves::LINE_UP) ? 1 : 0)
     end
   end
 end

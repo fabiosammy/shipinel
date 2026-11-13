@@ -51,6 +51,12 @@ contribution process. This file is how you (Claude) work on the project.
   (Focus, kept by line index; PageInView finds them in page order, round
   the ends, scrolling to them); Space hands the focused checkbox to the
   Painter as that frame's click (Frame#pressed); Escape lets go.
+- Outline: `g` opens a panel under the header with every heading
+  (indented by level, with its count; Outline, OutlinePanel, OutlineRows),
+  the section in view selected; j/k/arrows move, Enter or a click jumps
+  (ScrollSpot.of), g/Escape/a click outside close. While open, the keys
+  move it, not the page, and nothing under it can be clicked
+  (Frame#reachable?).
 - Select and copy: dragging over the page (or Ctrl+A) selects text in
   reading order (Selection, page positions, so it survives scrolling; a
   new layout drops it); Ctrl+C copies it, a line per laid-out line.
@@ -148,6 +154,7 @@ apart from the thin native layer.
 | `selection.rb`, `reading_order.rb`, `selected_lines.rb`, `clipboard.rb` | Text selected with the mouse or Ctrl+A, and Ctrl+C |
 | `search.rb`, `page_text.rb`, `matches.rb`, `match_maker.rb`, `span.rb`, `find_bar.rb`, `marks.rb` | The find bar (Ctrl+F): query, matches, the strip, marks drawn under the text |
 | `focus.rb`, `page_in_view.rb`, `focus_steps.rb` | The keyboard focus: Tab between checkboxes, Space ticks, its ring |
+| `outline.rb`, `outline_panel.rb`, `outline_rows.rb` | The outline (`g`): the list of sections to jump to |
 | `app.rb`, `session.rb`, `desktop.rb`, `reminder.rb`, `tray_icon.rb` | Loop, file poll, saved state, notifications, tray |
 | `task_toggler.rb`, `document_file.rb` | Safe toggle, atomic write |
 | `config.rb`, `state_file.rb`, `key_values.rb` | Config and saved state (key=value) |

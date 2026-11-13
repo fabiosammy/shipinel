@@ -93,7 +93,7 @@ module Shipinel
       return unless view.shows?(area)
 
       draw(command, area)
-      point_at(command, area) if command.is_a?(Clickable) && area.top >= view.top
+      point_at(command, area) if command.is_a?(Clickable) && @frame.reachable?(area)
     end
 
     # The overlay is in window position already.

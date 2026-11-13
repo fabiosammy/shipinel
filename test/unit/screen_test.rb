@@ -71,7 +71,7 @@ class ScreenTest < Minitest::Test
 
     read = Shipinel::UI.calls.find { |call| call.first == :keys }
 
-    assert_equal [true, [:keys, Shipinel::Keyboard.watched, 24]], [keys.pressed?, read]
+    assert_equal [true, [:keys, Shipinel::Keyboard.watched, 25]], [keys.pressed?, read]
   end
 
   # Typed characters are read until the shim answers 0.

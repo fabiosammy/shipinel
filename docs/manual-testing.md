@@ -151,6 +151,12 @@ cp test/fixtures/semana.md /tmp/semana.md
     scrolling to it. Space ticks or unticks it, exactly as a click
     (`git diff` shows only that line). Escape takes the ring away. With
     the find bar open, Tab and Space do nothing to the focus.
+34. **Outline.** `g`: a panel under the header lists every heading,
+    indented by level, with its "N of M" count, the section in view
+    highlighted. `j`/`k` or the arrows move the highlight (the page stays
+    still), Enter jumps there and closes it; a click on a row does the
+    same, a click outside or `g`/Escape closes it. Checkboxes under the
+    panel cannot be clicked while it is open.
 
 ## Per desktop
 
