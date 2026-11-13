@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 # Builds one frame of the page (Page#update decides that one is wanted):
-# the header, the laid-out document, the find bar's keys, which may go to a
-# match, the scroll, and what is marked on the text (selection, matches).
+# the header, the laid-out document, the find bar's and the focus's keys,
+# which may go to a match or a checkbox, the scroll, and what is marked on
+# the page (selection, matches, focus).
 
 require_relative "content_cache"
 require_relative "document_view"
@@ -50,9 +51,15 @@ module Shipinel
     #: (Input input, DrawList content, Rect area) -> Scrollbar
     def scrolled(input, content, area)
       shown = area.shortened(FindBar.room(@view.styles.status))
-      spot = @highlighter.searching(input.keys, content, Viewport.new(@scroll.offset, shown))
-      @scroll.aim(spot) if spot.aimed?
+      steer(@highlighter.moved(input.keys, content, Viewport.new(@scroll.offset, shown)))
       @scroll.bar_for(input, content, @highlighter.search.open? ? shown : area)
+    end
+
+    # Goes to `spot` unless it is ScrollSpot.none.
+    #: (ScrollSpot spot) -> void
+    def steer(spot)
+      @scroll.aim(spot) if spot.aimed?
+      nil
     end
   end
 end

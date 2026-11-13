@@ -22,11 +22,12 @@ module Shipinel
     def initialize(screen, frame)
       @screen = screen
       @frame = frame
-      @clicked = nil
+      @clicked = frame.pressed
       @hand = false
     end
 
-    # The checkbox or link clicked this frame, if any (the last one wins).
+    # The checkbox or link clicked this frame, if any (the last one wins;
+    # Space on the focused checkbox counts as a click on it).
     #: () -> DrawCommand?
     def paint
       paint_marks

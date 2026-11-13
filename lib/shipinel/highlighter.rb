@@ -9,6 +9,7 @@ require_relative "highlights"
 require_relative "markdown/block"
 require_relative "poller"
 require_relative "find_bar"
+require_relative "focus"
 require_relative "font_set"
 require_relative "marks"
 require_relative "saved_state"
@@ -24,10 +25,8 @@ module Shipinel
   # back between two polls, so they are never marked.
   class Highlighter
     attr_reader :highlights #: Highlights
-    # The text selected with the mouse (Selection).
-    attr_reader :selection #: Selection
-    # The find bar (Search).
-    attr_reader :search #: Search
+    # The selection, the find bar and the keyboard focus (Marks).
+    attr_reader :marks #: Marks
 
     # @rbs @fonts: FontSet
 
@@ -35,27 +34,50 @@ module Shipinel
     #: (Day day, FontSet fonts) -> void
     def initialize(day, fonts)
       @highlights = Highlights.new(day, LineChanges.none)
-      @selection = Selection.none
-      @search = Search.none
+      @marks = Marks.none
       @fonts = fonts
     end
 
-    # The find bar after this frame's keys, on `content` shown in `view`:
-    # where the window goes to show the match it is on, when it moved to
-    # another one (ScrollSpot.none otherwise).
+    # The find bar (Search).
+    #: () -> Search
+    def search
+      @marks.search
+    end
+
+    # The find bar's and the focus's keys, on `content` shown in `view`:
+    # where the window goes to show the match or checkbox they moved to
+    # (the match when both did; ScrollSpot.none when neither did).
     #: (KeyPress keys, DrawList content, Viewport view) -> ScrollSpot
-    def searching(keys, content, view)
-      steps = keys.for_finding
-      before = @search
-      @search = before.after(steps, content, @fonts).placed(before, view)
-      @search.found_anew?(before) || !steps.step.zero? ? @search.aim(view) : ScrollSpot.none
+    def moved(keys, content, view)
+      found = searching(keys.for_finding, content, view)
+      focused = focusing(keys.for_focus, PageInView.new(content, view))
+      found.aimed? ? found : focused
+    end
+
+    # The find bar after `finding`: where the window goes to show the
+    # match it is on, when it moved to another one.
+    #: (FindKeys finding, DrawList content, Viewport view) -> ScrollSpot
+    def searching(finding, content, view)
+      before = search
+      found = before.after(finding, content, @fonts).placed(before, view)
+      @marks = @marks.with_search(found)
+      found.found_anew?(before) || !finding.step.zero? ? found.aim(view) : ScrollSpot.none
+    end
+
+    # The keyboard focus after `steps`: where the window goes to show the
+    # checkbox Tab moved to.
+    #: (FocusKeys steps, PageInView page) -> ScrollSpot
+    def focusing(steps, page)
+      focus = @marks.focus.after(steps, page)
+      @marks = @marks.with_focus(focus)
+      steps.step.zero? ? ScrollSpot.none : focus.aim(page)
     end
 
     # The find bar as it is, in `view`'s status text, at the bottom of
     # `window`.
     #: (View view, Rect window) -> FindBar
     def find_bar(view, window)
-      FindBar.new(@search, view.styles.status, window, @fonts)
+      FindBar.new(search, view.styles.status, window, @fonts)
     end
 
     # `frame`, showing the selection as this frame's input leaves it and
@@ -63,10 +85,11 @@ module Shipinel
     # on the clipboard.
     #: (Input input, Frame frame, FindBar bar) -> Frame
     def selecting(input, frame, bar)
-      @selection = @selection.after(input, frame)
-      Clipboard.copy(@selection.text) if input.keys.copy?
+      selection = @marks.selection.after(input, frame)
+      @marks = @marks.with_selection(selection)
+      Clipboard.copy(selection.text) if input.keys.copy?
       bar.add_to(frame.overlay)
-      frame.showing(Marks.new(@selection, @search))
+      frame.showing(@marks)
     end
 
     # `before` and `after`: the file's content around this poll's reload.

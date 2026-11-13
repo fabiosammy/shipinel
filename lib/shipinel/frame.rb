@@ -45,7 +45,14 @@ module Shipinel
     #: (Marks marks) -> Frame
     def showing(marks)
       @marks = marks
+      marks.focus.ring_into(@overlay, PageInView.new(@content, @view))
       self
+    end
+
+    # The checkbox Space ticks this frame (the keyboard's click), if any.
+    #: () -> DrawCommand?
+    def pressed
+      @marks.focus.pressed_in(@content)
     end
 
     # The text selected on this page.

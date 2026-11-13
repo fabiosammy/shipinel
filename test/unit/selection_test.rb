@@ -102,7 +102,8 @@ class SelectionTest < Minitest::Test
     page = frame
     rest = page.look(input(300.0, 300.0, 0))
 
-    refute rest.same_as?(page.showing(Shipinel::Marks.new(Shipinel::Selection.all(content),
-                                                          Shipinel::Search.none)).look(input(300.0, 300.0, 0)))
+    selected = page.showing(Shipinel::Marks.none.with_selection(Shipinel::Selection.all(content)))
+
+    refute rest.same_as?(selected.look(input(300.0, 300.0, 0)))
   end
 end

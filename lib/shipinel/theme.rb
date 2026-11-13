@@ -60,6 +60,14 @@ module Shipinel
       BACKGROUND = 0x34456BFF
     end
 
+    # The ring around the checkbox the keyboard focus is on.
+    module Focus
+      RING = 0x7AA2F7FF
+      WIDTH = 2.0
+      # Between the checkbox and the ring.
+      GAP = 2.0
+    end
+
     # What the find bar found: every match, and the one it is on.
     module Found
       MATCH = 0x5A4A22FF
