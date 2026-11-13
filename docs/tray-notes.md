@@ -29,7 +29,7 @@ Service name `org.kde.StatusNotifierItem-<pid>-1`, registered with
 | `IconName`, `OverlayIconName`, `AttentionIconName`, `AttentionMovieName` | `s` | empty: the icon is a pixmap |
 | `IconPixmap` | `a(iiay)` | one 32 × 32 ARGB32 image, network byte order: a ring filled clockwise from the top by the share of checked tasks, green when all are |
 | `OverlayIconPixmap`, `AttentionIconPixmap` | `a(iiay)` | empty |
-| `ToolTip` | `(sa(iiay)ss)` | no icon; title, and "12 of 40 tasks done · 30%" |
+| `ToolTip` | `(sa(iiay)ss)` | no icon; title, and "12 of 40 tasks done · 30%", followed by " · 2 overdue · 1 due today" when open tasks are |
 | `WindowId`, `ItemIsMenu`, `Menu` | `i`, `b`, `o` | 0, false, `/MenuBar` |
 | `Activate(ii)`, `SecondaryActivate(ii)` | | show or hide the window |
 | `ContextMenu(ii)`, `Scroll(is)` | | nothing (the host shows the dbusmenu) |

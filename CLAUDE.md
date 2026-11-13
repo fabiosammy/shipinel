@@ -41,9 +41,10 @@ contribution process. This file is how you (Claude) work on the project.
   open window at midnight (Day, Highlighter).
 - Focus marks: an open task with `⏳` or "(waiting" is waiting (italic,
   quieter; still counted); a `YYYY-MM-DD` before today in an open task is
-  amber; lines changed outside get a margin mark for 10 s, deleted ones a
-  notch over the line that follows them (Highlights, LineChanges,
-  RemovedLines; compared by content per poll, so own ticks never mark).
+  amber, today's in the accent color (Highlights#color_of); lines changed
+  outside get a margin mark for 10 s, deleted ones a notch over the line
+  that follows them (Highlights, LineChanges, RemovedLines; compared by
+  content per poll, so own ticks never mark).
 - Keys: `j`/`k`, arrows, Page Up/Down, Home/End, `+`/`-`/`0` zoom, `h`,
   `u` (undo the last tick once, through the same safe toggle).
 - Select and copy: dragging over the page (or Ctrl+A) selects text in
@@ -66,7 +67,8 @@ contribution process. This file is how you (Claude) work on the project.
 - Notifications through `notify-send`: a daily open-tasks nudge naming one
   open task that is not waiting, and a failed save.
 - Tray icon (StatusNotifierItem + dbusmenu over sd-bus): progress ring and
-  tooltip, click shows/hides the window, menu with Quit, optional close to
+  tooltip (with the open tasks overdue or due today, DueDates: a task's
+  first date), click shows/hides the window, menu with Quit, optional close to
   tray; without a tray host, closing quits.
 - TERM, INT and HUP end it like the close button (StopSignals: the trap
   sets a flag the loop reads), saving the state.

@@ -34,7 +34,8 @@
   color, and on a new day the plan opens there.
 - **What can be done now.** A task marked as waiting (`⏳` or "(waiting on
   …)") steps back in quieter italics, so the ones you can pick up stand out;
-  a date that has passed in an open task (`due 2026-11-06`) turns amber.
+  a date that has passed in an open task (`due 2026-11-06`) turns amber, and
+  today's date turns blue like today's heading.
 - **Changes noticed.** Lines edited outside Shipinel (by you in your editor,
   or an assistant) get a mark beside them for ten seconds, and a short
   notch shows where lines were deleted.
@@ -42,8 +43,10 @@
   `-` and `0` zoom; `h` hides the header; `u` undoes the last tick.
 - **Notifications**: a daily nudge with the number of tasks still open and
   one of them, and a warning when a tick could not be saved.
-- **Tray icon**: the progress as a ring and in its tooltip; a click shows or
-  hides the window, and closing can hide it there instead of quitting.
+- **Tray icon**: the progress as a ring and in its tooltip, which also says
+  how many open tasks are overdue or due today ("2 overdue · 1 due today");
+  a click shows or hides the window, and closing can hide it there instead
+  of quitting.
 - **Light on the machine.** An idle window sleeps until input arrives and
   costs next to no CPU.
 - Native on **Wayland** (KDE Plasma, Hyprland, GNOME) and on X11.
@@ -116,7 +119,7 @@ quits (or hides it in the tray, see `close_to_tray`).
 | `#`, `##`, `###` (up to `######`) headings, optional closing `#`s | Bold, sized by level |
 | `- [ ] task`, `- [x] task`, `- [X] task`, also with `*` or `+` | A checkbox you can click; done tasks are dimmed |
 | An open task with `⏳`, or `(waiting` in any case (`(Waiting on Ana)`) | Waiting: quieter italics. It still counts in the progress |
-| A date `YYYY-MM-DD` in an open task, before today | The date in amber (not the punctuation around it). Done tasks and other text are left as they are |
+| A date `YYYY-MM-DD` in an open task, before today or today | The date in amber when it has passed, in blue (today's heading color) when it is today; not the punctuation around it. Done tasks and other text are left as they are |
 | `- item`, `* item`, `+ item` | A bullet |
 | `1. item`, `2) item` | A numbered item, with its own number; `1. [ ] task` is a task |
 | Indented items (2 or 4 spaces, or tabs) | Nested, indented by depth |
