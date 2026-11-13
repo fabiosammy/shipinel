@@ -216,9 +216,11 @@ for newer actions. `main` is protected:
 the `validate`, `linux-bundle / bundle` (both from 10) and `title` (11)
 checks must pass, squash merges only; I (admin) may still push directly.
 
-**The sandbox's clang-tidy is older than the flake's.** A green local
-`rake check` does not prove CI green for the C checks: run `nix flake check`
-before telling me a change is ready to push.
+**Run the gate as `nix develop -c bundle exec rake check`.** The sandbox's
+own clang-tidy is older than the flake's (and its hand-linked tools go with
+a rebuilt container), so a green run outside the dev shell does not prove CI
+green for the C checks; `nix flake check` before telling me a change is
+ready to push.
 
 ---
 
@@ -246,8 +248,10 @@ before telling me a change is ready to push.
   `XDG_STATE_HOME` at a temp dir so tests never touch real state.
 - `test/*.rb` are spin snapshot programs compiled by Spinel and compared with
   `spinel diff`.
-- **The window is checked in Xvfb only** (`DISPLAY=:99`, `XAUTHORITY` unset),
-  with the helper scripts in the session scratchpad. Never send input or
+- **The window is checked in Xvfb only**, started with `sandbox-xvfb`
+  (clausea image; a fixed display such as `:99`, refused when its socket or
+  lock exists), `XAUTHORITY` unset, driven with xdotool and read back with
+  xclip; helper scripts live in the session scratchpad. Never send input or
   screenshots to my real display.
 - **D-Bus (tray) tests run on a private bus** (`dbus-run-session`) with a
   stand-in StatusNotifierWatcher; never on my session bus.

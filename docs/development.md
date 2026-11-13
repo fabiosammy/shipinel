@@ -3,6 +3,13 @@
 `nix develop` provides everything (flake.nix). This page is the manual
 equivalent, as used in the Debian 12 sandbox where Shipinel is developed.
 
+**Run the gate through the flake even there:**
+`nix develop -c bundle exec rake check`. Its tools are the ones CI uses
+(the newer clang-tidy, actionlint, cppcheck), they live in the Nix store,
+which survives a rebuilt container, and nothing has to be linked into
+`~/.local` by hand. The manual setup below is for building and running the
+window against the system's Mesa.
+
 ## System packages (Debian 12)
 
 ```sh
@@ -96,12 +103,18 @@ spin build && build/bin/shipinel test/fixtures/semana.md
 ## Trying the window without touching your desktop
 
 A virtual X server keeps synthetic input away from the real display
-(`apt install xvfb`):
+(`apt install xvfb xauth xdotool xclip`; the clausea image has them, with
+`sandbox-xvfb`). Start it on a fixed number whose socket and lock do not
+exist (`sandbox-xvfb [N]` checks that): `/tmp/.X11-unix` may be shared with
+the host, and a number Xvfb picks itself can be the desktop's.
 
 ```sh
-Xvfb :99 -screen 0 1024x768x24 -nolisten tcp &
-DISPLAY=:99 build/bin/shipinel test/fixtures/semana.md
+sandbox-xvfb 99     # or: Xvfb :99 -screen 0 1280x900x24 -nolisten tcp +extension GLX &
+env -u XAUTHORITY DISPLAY=:99 build/bin/shipinel test/fixtures/semana.md
 ```
+
+`xdotool` drives it (keys, clicks, drags) and `xclip -selection clipboard
+-o` reads back what Ctrl+C copied.
 
 Never drive the real display with XTest or similar: synthetic clicks go to
 whatever window is on top there.
