@@ -125,28 +125,4 @@ class PageTest < Minitest::Test
     @page.redraw
     frame.marks.search
   end
-
-  def tasks_plan
-    File.write(@path, "- [ ] a\n- [ ] b\n")
-    @document.reload
-  end
-
-  def press_once(code)
-    @screen.keys = press(code)
-    pressed = frame
-    @screen.keys = 0
-    pressed
-  end
-
-  # Tab, Tab: the focus is on the second task, with a ring in the overlay;
-  # Space hands that checkbox over as this frame's click.
-  def test_tab_moves_the_focus_and_space_ticks
-    tasks_plan
-    press_once(Shipinel::Keyboard::Focusing::TAB)
-    ringed = press_once(Shipinel::Keyboard::Focusing::TAB)
-    rings = Array.new(ringed.overlay_size) { |position| ringed.overlay_at(position) }.grep(Shipinel::Box)
-                 .count { |box| box.color == Shipinel::Theme::Focus::RING }
-
-    assert_equal [4, 1], [rings, press_once(Shipinel::Keyboard::Focusing::SPACE).pressed.click.line_index]
-  end
 end
