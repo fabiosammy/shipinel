@@ -157,6 +157,10 @@ cp test/fixtures/semana.md /tmp/semana.md
     still), Enter jumps there and closes it; a click on a row does the
     same, a click outside or `g`/Escape closes it. Checkboxes under the
     panel cannot be clicked while it is open.
+35. **Help and status line.** The bottom of the window says "Press ? for
+    help". `?` (or F1) covers the page with the keys and what they do; `?`,
+    F1, Escape or a click closes it, and while it is open `h` does not
+    hide the header. With the find bar open, `?` is typed into it instead.
 
 ## Per desktop
 

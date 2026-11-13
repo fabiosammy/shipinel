@@ -6,6 +6,7 @@
 
 require_relative "anchor"
 require_relative "draw_list"
+require_relative "help_panel"
 require_relative "input"
 require_relative "outline_rows"
 require_relative "page_in_view"
@@ -74,17 +75,23 @@ module Shipinel
       tasks.empty? ? title : "#{title} · #{tasks}"
     end
 
-    # Into the overlay, while the outline is open.
+    # Into the overlay, while the outline is open; the help instead while
+    # that is.
     #: (DrawList overlay) -> void
     def add_to(overlay)
+      @outline.help? ? HelpPanel.new(@page, @style).add_to(overlay) : add_outline(overlay)
+    end
+
+    private
+
+    #: (DrawList overlay) -> void
+    def add_outline(overlay)
       return unless @outline.open?
 
       add_band(overlay)
       @rows.shown.times { |row| add_row(overlay, @rows.top_row + row) }
       add_empty(overlay) if @rows.anchors.empty?
     end
-
-    private
 
     # The band, with a thin rule along its bottom to part it from the page.
     #: (DrawList overlay) -> void

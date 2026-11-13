@@ -11,8 +11,8 @@ module Shipinel
     attr_reader :shift #: Float
     attr_reader :top #: Float
     attr_reader :width #: Float
-
-    # @rbs @bottom: Float
+    # Where the area ends, in the window.
+    attr_reader :bottom #: Float
 
     #: (Float offset, Rect area) -> void
     def initialize(offset, area)
@@ -34,6 +34,12 @@ module Shipinel
     #: () -> Float
     def offset
       @shift + @top
+    end
+
+    # The area itself, in the window.
+    #: () -> Rect
+    def area
+      Rect.new(0.0, @top, @width, height)
     end
 
     # How tall the area is.

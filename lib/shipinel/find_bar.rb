@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-# The strip pinned to the bottom of the window while the find bar is open:
+# The strip pinned to the bottom of the window: while the find bar is open,
 # "Find: " and what was typed, with a cursor after it, and on the right
-# which match it is on ("2 of 7") or "no matches". It does not scroll; the
-# page above it is shortened by its height.
+# which match it is on ("2 of 7") or "no matches"; otherwise a status line
+# saying how to get help. It does not scroll; the page above it is
+# shortened by its height.
 
 require_relative "draw_list"
 require_relative "font_set"
@@ -39,48 +40,62 @@ module Shipinel
       style.line_height + (PADDING * 2)
     end
 
-    # 0 while closed.
+    # The status line says this while the find bar is closed.
+    STATUS = "Press ? for help"
+
     #: () -> Float
     def height
-      @search.open? ? FindBar.room(@style) : 0.0
+      FindBar.room(@style)
     end
 
-    # Into the overlay.
+    # Into the overlay: the find bar, or the status line.
     #: (DrawList overlay) -> void
     def add_to(overlay)
-      return unless @search.open?
-
-      band = Rect.new(0.0, @area.top + @area.height - height, @area.width, height)
       overlay.add(Box.new(band, Theme::Progress::BAND))
-      add_query(overlay, band)
-      add_count(overlay, band)
+      return add_status(overlay) unless @search.open?
+
+      add_query(overlay)
+      add_count(overlay)
     end
 
     private
 
-    # The text line inside `band`, from `left`, `width` wide.
-    #: (Rect band, Float left, Float width) -> Rect
-    def line(band, left, width)
+    # "Press ? for help", muted, in the status line.
+    #: (DrawList overlay) -> void
+    def add_status(overlay)
+      muted = @style.with_color(Theme::Ink::MUTED)
+      overlay.add(TextRun.new(STATUS, line(Theme::Spacing::MARGIN, @fonts.text_width(STATUS, muted)), muted))
+    end
+
+    # The strip, along the bottom of the window.
+    #: () -> Rect
+    def band
+      Rect.new(0.0, @area.top + @area.height - height, @area.width, height)
+    end
+
+    # The text line inside the strip, from `left`, `width` wide.
+    #: (Float left, Float width) -> Rect
+    def line(left, width)
       Rect.new(left, band.top + PADDING, width, @style.line_height)
     end
 
     # "Find: " and the query, then a thin bar where the next character goes.
-    #: (DrawList overlay, Rect band) -> void
-    def add_query(overlay, band)
+    #: (DrawList overlay) -> void
+    def add_query(overlay)
       typed = "#{LABEL}#{@search.query}"
       width = @fonts.text_width(typed, @style)
-      overlay.add(TextRun.new(typed, line(band, Theme::Spacing::MARGIN, width), @style))
-      overlay.add(Box.new(line(band, Theme::Spacing::MARGIN + width + 1.0, 2.0), @style.color))
+      overlay.add(TextRun.new(typed, line(Theme::Spacing::MARGIN, width), @style))
+      overlay.add(Box.new(line(Theme::Spacing::MARGIN + width + 1.0, 2.0), @style.color))
     end
 
     # "2 of 7" or "no matches" on the right; nothing before any typing.
-    #: (DrawList overlay, Rect band) -> void
-    def add_count(overlay, band)
+    #: (DrawList overlay) -> void
+    def add_count(overlay)
       return if @search.query.empty?
 
       text = count_text
       width = @fonts.text_width(text, count_style)
-      overlay.add(TextRun.new(text, line(band, band.width - Theme::Spacing::MARGIN - width, width), count_style))
+      overlay.add(TextRun.new(text, line(@area.width - Theme::Spacing::MARGIN - width, width), count_style))
     end
 
     # Amber when nothing matches.

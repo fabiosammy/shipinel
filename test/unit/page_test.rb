@@ -40,7 +40,8 @@ class PageTest < Minitest::Test
   def press(code) = 1 << Shipinel::Keyboard.watched.find_index(code)
 
   def title(frame)
-    Array.new(frame.overlay_size) { |position| frame.overlay_at(position) }.grep(Shipinel::TextRun).last.text
+    runs = Array.new(frame.overlay_size) { |position| frame.overlay_at(position) }.grep(Shipinel::TextRun)
+    runs.map(&:text).reject { |text| text == Shipinel::FindBar::STATUS }.last
   end
 
   def test_header_names_the_file_until_a_heading_scrolls_past

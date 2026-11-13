@@ -51,6 +51,11 @@ contribution process. This file is how you (Claude) work on the project.
   (Focus, kept by line index; PageInView finds them in page order, round
   the ends, scrolling to them); Space hands the focused checkbox to the
   Painter as that frame's click (Frame#pressed); Escape lets go.
+- Help: `?` (typed) or F1 opens a panel over the page with every key and
+  click (HelpPanel; a mode of Outline, so it takes the keys and blocks
+  clicks the same way); ?, F1, Escape or a click close it. The strip at
+  the bottom is a status line, "Press ? for help", whenever the find bar
+  is closed (FindBar), and the page area is always shortened by it.
 - Outline: `g` opens a panel under the header with every heading
   (indented by level, with its count; Outline, OutlinePanel, OutlineRows),
   the section in view selected; j/k/arrows move, Enter or a click jumps

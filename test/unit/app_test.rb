@@ -152,7 +152,8 @@ class AppTest < Minitest::Test
     times = READINGS.each
     Shipinel::Clock.stub(:now_ms, -> { times.next }) { run_app(screen) }
 
-    assert_equal [["Semana", "Reunião", "0 of 1 task done · 0%", "semana.md"], ["Domingo", "semana.md"]],
+    assert_equal [["Semana", "Reunião", "0 of 1 task done · 0%", "semana.md", "Press ? for help"],
+                  ["Domingo", "semana.md", "Press ? for help"]],
                  [screen.texts_on(0), screen.texts_on(1)]
   end
 
@@ -162,7 +163,7 @@ class AppTest < Minitest::Test
     screen = run_app(FakeScreen.new(click_on: 0))
 
     assert_equal "[topo](#topo)\n", File.read(@path)
-    assert_equal ["topo", "semana.md"], screen.texts_on(0)
+    assert_equal ["topo", "semana.md", "Press ? for help"], screen.texts_on(0)
   end
 
   # Nothing changes after the first frame, busy or idle, so only that one
@@ -171,7 +172,8 @@ class AppTest < Minitest::Test
     screen = run_app(FakeScreen.new(frames: 40))
     drawn = screen.calls.count { |call| call.first == :end_frame } - screen.calls.count { |call| call.first == :skip }
 
-    assert_equal [1, ["Semana", "Reunião", "0 of 1 task done · 0%", "semana.md"]], [drawn, screen.texts_on(0)]
+    assert_equal [1, ["Semana", "Reunião", "0 of 1 task done · 0%", "semana.md", "Press ? for help"]],
+                 [drawn, screen.texts_on(0)]
     assert_empty screen.texts_on(1)
   end
 
