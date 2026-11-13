@@ -8,7 +8,6 @@ require_relative "clipboard"
 require_relative "highlights"
 require_relative "markdown/block"
 require_relative "poller"
-require_relative "find_bar"
 require_relative "focus"
 require_relative "font_set"
 require_relative "marks"
@@ -90,13 +89,6 @@ module Shipinel
       outline.spot(panel)
     end
 
-    # The find bar as it is, in `view`'s status text, at the bottom of
-    # `window`.
-    #: (View view, Rect window) -> FindBar
-    def find_bar(view, window)
-      FindBar.new(search, view.styles.status, window, @fonts)
-    end
-
     # `frame`, showing the selection as this frame's input leaves it and
     # the matches, with `bar` in its overlay; Ctrl+C puts the selected text
     # on the clipboard.
@@ -104,7 +96,7 @@ module Shipinel
     def selecting(input, frame, bar)
       selection = @marks.selection.after(input, frame)
       @marks = @marks.with_selection(selection)
-      Clipboard.copy(selection.text) if input.keys.copy?
+      Clipboard.copy(selection.text) if input.keys.commands.copy?
       bar.add_to(frame.overlay)
       frame.showing(@marks)
     end

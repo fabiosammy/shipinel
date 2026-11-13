@@ -2,7 +2,8 @@
 
 # Runs the window: opens it, loads the fonts, then each frame re-reads the
 # file when it is time, lays the document out, draws it, and acts on a
-# click: toggles the task in the file, or opens the link.
+# click: toggles the task in the file, or opens the link. Another plan can
+# be opened while it runs (dropped on the window, or Ctrl+O).
 
 require_relative "document_file"
 require_relative "document_view"
@@ -12,6 +13,7 @@ require_relative "launch"
 require_relative "frame"
 require_relative "page"
 require_relative "painter"
+require_relative "plan_picker"
 require_relative "poller"
 require_relative "session"
 require_relative "screen"
@@ -39,19 +41,19 @@ module Shipinel
     #: (Screen screen, Launch launch) -> void
     def initialize(screen, launch)
       @screen = screen
-      @document = DocumentView.new(DocumentFile.new(launch.path))
+      @document = DocumentView.open(launch.path)
       @session = launch.session(WindowPlace.sized(WIDTH, HEIGHT))
-      @page = Page.new(@session.saved.view, FontSet.new(screen.font_shim, launch.fonts))
+      @page = launch.page(@session.saved.view, screen.font_shim)
     end
 
     # Raises WindowError when no window could be opened.
     #: () -> void
     def run
-      @screen.open(@session.saved.place, TITLE)
-      raise WindowError, NO_WINDOW unless @screen.ready?
+      raise WindowError, NO_WINDOW unless @screen.open(@session.saved.place, TITLE)
 
       prepare
-      tick until ending?
+      # The tray's Quit, or the close button unless it hides to the tray.
+      tick until @session.desktop.ending?(@screen)
       finish
     end
 
@@ -61,14 +63,14 @@ module Shipinel
     # the tray icon.
     #: () -> void
     def prepare
-      @page.prepare(@document, @session.saved)
-      @session.desktop.start("Shipinel · #{@document.name}")
+      show_plan
+      @session.desktop.start(@document.name)
     end
 
-    # The tray's Quit, or the close button unless it hides to the tray.
-    #: () -> bool
-    def ending?
-      @session.desktop.ending?(@screen)
+    # The plan's characters in the fonts, and the page where it was left.
+    #: () -> void
+    def show_plan
+      @page.prepare(@document, @session.saved)
     end
 
     #: () -> void
@@ -95,13 +97,26 @@ module Shipinel
       respond(@screen.input)
     end
 
-    # This frame's input: the page drawn (or not), a click acted on, and
-    # `u` undoing the last tick.
+    # This frame's input: the page drawn (or not), a click acted on, `u`
+    # undoing the last tick, and another plan opened.
     #: (Input input) -> void
     def respond(input)
       clicked = show(@page.update(input, @screen.placement.area, @document))
       act(clicked) if clicked
       saved(@document.undo) if input.keys.undo?
+      switch_to(PlanPicker.wanted(input, @screen, @document))
+    end
+
+    # Another plan, dropped on the window or picked after Ctrl+O: where
+    # this one was is saved, and the other opens where it was left.
+    #: (String path) -> void
+    def switch_to(path)
+      return if path.empty?
+
+      remember
+      @document = DocumentView.open(path)
+      @session = @session.for_plan(path, @page.view, @screen.placement)
+      show_plan
     end
 
     # Without a frame to draw, keeps the window responsive without drawing:
@@ -141,10 +156,7 @@ module Shipinel
 
     #: (DrawCommand command) -> void
     def act(command)
-      case command
-      when Checkbox then saved(@document.toggle(command.click))
-      when LinkArea then @document.follow(command.url)
-      end
+      saved(@document.click(command))
       # A problem notice may bring characters the fonts lack.
       @page.refresh_fonts(@document.shown_text)
     end

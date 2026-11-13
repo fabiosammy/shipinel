@@ -5,6 +5,8 @@
 
 require_relative "config"
 require_relative "font_locator"
+require_relative "font_set"
+require_relative "page"
 require_relative "session"
 require_relative "view"
 
@@ -29,6 +31,13 @@ module Shipinel
     #: (WindowPlace place) -> Session
     def session(place)
       Session.for(@path, SavedState.fresh(@view, place), @config)
+    end
+
+    # The page for the plan as `view` shows it, with the fonts found, loaded
+    # through `shim`.
+    #: (View view, FontShim shim) -> Page
+    def page(view, shim)
+      Page.new(view, FontSet.new(shim, @fonts))
     end
   end
 end

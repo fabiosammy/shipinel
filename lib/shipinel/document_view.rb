@@ -6,6 +6,7 @@
 # links open next to the file. The last tick can be undone once.
 
 require_relative "document_file"
+require_relative "draw_list"
 require_relative "link_opener"
 require_relative "markdown/parser"
 require_relative "task_toggler"
@@ -44,6 +45,12 @@ module Shipinel
     # @rbs @snapshot: Snapshot
     # @rbs @last: LastAction
 
+    # The plan at `path`.
+    #: (String path) -> DocumentView
+    def self.open(path)
+      DocumentView.new(DocumentFile.new(path))
+    end
+
     #: (DocumentFile file) -> void
     def initialize(file)
       @file = file
@@ -71,6 +78,17 @@ module Shipinel
       @last = LastAction.new("", @last.undo)
     end
 
+    # A click on a checkbox toggles its task; one on a link opens it (and
+    # reports nothing to save).
+    #: (DrawCommand command) -> ToggleResult
+    def click(command)
+      case command
+      when Checkbox then toggle(command.click)
+      when LinkArea then opened(command.url)
+      else ToggleResult.new(:nothing, "")
+      end
+    end
+
     # A click on a checkbox; `u` puts it back (undo).
     #: (TaskClick click) -> ToggleResult
     def toggle(click)
@@ -92,10 +110,31 @@ module Shipinel
       result
     end
 
+    # Shows `problem` as the action notice (a plan that could not be
+    # opened), as a failed click does.
+    #: (String problem) -> void
+    def notice(problem)
+      @last = LastAction.new(problem, @last.undo)
+      nil
+    end
+
+    # A click on a link: there is nothing to save.
+    #: (String url) -> ToggleResult
+    def opened(url)
+      follow(url)
+      ToggleResult.new(:nothing, "")
+    end
+
     #: (String url) -> void
     def follow(url)
       @last = LastAction.new(LinkOpener.new(File.dirname(@file.path), LinkOpener::XDG_OPEN).open(url), @last.undo)
       nil
+    end
+
+    # The plan's path.
+    #: () -> String
+    def path
+      @file.path
     end
 
     # What the file held at the last read ("" when it cannot be read).

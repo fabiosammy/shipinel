@@ -52,6 +52,7 @@ module Shipinel
     ffi_func :ui_control_down, [], :bool
     ffi_func :ui_shift_down, [], :bool
     ffi_func :ui_char_pressed, [], :int
+    ffi_func :ui_dropped_file, [], :str
     ffi_func :ui_set_clipboard, %i[str], :void
   end
 end

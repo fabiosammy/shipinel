@@ -14,9 +14,9 @@ class ScreenTest < Minitest::Test
   end
 
   def test_window_lifecycle
-    @screen.open(Shipinel::WindowPlace.new(Shipinel::Rect.new(30.0, 40.0, 500.0, 700.0), true), "shipinel")
+    opened = @screen.open(Shipinel::WindowPlace.new(Shipinel::Rect.new(30.0, 40.0, 500.0, 700.0), true), "shipinel")
 
-    assert_predicate @screen, :ready?
+    assert opened
     refute_predicate @screen, :closing?
     @screen.close
 
@@ -71,7 +71,7 @@ class ScreenTest < Minitest::Test
 
     read = Shipinel::UI.calls.find { |call| call.first == :keys }
 
-    assert_equal [true, [:keys, Shipinel::Keyboard.watched, 26]], [keys.pressed?, read]
+    assert_equal [true, [:keys, Shipinel::Keyboard.watched, 27]], [keys.pressed?, read]
   end
 
   # Typed characters are read until the shim answers 0.

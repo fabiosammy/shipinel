@@ -37,6 +37,7 @@ module Shipinel
        "Space|Tick the task with the focus ring", "u|Undo the last tick",
        "j, k, arrows|Scroll a line", "Page Up / Down|Scroll a window", "Home / End|Go to the top / the end",
        "g|Sections: jump to one", "Ctrl+F|Find (Enter: next, Escape: close)",
+       "Ctrl+O, drop a file|Open another plan",
        "Drag, Ctrl+A|Select text", "Ctrl+C|Copy the selection", "+, -, 0|Text size",
        "h|Hide or show the header", "? or F1|This help (Escape or a click closes it)"]
     end

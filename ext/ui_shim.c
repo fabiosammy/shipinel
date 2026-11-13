@@ -16,6 +16,7 @@
 #include <poll.h>
 #include <raylib.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <threads.h>
 #include <time.h>
 #include <unistd.h>
@@ -61,7 +62,9 @@ enum {
     MAX_WATCHED_KEYS = 30,
     /* ui_mouse_buttons' bits. */
     MOUSE_DOWN = 1,
-    MOUSE_PRESSED = 2
+    MOUSE_PRESSED = 2,
+    /* ui_dropped_file keeps one path of at most this many bytes. */
+    PATH_BYTES = 4096
 };
 
 static const long NANOSECONDS = 1000000000L;
@@ -426,6 +429,21 @@ int ui_pointer_on(float left, float top, float width, float height) {
  * frees it, so the cursor is only set when it changes. */
 int ui_control_down(void) {
     return IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL) ? 1 : 0;
+}
+
+/* raylib collects drops from GLFW's callback; the first path is copied
+ * out (truncated past PATH_BYTES) before the list is freed. */
+const char *ui_dropped_file(void) {
+    static char path[PATH_BYTES];
+    path[0] = '\0';
+    if (IsFileDropped()) {
+        FilePathList files = LoadDroppedFiles();
+        if (files.count > 0) {
+            snprintf(path, sizeof path, "%s", files.paths[0]);
+        }
+        UnloadDroppedFiles(files);
+    }
+    return path;
 }
 
 int ui_shift_down(void) {

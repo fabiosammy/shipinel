@@ -14,7 +14,15 @@ class AppTest < Minitest::Test
   class FakeScreen
     attr_reader :calls, :text_tops
 
-    attr_accessor :on_frame_end
+    attr_accessor :on_frame_end, :keys
+
+    # A file dropped on the window on frame `frame`.
+    def drop(path, frame)
+      @dropped = path
+      @drop_on = frame
+    end
+
+    def dropped_file = @frame == @drop_on ? @dropped.to_s : ""
 
     # broken: :window (it never opens) or :font (the body font fails).
     def initialize(frames: 2, click_on: nil, wheel: 0.0, broken: nil)
@@ -27,12 +35,11 @@ class AppTest < Minitest::Test
       @text_tops = []
     end
 
-    def open(place, title) = @calls << [:open, place.rect.width, place.rect.height, title]
-    def ready? = @broken != :window
+    def open(place, title) = (@calls << [:open, place.rect.width, place.rect.height, title]) && @broken != :window
     def closing? = @frame >= @frames
     def close = @calls << [:close]
     def placement = Shipinel::WindowPlace.sized(440, 640)
-    def input = Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, @wheel, Shipinel::KeyPress.new(0, ""))
+    def input = Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, @wheel, Shipinel::KeyPress.new(@keys || 0, ""))
     def font_shim = (@font_shim ||= FakeShim.new(failing: @broken == :font ? PATHS_FAILING : []))
     def begin_frame(_color) = @pointed = false
     def texts_on(frame) = @texts.select { |text_frame, _text| text_frame == frame }.map(&:last)

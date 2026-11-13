@@ -47,8 +47,8 @@ class KeyboardTest < Minitest::Test
   # Ctrl+C and Ctrl+A need Control; Control alone is not a key press.
   def test_copy_and_select_all_need_control
     assert_equal [false, true, true, false],
-                 [press(K::Selecting::C).copy?, with_control(K::Selecting::C).copy?,
-                  with_control(K::Selecting::A).select_all?, press(K::Selecting::A).select_all?]
+                 [press(K::Selecting::C).commands.copy?, with_control(K::Selecting::C).commands.copy?,
+                  with_control(K::Selecting::A).commands.select_all?, press(K::Selecting::A).commands.select_all?]
   end
 
   def test_control_alone_is_not_a_key_press

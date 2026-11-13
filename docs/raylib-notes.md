@@ -408,3 +408,18 @@ From `raylib.h` (6.2):
 `ui_shift_down` makes Shift+Enter go to the previous match. Escape does not
 close the window (`SetExitKey(KEY_NULL)` in `ui_open_window`), so it can
 close the find bar.
+
+## Dropped files (2026-11-13)
+
+From `raylib.h` (6.2):
+
+- `typedef struct FilePathList { unsigned int count; char **paths; }`
+  (line 530).
+- `RLAPI bool IsFileDropped(void);` (line 1171),
+  `RLAPI FilePathList LoadDroppedFiles(void);` (1172),
+  `RLAPI void UnloadDroppedFiles(FilePathList files);` (1173). GLFW's drop
+  callback fills the list; it lives until `UnloadDroppedFiles`.
+
+`ui_dropped_file` copies the first path into a static buffer (4096 bytes)
+and frees the list, so Ruby gets a plain `const char *` (`:str` returns
+work, probed with `getenv`); "" when nothing was dropped.

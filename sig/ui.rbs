@@ -40,6 +40,7 @@ module Shipinel
     def self.ui_control_down: () -> bool
     def self.ui_shift_down: () -> bool
     def self.ui_char_pressed: () -> Integer
+    def self.ui_dropped_file: () -> String
     def self.ui_set_clipboard: (String text) -> void
   end
 end

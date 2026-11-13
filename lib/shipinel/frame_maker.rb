@@ -51,7 +51,8 @@ module Shipinel
     #: (Input input, Frame frame, Rect window) -> Frame
     def finish(input, frame, window)
       outlined = frame.adding(panel(PageInView.new(frame.content, frame.view)))
-      @highlighter.selecting(input, outlined, @highlighter.find_bar(@view, window))
+      @highlighter.selecting(input, outlined,
+                             FindBar.new(@highlighter.search, @view.styles.status, window, @typesetter.fonts))
     end
 
     # The outline as it is, over `page`, in the status text.
