@@ -46,6 +46,12 @@ module Shipinel
       !date.empty? && !@date.empty? && date < @date
     end
 
+    # Whether `date` (YYYY-MM-DD) is this day; never for "" or Day.none.
+    #: (String date) -> bool
+    def on?(date)
+      !@date.empty? && @date == date
+    end
+
     # A heading's plain title is about this day when it holds the date
     # ("Friday 2026-11-13 — housekeeping") or starts with the weekday's
     # name as a word ("Monday — push", "Segunda-feira").

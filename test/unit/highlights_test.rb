@@ -58,20 +58,22 @@ class HighlightsTest < Minitest::Test
     refute highlights.changed?(0, 1)
   end
 
-  def test_dates_before_today_are_overdue
+  # Sunday 2026-11-08: the 7th is overdue, the 8th due today, the 9th and
+  # a word without a date are not pointed out.
+  def test_past_dates_are_overdue_and_todays_is_due
     highlights = Shipinel::Highlights.new(SUNDAY, Shipinel::LineChanges.none)
+    parts = ["(2026-11-07).", "2026-11-08", "2026-11-09", "Monday"].map { |word| highlights.dated_parts(word) }
 
-    dates = ["(2026-11-07).", "2026-11-08", "Monday"].map { |word| highlights.overdue_parts(word).date }
-
-    assert_equal ["2026-11-07", "", ""], dates
+    assert_equal([["2026-11-07", Shipinel::Theme::Accent::OVERDUE], ["2026-11-08", Shipinel::Theme::Accent::TODAY],
+                  ["", 0], ["", 0]], parts.map { |part| [part.date, part.color] })
   end
 
-  def test_no_date_known_nothing_is_overdue
-    assert_equal "", Shipinel::Highlights.none.overdue_parts("1999-01-01").date
+  def test_no_date_known_nothing_is_pointed_out
+    assert_equal "", Shipinel::Highlights.none.dated_parts("1999-01-01").date
   end
 
   def test_a_dated_word_is_cut_around_its_date
-    parts = Shipinel::DatedWord.around("(2026-11-07).", "2026-11-07")
+    parts = Shipinel::DatedWord.around("(2026-11-07).", "2026-11-07", Shipinel::Theme::Accent::OVERDUE)
 
     assert_equal ["(", "2026-11-07", ")."], [parts.before, parts.date, parts.after]
   end

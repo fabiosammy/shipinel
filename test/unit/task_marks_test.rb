@@ -43,13 +43,15 @@ class TaskMarksTest < Minitest::Test
   end
 
   # Only in open tasks: a done task, or a date in a paragraph, is history.
-  def test_past_dates_in_open_tasks_are_overdue
-    source = "- [ ] due 2026-11-07 or 2026-11-08\n- [x] 2026-11-01\n\n2026-11-01"
+  # Today (the 8th) is due, the 9th is not pointed out.
+  def test_past_and_todays_dates_in_open_tasks_are_marked
+    source = "- [ ] due 2026-11-07 or 2026-11-08 then 2026-11-09\n- [x] 2026-11-01\n\n2026-11-01"
     colors = runs(page(source, highlights: Shipinel::Highlights.new(TODAY, Shipinel::LineChanges.none)))
              .to_h { |run| [run.text.strip, run.style.color] }
 
     assert_equal({ "due" => Shipinel::Theme::Ink::BODY, "2026-11-07" => Shipinel::Theme::Accent::OVERDUE,
-                   "or" => Shipinel::Theme::Ink::BODY, "2026-11-08" => Shipinel::Theme::Ink::BODY,
+                   "or" => Shipinel::Theme::Ink::BODY, "2026-11-08" => Shipinel::Theme::Accent::TODAY,
+                   "then" => Shipinel::Theme::Ink::BODY, "2026-11-09" => Shipinel::Theme::Ink::BODY,
                    "2026-11-01" => Shipinel::Theme::Ink::BODY }, colors)
   end
 

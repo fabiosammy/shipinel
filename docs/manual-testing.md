@@ -99,9 +99,10 @@ cp test/fixtures/semana.md /tmp/semana.md
     amber, otherwise blue (green when all are done). Scroll into a section
     with tasks: the section line ends with "· N of M", counting its
     subsections; a long title is cut with "…" before the count.
-22. **Waiting and overdue.** In an open task, `⏳` (drawn from the emoji
-    font) or "(waiting on …)" makes the text italic and quieter; a date
-    before today (`2026-11-06` on 2026-11-08) is amber. The same in a done
+22. **Waiting, overdue and due today.** In an open task, `⏳` (drawn from
+    the emoji font) or "(waiting on …)" makes the text italic and quieter;
+    a date before today (`2026-11-06` on 2026-11-08) is amber, and today's
+    date (`2026-11-08`) is blue like today's heading. The same in a done
     task, or in a paragraph, stays as it is.
 23. **Changed lines.** Edit two lines in your editor and save: within a
     second a teal mark appears in the left margin beside each of their

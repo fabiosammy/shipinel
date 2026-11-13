@@ -34,7 +34,8 @@
   color, and on a new day the plan opens there.
 - **What can be done now.** A task marked as waiting (`⏳` or "(waiting on
   …)") steps back in quieter italics, so the ones you can pick up stand out;
-  a date that has passed in an open task (`due 2026-11-06`) turns amber.
+  a date that has passed in an open task (`due 2026-11-06`) turns amber, and
+  today's date turns blue like today's heading.
 - **Changes noticed.** Lines edited outside Shipinel (by you in your editor,
   or an assistant) get a mark beside them for ten seconds, and a short
   notch shows where lines were deleted.
@@ -116,7 +117,7 @@ quits (or hides it in the tray, see `close_to_tray`).
 | `#`, `##`, `###` (up to `######`) headings, optional closing `#`s | Bold, sized by level |
 | `- [ ] task`, `- [x] task`, `- [X] task`, also with `*` or `+` | A checkbox you can click; done tasks are dimmed |
 | An open task with `⏳`, or `(waiting` in any case (`(Waiting on Ana)`) | Waiting: quieter italics. It still counts in the progress |
-| A date `YYYY-MM-DD` in an open task, before today | The date in amber (not the punctuation around it). Done tasks and other text are left as they are |
+| A date `YYYY-MM-DD` in an open task, before today or today | The date in amber when it has passed, in blue (today's heading color) when it is today; not the punctuation around it. Done tasks and other text are left as they are |
 | `- item`, `* item`, `+ item` | A bullet |
 | `1. item`, `2) item` | A numbered item, with its own number; `1. [ ] task` is a task |
 | Indented items (2 or 4 spaces, or tabs) | Nested, indented by depth |

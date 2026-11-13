@@ -14,7 +14,8 @@ module Shipinel
   # Places text piece by piece, starting a new line when the next piece
   # would pass the right edge. A word longer than a whole line (a long path
   # in a narrow table column) is broken between characters instead. A past
-  # date in an open task is drawn in the overdue color.
+  # date in an open task is drawn in the overdue color, today's in the
+  # accent color.
   class LineWrap
     # Example match: "ação " in "ação de teste" (a word with the spaces
     # after it), or a run of spaces.
@@ -48,11 +49,11 @@ module Shipinel
 
     #: (String word, SpanLook look) -> void
     def place_word(word, look)
-      # Only a past date in the overdue color: "(" before it and ")." after
-      # it keep the look of the text around them.
-      parts = @flow.page.marks.overdue_parts(word)
+      # Only the date in its color (overdue or due today): "(" before it
+      # and ")." after it keep the look of the text around them.
+      parts = @flow.page.marks.dated_parts(word)
       place_pieces(parts.before, look)
-      place_pieces(parts.date, look.overdue)
+      place_pieces(parts.date, look.dated(parts.color))
       place_pieces(parts.after, look)
     end
 
