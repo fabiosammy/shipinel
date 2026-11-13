@@ -67,7 +67,8 @@ contribution process. This file is how you (Claude) work on the project.
 - Notifications through `notify-send`: a daily open-tasks nudge naming one
   open task that is not waiting, and a failed save.
 - Tray icon (StatusNotifierItem + dbusmenu over sd-bus): progress ring and
-  tooltip, click shows/hides the window, menu with Quit, optional close to
+  tooltip (with the open tasks overdue or due today, DueDates: a task's
+  first date), click shows/hides the window, menu with Quit, optional close to
   tray; without a tray host, closing quits.
 - TERM, INT and HUP end it like the close button (StopSignals: the trap
   sets a flag the loop reads), saving the state.

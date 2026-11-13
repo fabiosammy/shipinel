@@ -43,8 +43,10 @@
   `-` and `0` zoom; `h` hides the header; `u` undoes the last tick.
 - **Notifications**: a daily nudge with the number of tasks still open and
   one of them, and a warning when a tick could not be saved.
-- **Tray icon**: the progress as a ring and in its tooltip; a click shows or
-  hides the window, and closing can hide it there instead of quitting.
+- **Tray icon**: the progress as a ring and in its tooltip, which also says
+  how many open tasks are overdue or due today ("2 overdue · 1 due today");
+  a click shows or hides the window, and closing can hide it there instead
+  of quitting.
 - **Light on the machine.** An idle window sleeps until input arrives and
   costs next to no CPU.
 - Native on **Wayland** (KDE Plasma, Hyprland, GNOME) and on X11.

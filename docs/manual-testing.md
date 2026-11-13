@@ -88,7 +88,9 @@ cp test/fixtures/semana.md /tmp/semana.md
     folder, ticking a box shows "Shipinel could not save" with the reason.
     Without `notify-send` on PATH, each one prints a line on stderr instead.
 20. **Tray.** With `tray=on`: on KDE the icon appears with a ring and a
-    tooltip "N of M tasks done · P%" that follow the ticks. A click hides
+    tooltip "N of M tasks done · P%" that follow the ticks; with an open
+    task dated yesterday and one dated today, it ends "· 1 overdue · 1 due
+    today", and ticking them takes those away. A click hides
     the window, another brings it back where the window rules put it. The
     menu's Quit ends Shipinel. With `close_to_tray=on`, the close button
     hides the window and the icon stays. On Hyprland with waybar's tray the

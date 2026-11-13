@@ -7,6 +7,8 @@
 # which picks the plan at the next start.
 
 require_relative "config"
+require_relative "day"
+require_relative "due_dates"
 require_relative "reminder"
 require_relative "stop_signals"
 require_relative "tray_icon"
@@ -47,13 +49,14 @@ module Shipinel
       @tray_icon.start(Tray.new, title)
     end
 
-    # Every chore: the daily nudge when it is time, and the tray's progress.
+    # Every chore: the daily nudge when it is time, and the tray's progress
+    # with the open tasks overdue or due today.
     #: (Markdown::BlockList blocks, String name) -> void
     def remind(blocks, name)
       follow_config(ConfigFile.text)
       @reminder.tick(WallTime.now, blocks, name)
       progress = blocks.task_progress
-      @tray_icon.show(progress.tray_label, progress.share)
+      @tray_icon.show(DueDates.of(blocks, Day.today).after(progress.tray_label), progress.share)
     end
 
     #: (String problem) -> void
