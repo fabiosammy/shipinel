@@ -95,4 +95,19 @@ class KeyboardTest < Minitest::Test
 
     assert_equal [false, 100.0 + 48.0 + 300.0], [letters.pressed?, arrows.scrolled(100.0, BAR)]
   end
+
+  def focusing(*codes) = press(*codes).for_focus
+
+  # Tab: the next checkbox, Shift+Tab the previous; Space ticks; Escape
+  # lets go.
+  def test_focus_keys
+    shift_tab = Shipinel::FocusKeys.new(watched_bit(K::Focusing::TAB) | Shipinel::FindKeys::SHIFT)
+
+    assert_equal [1, -1, 0, true, true], [focusing(K::Focusing::TAB).step, shift_tab.step, focusing.step,
+                                          focusing(K::Focusing::SPACE).tick?, focusing(F::ESCAPE).clear?]
+  end
+
+  def test_tab_and_space_are_left_out_while_finding
+    refute_predicate press(K::Focusing::TAB, K::Focusing::SPACE).while_finding, :pressed?
+  end
 end

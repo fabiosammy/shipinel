@@ -233,6 +233,12 @@ module Shipinel
       @commands.size
     end
 
+    # A page with nothing on it (an empty file).
+    #: () -> bool
+    def empty?
+      @commands.empty?
+    end
+
     #: (Integer position) -> DrawCommand
     def at(position)
       @commands[position]

@@ -58,13 +58,20 @@ module Shipinel
       BACKSPACE = 259
     end
 
+    # Tab moves the keyboard focus to the next checkbox (with Shift, the
+    # previous one) and Space ticks it; Escape clears it.
+    module Focusing
+      TAB = 258
+      SPACE = 32
+    end
+
     # Bit n of a KeyPress is the n-th key here.
     #: () -> Array[Integer]
     def self.watched
       [Lines::J, Lines::DOWN, Lines::K, Lines::UP, Jumps::PAGE_DOWN, Jumps::PAGE_UP, Jumps::HOME, Jumps::END_KEY,
        Zoom::EQUAL, Zoom::KEYPAD_PLUS, Zoom::MINUS, Zoom::KEYPAD_MINUS, Zoom::ZERO, HEADER, UNDO,
        Selecting::C, Selecting::A, Finding::F, Finding::ESCAPE, Finding::ENTER, Finding::KEYPAD_ENTER,
-       Finding::BACKSPACE]
+       Finding::BACKSPACE, Focusing::TAB, Focusing::SPACE]
     end
   end
 
@@ -100,9 +107,9 @@ module Shipinel
       # Not a watched key: Screen sets it while Control is held, so it says
       # nothing on its own (`pressed?` leaves it out).
       CONTROL = 0x4000_0000
-      # j, k, the zoom keys, h and u: while the find bar is open they are
-      # typed, not obeyed (`while_finding`).
-      LETTERS = 0x7F05
+      # j, k, the zoom keys, h, u, Tab and Space: while the find bar is
+      # open they are typed (or ignored), not obeyed (`while_finding`).
+      TYPED = 0xC0_7F05
     end
 
     # What was typed this frame (for the find bar), "" for nothing.
@@ -127,13 +134,19 @@ module Shipinel
     # takes the letters.
     #: () -> KeyPress
     def while_finding
-      KeyPress.new(@bits & ~Selecting::LETTERS, @typed)
+      KeyPress.new(@bits & ~Selecting::TYPED, @typed)
     end
 
     # What these keys do to the find bar.
     #: () -> FindKeys
     def for_finding
       FindKeys.new(@bits, @typed)
+    end
+
+    # What these keys do to the keyboard focus.
+    #: () -> FocusKeys
+    def for_focus
+      FocusKeys.new(@bits)
     end
 
     # Where these keys move a page scrolled to `offset`: a line (j, k, the
@@ -239,6 +252,49 @@ module Shipinel
       return 0 unless @bits.anybits?(ENTER)
 
       @bits.anybits?(SHIFT) ? -1 : 1
+    end
+  end
+
+  # The keyboard focus's keys in one frame (Keyboard::Focusing).
+  class FocusKeys
+    NEXT = 0x40_0000
+    TICK = 0x80_0000
+
+    # @rbs @bits: Integer
+
+    #: (Integer bits) -> void
+    def initialize(bits)
+      @bits = bits
+    end
+
+    # 1: the next checkbox (Tab), -1: the previous one (Shift+Tab), 0.
+    #: () -> Integer
+    def step
+      return 0 unless @bits.anybits?(NEXT)
+
+      @bits.anybits?(FindKeys::SHIFT) ? -1 : 1
+    end
+
+    # Space.
+    #: () -> bool
+    def tick?
+      @bits.anybits?(TICK)
+    end
+
+    # Escape.
+    #: () -> bool
+    def clear?
+      @bits.anybits?(FindKeys::CLOSE)
+    end
+
+    # The focus these keys leave, from task `line` on `page`: Escape lets
+    # go; Tab moves; Space presses the checkbox it ends on.
+    #: (Integer line, PageInView page) -> Focus
+    def focus_after(line, page)
+      return Focus.none if clear?
+
+      moved = page.line_after(line, step)
+      Focus.new(moved, tick? && moved >= 0)
     end
   end
 end

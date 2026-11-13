@@ -124,7 +124,7 @@ class PainterTest < Minitest::Test
     view = Shipinel::Viewport.new(0.0, Shipinel::Rect.new(0.0, 0.0, 400.0, 600.0))
     Shipinel::Painter.new(screen,
                           Shipinel::Frame.new(content, overlay,
-                                              view).showing(Shipinel::Marks.new(Shipinel::Selection.all(content), Shipinel::Search.none))).paint
+                                              view).showing(Shipinel::Marks.none.with_selection(Shipinel::Selection.all(content)))).paint
   end
 
   # The page's only text gets a background, drawn first (under it); the
@@ -155,7 +155,7 @@ class PainterTest < Minitest::Test
     content = page
     screen = FakeScreen.new
     Shipinel::Painter.new(screen, Shipinel::Frame.new(content, Shipinel::DrawList.new, WINDOW)
-      .showing(Shipinel::Marks.new(Shipinel::Selection.none, found_on(content, "Ç")))).paint
+      .showing(Shipinel::Marks.none.with_search(found_on(content, "Ç")))).paint
 
     assert_equal [:rect, 110.0, Shipinel::Theme::Found::CURRENT], screen.draws.first
   end

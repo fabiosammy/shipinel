@@ -47,6 +47,10 @@ contribution process. This file is how you (Claude) work on the project.
   content per poll, so own ticks never mark).
 - Keys: `j`/`k`, arrows, Page Up/Down, Home/End, `+`/`-`/`0` zoom, `h`,
   `u` (undo the last tick once, through the same safe toggle).
+- Keyboard ticking: Tab / Shift+Tab move a focus ring between checkboxes
+  (Focus, kept by line index; PageInView finds them in page order, round
+  the ends, scrolling to them); Space hands the focused checkbox to the
+  Painter as that frame's click (Frame#pressed); Escape lets go.
 - Select and copy: dragging over the page (or Ctrl+A) selects text in
   reading order (Selection, page positions, so it survives scrolling; a
   new layout drops it); Ctrl+C copies it, a line per laid-out line.
@@ -143,6 +147,7 @@ apart from the thin native layer.
 | `day.rb`, `line_changes.rb`, `highlights.rb`, `highlighter.rb`, `ChangeMarks` in `draw_list.rb` | Today's heading, past dates, lines changed outside: kept per poll, marked while laying out |
 | `selection.rb`, `reading_order.rb`, `selected_lines.rb`, `clipboard.rb` | Text selected with the mouse or Ctrl+A, and Ctrl+C |
 | `search.rb`, `page_text.rb`, `matches.rb`, `match_maker.rb`, `span.rb`, `find_bar.rb`, `marks.rb` | The find bar (Ctrl+F): query, matches, the strip, marks drawn under the text |
+| `focus.rb`, `page_in_view.rb`, `focus_steps.rb` | The keyboard focus: Tab between checkboxes, Space ticks, its ring |
 | `app.rb`, `session.rb`, `desktop.rb`, `reminder.rb`, `tray_icon.rb` | Loop, file poll, saved state, notifications, tray |
 | `task_toggler.rb`, `document_file.rb` | Safe toggle, atomic write |
 | `config.rb`, `state_file.rb`, `key_values.rb` | Config and saved state (key=value) |

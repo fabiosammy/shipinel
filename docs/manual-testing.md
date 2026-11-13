@@ -146,6 +146,11 @@ cp test/fixtures/semana.md /tmp/semana.md
     round the ends. Typing `h` or `j` goes into the bar; the arrows still
     scroll. "zzz" says "no matches" in amber. Escape closes it and the
     highlights go.
+33. **Keyboard ticking.** Tab: a blue ring goes round the first checkbox in
+    view; Tab again moves it on, Shift+Tab back, round the ends, the page
+    scrolling to it. Space ticks or unticks it, exactly as a click
+    (`git diff` shows only that line). Escape takes the ring away. With
+    the find bar open, Tab and Space do nothing to the focus.
 
 ## Per desktop
 
