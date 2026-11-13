@@ -12,6 +12,7 @@ require_relative "find_bar"
 require_relative "focus"
 require_relative "font_set"
 require_relative "marks"
+require_relative "outline_panel"
 require_relative "saved_state"
 require_relative "scroll_spot"
 require_relative "search"
@@ -44,6 +45,12 @@ module Shipinel
       @marks.search
     end
 
+    # Whether the outline is open (and takes the keys).
+    #: () -> bool
+    def outline_open?
+      @marks.outline.open?
+    end
+
     # The find bar's and the focus's keys, on `content` shown in `view`:
     # where the window goes to show the match or checkbox they moved to
     # (the match when both did; ScrollSpot.none when neither did).
@@ -71,6 +78,15 @@ module Shipinel
       focus = @marks.focus.after(steps, page)
       @marks = @marks.with_focus(focus)
       steps.step.zero? ? ScrollSpot.none : focus.aim(page)
+    end
+
+    # The outline after this frame's input, shown as `panel`: where the
+    # window goes for a jump (ScrollSpot.none otherwise).
+    #: (Input input, OutlinePanel panel) -> ScrollSpot
+    def outlining(input, panel)
+      outline = @marks.outline.after(input, panel)
+      @marks = @marks.with_outline(outline)
+      outline.spot(panel)
     end
 
     # The find bar as it is, in `view`'s status text, at the bottom of

@@ -314,7 +314,11 @@ Probes live in the session scratchpad (`probes/*.rb`), compiled with
      `i = 0` works, `index = 0; while index < 2; index += 1; end` → 35 widen
      warnings, all inside `builtins/`. **Rule:** never use those four names
      (nor `clamp`, found later); say `position` (in a list) or `line_index`
-     (in the file).
+     (in the file). A local `count` came back in the outline's row label
+     (2026-11-13): it widened only with `spin flags` (`--require-gate`,
+     `--rbs <root>`), not with a bare `spinel --rbs sig`, so check a
+     suspicion with `spinel $(spin flags) --rbs sig --warn-widen
+     bin/shipinel.rb`, as `rake spinel_widen` does.
    - An `# @rbs @ivar: T` line directly above a method's `#:` comment is
      read as part of that method's comment and ignored ("belongs to the
      method's leading comment block"). **Rule:** a blank line after the ivar

@@ -40,6 +40,12 @@ module Shipinel
       @buttons.anybits?(PRESSED)
     end
 
+    # The same input with no key pressed (while the outline takes them).
+    #: () -> Input
+    def without_keys
+      Input.new(@at, @buttons, @wheel, KeyPress.new(0, ""))
+    end
+
     # The same input without the letter commands, which the open find bar
     # takes as text (KeyPress#while_finding).
     #: () -> Input

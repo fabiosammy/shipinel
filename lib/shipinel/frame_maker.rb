@@ -12,6 +12,8 @@ require_relative "frame"
 require_relative "header"
 require_relative "highlighter"
 require_relative "input"
+require_relative "outline_panel"
+require_relative "page_in_view"
 require_relative "scroll"
 require_relative "typesetter"
 require_relative "view"
@@ -41,7 +43,21 @@ module Shipinel
       content = @typesetter.page_for(key, @view.styles, document)
       bar = scrolled(input, content, key.below(header.height))
       title = header.titled(bar.section_in(content, document.name), @typesetter.fonts)
-      @highlighter.selecting(input, Frame.of(content, title, bar), @highlighter.find_bar(@view, key.area))
+      finish(input, Frame.of(content, title, bar), key.area)
+    end
+
+    # The outline's panel and the find bar (at the bottom of `window`) into
+    # `frame`'s overlay, and the selection and other marks onto it.
+    #: (Input input, Frame frame, Rect window) -> Frame
+    def finish(input, frame, window)
+      outlined = frame.adding(panel(PageInView.new(frame.content, frame.view)))
+      @highlighter.selecting(input, outlined, @highlighter.find_bar(@view, window))
+    end
+
+    # The outline as it is, over `page`, in the status text.
+    #: (PageInView page) -> OutlinePanel
+    def panel(page)
+      OutlinePanel.new(@highlighter.marks.outline, page, @view.styles.status)
     end
 
     private
@@ -51,8 +67,20 @@ module Shipinel
     #: (Input input, DrawList content, Rect area) -> Scrollbar
     def scrolled(input, content, area)
       shown = area.shortened(FindBar.room(@view.styles.status))
-      steer(@highlighter.moved(input.keys, content, Viewport.new(@scroll.offset, shown)))
-      @scroll.bar_for(input, content, @highlighter.search.open? ? shown : area)
+      calm = pointed(input, PageInView.new(content, Viewport.new(@scroll.offset, shown)))
+      @scroll.bar_for(calm, content, @highlighter.search.open? ? shown : area)
+    end
+
+    # The outline's input first, which may jump to a section; then the find
+    # bar's and the focus's keys, which may go to a match or a checkbox.
+    # Returns the input left for scrolling: while the outline is open, the
+    # keys move it, not the page.
+    #: (Input input, PageInView page) -> Input
+    def pointed(input, page)
+      steer(@highlighter.outlining(input, panel(page)))
+      calm = @highlighter.outline_open? ? input.without_keys : input
+      steer(@highlighter.moved(calm.keys, page.content, page.view))
+      calm
     end
 
     # Goes to `spot` unless it is ScrollSpot.none.

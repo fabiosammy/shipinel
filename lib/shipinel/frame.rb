@@ -12,6 +12,8 @@ require_relative "input"
 require_relative "scrollbar"
 require_relative "look"
 require_relative "marks"
+require_relative "outline_panel"
+require_relative "page_in_view"
 
 module Shipinel
   # See the file comment.
@@ -49,6 +51,13 @@ module Shipinel
       self
     end
 
+    # The frame with `panel` (the outline's) in its overlay.
+    #: (OutlinePanel panel) -> Frame
+    def adding(panel)
+      panel.add_to(@overlay)
+      self
+    end
+
     # The checkbox Space ticks this frame (the keyboard's click), if any.
     #: () -> DrawCommand?
     def pressed
@@ -73,6 +82,14 @@ module Shipinel
     #: (Point at) -> bool
     def on_text?(at)
       at.top >= @view.top && clickable_at(at).negative? && !@overlay.covers?(at)
+    end
+
+    # Whether a click on the checkbox or link drawn at `area` (a window
+    # position) reaches it: below the header, not under the overlay (the
+    # outline's panel, the find bar).
+    #: (Rect area) -> bool
+    def reachable?(area)
+      area.top >= @view.top && !@overlay.covers?(area.corner)
     end
 
     # The lists are read by index, as DrawList is (docs/spinel-notes.md).

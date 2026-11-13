@@ -28,6 +28,12 @@ module Shipinel
       ScrollSpot.new("", 0.0, -1.0)
     end
 
+    # The top of `anchor`'s heading.
+    #: (Anchor anchor) -> ScrollSpot
+    def self.of(anchor)
+      ScrollSpot.new(anchor.slug, 0.0, anchor.top)
+    end
+
     # Where a page scrolled to `offset` is.
     #: (Float offset, AnchorList anchors) -> ScrollSpot
     def self.at(offset, anchors)

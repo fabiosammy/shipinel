@@ -95,7 +95,7 @@ module Shipinel
     #: (Input input, Rect area, DocumentView document) -> Frame?
     def update(input, area, document)
       input = input.while_finding if @highlighter.search.open?
-      adjust(input.keys)
+      adjust(input.keys) unless @highlighter.outline_open?
       key = LayoutKey.new(document.blocks, document.action_problem, @highlighter.highlights, area)
       return unless wanted?(input, key)
 

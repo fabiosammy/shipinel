@@ -105,12 +105,14 @@
 | `u` | Undo the last tick (once), as long as that line has not changed since |
 | Tab / Shift+Tab | Move a focus ring to the next / previous checkbox (the first Tab starts at the first one in view; round the ends; the page scrolls to it) |
 | Space | Tick or untick the checkbox with the focus ring, as a click would; Escape lets go of the focus |
+| `g` | Open the outline: every heading with its tasks' count, the section in view selected; `j` / `k` or the arrows move, Enter or a click jumps there, `g`, Escape or a click outside closes it |
 | Drag over the text, Ctrl+A | Select text (a click elsewhere clears it) |
 | Ctrl+C | Copy the selected text, a line for each line on the page |
 | Ctrl+F | Find: type to highlight every match (any case) and go to the first one below; Enter / Shift+Enter for the next / previous; Backspace; Escape closes it |
 
 While the find bar is open, letters are typed into it: `j`, `k`, `h`, `u`,
-`+`, `-`, `0`, Tab and Space do not act until Escape closes it (the arrows, Page
+`+`, `-`, `0`, Tab, Space and `g` do not act until Escape closes it; while
+the outline is open, the keys move it, not the page (the arrows, Page
 Up/Down, Home and End still scroll). Keys repeat while held. Escape does nothing; only the window's close button
 quits (or hides it in the tray, see `close_to_tray`).
 

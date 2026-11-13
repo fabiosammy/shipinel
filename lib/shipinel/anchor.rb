@@ -69,12 +69,15 @@ module Shipinel
     # @rbs @anchors: Array[Anchor]
     # @rbs @open: Array[Anchor]
     # @rbs @levels: Array[Integer]
+    # The level of every anchor (1 for #, 2 for ##, ...), for the outline.
+    # @rbs @depths: Array[Integer]
 
     #: () -> void
     def initialize
       @anchors = []
       @open = []
       @levels = []
+      @depths = []
     end
 
     # A heading of `level` closes the open ones of the same or a deeper
@@ -83,9 +86,8 @@ module Shipinel
     def add(anchor, level)
       close_from(level)
       @anchors << anchor
-      @open << anchor
-      @levels << level
-      nil
+      @depths << level
+      open_heading(anchor, level)
     end
 
     # A heading of `level` with this (markdown) text starts at `top`; its
@@ -105,6 +107,23 @@ module Shipinel
     #: (Integer position) -> Anchor
     def at(position)
       @anchors[position]
+    end
+
+    # How many headings the page has.
+    #: () -> Integer
+    def size
+      @anchors.size
+    end
+
+    #: () -> bool
+    def empty?
+      @anchors.empty?
+    end
+
+    # The level of the heading at `position` (1 for #).
+    #: (Integer position) -> Integer
+    def level_at(position)
+      @depths[position]
     end
 
     # The position of the last heading at or above page offset `offset`.
@@ -143,6 +162,14 @@ module Shipinel
     end
 
     private
+
+    # The heading counts the tasks met until one of its level or higher.
+    #: (Anchor anchor, Integer level) -> void
+    def open_heading(anchor, level)
+      @open << anchor
+      @levels << level
+      nil
+    end
 
     #: (Integer level) -> void
     def close_from(level)
