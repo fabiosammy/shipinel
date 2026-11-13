@@ -45,10 +45,10 @@ module Shipinel
       @marks.search
     end
 
-    # Whether the outline is open (and takes the keys).
+    # Whether the outline or the help is open (and takes the keys).
     #: () -> bool
     def outline_open?
-      @marks.outline.open?
+      @marks.outline.shown?
     end
 
     # The find bar's and the focus's keys, on `content` shown in `view`:
@@ -80,11 +80,12 @@ module Shipinel
       steps.step.zero? ? ScrollSpot.none : focus.aim(page)
     end
 
-    # The outline after this frame's input, shown as `panel`: where the
-    # window goes for a jump (ScrollSpot.none otherwise).
+    # The outline or help after this frame's input, shown as `panel`: where
+    # the window goes for a jump (ScrollSpot.none otherwise). While the find
+    # bar is open, a typed "?" is part of its query, not the help.
     #: (Input input, OutlinePanel panel) -> ScrollSpot
     def outlining(input, panel)
-      outline = @marks.outline.after(input, panel)
+      outline = @marks.outline.after(search.open? ? input.without_keys : input, panel)
       @marks = @marks.with_outline(outline)
       outline.spot(panel)
     end

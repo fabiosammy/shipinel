@@ -11,12 +11,12 @@ require "tmpdir"
 # plan with two sections, the second far enough down to scroll to.
 class PageKeysTest < Minitest::Test
   class FakeScreen
-    attr_accessor :keys
+    attr_accessor :keys, :typed
 
     def placement = Shipinel::WindowPlace.new(Shipinel::Rect.new(0.0, 0.0, 400.0, 300.0), false)
 
     def input
-      Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, 0.0, Shipinel::KeyPress.new(@keys || 0, ""))
+      Shipinel::Input.new(Shipinel::Point.new(0.0, 0.0), 0, 0.0, Shipinel::KeyPress.new(@keys || 0, @typed || ""))
     end
   end
 
@@ -40,7 +40,8 @@ class PageKeysTest < Minitest::Test
   def press(code) = 1 << Shipinel::Keyboard.watched.find_index(code)
 
   def title(frame)
-    Array.new(frame.overlay_size) { |position| frame.overlay_at(position) }.grep(Shipinel::TextRun).last.text
+    runs = Array.new(frame.overlay_size) { |position| frame.overlay_at(position) }.grep(Shipinel::TextRun)
+    runs.map(&:text).reject { |text| text == Shipinel::FindBar::STATUS }.last
   end
 
   def tasks_plan
@@ -99,5 +100,36 @@ class PageKeysTest < Minitest::Test
     texts = Array.new(shown.overlay_size) { |position| shown.overlay_at(position) }.grep(Shipinel::TextRun).map(&:text)
 
     assert_equal [true, false], [texts.include?("Goal 2"), outline_after(Shipinel::Keyboard::OUTLINE).open?]
+  end
+
+  def type_once(text)
+    @screen.typed = text
+    frame
+    @screen.typed = ""
+  end
+
+  # "?" opens the help; while it is open, h does not hide the header.
+  def test_question_mark_opens_the_help
+    type_once("?")
+    press_once(Shipinel::Keyboard::HEADER)
+    @page.redraw
+
+    assert_equal [true, true], [frame.marks.outline.help?, @page.view.header?]
+  end
+
+  # With the find bar open, "?" is part of the query.
+  def open_find
+    @screen.keys = press(Shipinel::Keyboard::Finding::F) | Shipinel::KeyPress::Selecting::CONTROL
+    frame
+    @screen.keys = 0
+  end
+
+  def test_question_mark_is_typed_into_the_find_bar
+    open_find
+    type_once("?")
+    @page.redraw
+    shown = frame
+
+    assert_equal [false, "?"], [shown.marks.outline.help?, shown.marks.search.query]
   end
 end

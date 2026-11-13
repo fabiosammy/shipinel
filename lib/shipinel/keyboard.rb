@@ -43,6 +43,8 @@ module Shipinel
     UNDO = 85
     # Opens or closes the outline (the list of sections to jump to).
     OUTLINE = 71
+    # Opens or closes the help (as does a typed "?").
+    HELP = 290
 
     # With Control: copy the selection (C), select everything (A).
     module Selecting
@@ -73,7 +75,7 @@ module Shipinel
       [Lines::J, Lines::DOWN, Lines::K, Lines::UP, Jumps::PAGE_DOWN, Jumps::PAGE_UP, Jumps::HOME, Jumps::END_KEY,
        Zoom::EQUAL, Zoom::KEYPAD_PLUS, Zoom::MINUS, Zoom::KEYPAD_MINUS, Zoom::ZERO, HEADER, UNDO,
        Selecting::C, Selecting::A, Finding::F, Finding::ESCAPE, Finding::ENTER, Finding::KEYPAD_ENTER,
-       Finding::BACKSPACE, Focusing::TAB, Focusing::SPACE, OUTLINE]
+       Finding::BACKSPACE, Focusing::TAB, Focusing::SPACE, OUTLINE, HELP]
     end
   end
 
@@ -109,9 +111,9 @@ module Shipinel
       # Not a watched key: Screen sets it while Control is held, so it says
       # nothing on its own (`pressed?` leaves it out).
       CONTROL = 0x4000_0000
-      # j, k, the zoom keys, h, u, Tab, Space and g: while the find bar is
-      # open they are typed (or ignored), not obeyed (`while_finding`).
-      TYPED = 0x1C0_7F05
+      # j, k, the zoom keys, h, u, Tab, Space, g and F1: while the find bar
+      # is open they are typed (or ignored), not obeyed (`while_finding`).
+      TYPED = 0x3C0_7F05
     end
 
     # What was typed this frame (for the find bar), "" for nothing.
@@ -151,10 +153,10 @@ module Shipinel
       FocusKeys.new(@bits)
     end
 
-    # What these keys do to the outline.
+    # What these keys do to the outline and the help.
     #: () -> OutlineKeys
     def for_outline
-      OutlineKeys.new(@bits)
+      OutlineKeys.new(@bits, @typed)
     end
 
     # Where these keys move a page scrolled to `offset`: a line (j, k, the
@@ -307,15 +309,41 @@ module Shipinel
   end
 
   # The outline's keys in one frame: g opens or closes it, the line keys
-  # (j, k, the arrows) move its selection, Enter jumps, Escape closes.
+  # (j, k, the arrows) move its selection, Enter jumps, Escape closes; and
+  # ? or F1, which open or close the help.
   class OutlineKeys
     TOGGLE = 0x100_0000
+    HELP = 0x200_0000
 
     # @rbs @bits: Integer
+    # @rbs @typed: String
 
-    #: (Integer bits) -> void
-    def initialize(bits)
+    #: (Integer bits, String typed) -> void
+    def initialize(bits, typed)
       @bits = bits
+      @typed = typed
+    end
+
+    # F1, or a typed "?".
+    #: () -> bool
+    def help?
+      @bits.anybits?(HELP) || @typed.include?("?")
+    end
+
+    # Where this frame jumps in the outline: the row clicked (`picked`), or
+    # -2 for a click outside it (OutlinePanel::OUTSIDE); else, with no click
+    # (-1), `selected` on Enter, else -1 (no jump: Outline::STAY).
+    #: (OutlineKeys keys, Integer selected, Integer picked) -> Integer
+    def self.target(keys, selected, picked)
+      return picked unless picked == -1
+
+      keys.jump? ? selected : -1
+    end
+
+    # ?, F1 or Escape: the open help closes.
+    #: () -> bool
+    def ends_help?
+      help? || close?
     end
 
     #: () -> bool

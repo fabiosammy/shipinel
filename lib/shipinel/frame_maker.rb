@@ -63,12 +63,12 @@ module Shipinel
     private
 
     # The find bar's keys first, which may go to a match; then the page
-    # scrolls in `area`, less the find bar while it is open.
+    # scrolls in `area`, less the strip at the bottom (find bar or status).
     #: (Input input, DrawList content, Rect area) -> Scrollbar
     def scrolled(input, content, area)
       shown = area.shortened(FindBar.room(@view.styles.status))
       calm = pointed(input, PageInView.new(content, Viewport.new(@scroll.offset, shown)))
-      @scroll.bar_for(calm, content, @highlighter.search.open? ? shown : area)
+      @scroll.bar_for(calm, content, shown)
     end
 
     # The outline's input first, which may jump to a section; then the find

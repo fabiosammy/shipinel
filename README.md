@@ -105,6 +105,7 @@
 | `u` | Undo the last tick (once), as long as that line has not changed since |
 | Tab / Shift+Tab | Move a focus ring to the next / previous checkbox (the first Tab starts at the first one in view; round the ends; the page scrolls to it) |
 | Space | Tick or untick the checkbox with the focus ring, as a click would; Escape lets go of the focus |
+| `?` or F1 | Open the help: every key and click with what it does (`?`, F1, Escape or a click closes it). The status line at the bottom says so |
 | `g` | Open the outline: every heading with its tasks' count, the section in view selected; `j` / `k` or the arrows move, Enter or a click jumps there, `g`, Escape or a click outside closes it |
 | Drag over the text, Ctrl+A | Select text (a click elsewhere clears it) |
 | Ctrl+C | Copy the selected text, a line for each line on the page |

@@ -29,8 +29,9 @@ class FindBarTest < Minitest::Test
     Array.new(overlay.size) { |position| overlay.at(position) }.grep(Shipinel::TextRun).map(&:text)
   end
 
-  def test_closed_it_takes_no_room_and_draws_nothing
-    assert_equal [0.0, []], [Shipinel::FindBar.new(Shipinel::Search.none, STYLE, WINDOW, FONTS).height, texts(Shipinel::Search.none)]
+  # Closed, the strip is the status line pointing to the help.
+  def test_closed_it_shows_the_status_line
+    assert_equal ["Press ? for help"], texts(Shipinel::Search.none)
   end
 
   def test_open_it_shows_the_query_and_where_it_is

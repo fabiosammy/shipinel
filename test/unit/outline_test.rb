@@ -81,4 +81,43 @@ class OutlineTest < Minitest::Test
 
     assert_equal 0, overlay.size
   end
+
+  def typed(text) = Shipinel::Input.new(Shipinel::Point.new(50.0, 0.0), 0, 0.0, Shipinel::KeyPress.new(0, text))
+  def after(outline, input) = outline.after(input, panel(outline))
+
+  # A typed "?" opens the help over the outline.
+  def test_the_help_opens_over_the_outline
+    helping = after(opened, typed("?"))
+
+    assert_equal [true, false, true], [helping.help?, helping.open?, helping.shown?]
+  end
+
+  # ?, F1, Escape or a click close it.
+  def test_the_help_closes
+    helping = after(opened, typed("?"))
+    closers = [typed("?"), input(0.0, 0, Shipinel::OutlineKeys::HELP), input(0.0, 0, Shipinel::FindKeys::CLOSE),
+               input(80.0, PRESS)]
+
+    assert_equal([false] * 4, closers.map { |closer| after(helping, closer).help? })
+  end
+
+  def test_f1_opens_the_help_and_other_keys_keep_it
+    helping = after(Shipinel::Outline.none, input(0.0, 0, Shipinel::OutlineKeys::HELP))
+
+    assert_equal [true, true], [helping.help?, after(helping, input(0.0, 0, Shipinel::KeyPress::Moves::LINE_DOWN)).help?]
+  end
+
+  def help_texts
+    overlay = Shipinel::DrawList.new
+    panel(after(Shipinel::Outline.none, typed("?"))).add_to(overlay)
+    Array.new(overlay.size) { |position| overlay.at(position) }.grep(Shipinel::TextRun).map(&:text)
+  end
+
+  # The help covers the page area: its title, then a key and what it does.
+  def test_the_help_panel_draws_the_keys
+    texts = help_texts
+
+    assert_equal [true, true],
+                 [texts.first.start_with?("Shipinel #{Shipinel::VERSION}"), texts.include?("Tab, Shift+Tab")]
+  end
 end
