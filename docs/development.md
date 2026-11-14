@@ -119,13 +119,17 @@ env -u XAUTHORITY DISPLAY=:99 build/bin/shipinel test/fixtures/semana.md
 Never drive the real display with XTest or similar: synthetic clicks go to
 whatever window is on top there.
 
-## The README's animation
+## The README's animations
 
-`docs/demo/record.sh PATH/TO/shipinel docs/demo.gif` records the example
+`docs/demo/record.sh PATH/TO/shipinel OUT.gif [SCENE]` records the example
 week in its own Xvfb: it builds `docs/demo/clock.c` (an `LD_PRELOAD` that
-moves the wall clock to Wednesday 2026-11-11 15:30), ticks a task, edits a
-line as another editor would, scrolls, presses `u` and `h`, and turns the
-recording into a GIF with a small palette. It needs xdotool and an ffmpeg
+moves the wall clock to Wednesday 2026-11-11 15:30, and leaves itself out
+of the programs Shipinel starts), plays one scene and turns the recording
+into a GIF with a small palette. The scenes: `overview` (`docs/demo.gif`:
+a tick, an outside edit, scrolling, `u` and `h`), `find`
+(`docs/demo-find.gif`), `keys` (`docs/demo-keys.gif`: Tab and Space, the
+outline, the help) and `select` (`docs/demo-select.gif`). The still
+`docs/screenshot.png` is the overview's first half second. It needs xdotool and an ffmpeg
 with x11grab (Debian's `ffmpeg`, or `nixpkgs#ffmpeg-full`; plain
 `nixpkgs#ffmpeg` has no X11 capture). Use the fonts of the still image
 (Liberation Sans through `FONTCONFIG_FILE`) so the two match. The pointer

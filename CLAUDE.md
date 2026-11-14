@@ -312,8 +312,10 @@ Keep in step with every change:
 - `docs/spinel-notes.md`, `docs/raylib-notes.md`, `docs/tray-notes.md`,
   `docs/exceptions.md`, `docs/manual-testing.md`, `docs/development.md`,
   `docs/config.example`, `docs/example-week.md` + `docs/screenshot.png`
-  (still) + `docs/demo.gif` (recorded by `docs/demo/record.sh` in Xvfb, with
-  the clock moved by `docs/demo/clock.c`; re-record when the look changes).
+  (still) + `docs/demo.gif`, `docs/demo-find.gif`, `docs/demo-keys.gif`,
+  `docs/demo-select.gif` (recorded by `docs/demo/record.sh SHIPINEL OUT
+  SCENE` in Xvfb, with the clock moved by `docs/demo/clock.c`; re-record
+  when the look changes).
 
 ---
 

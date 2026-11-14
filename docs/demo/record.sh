@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# Records docs/demo.gif, the animated screenshot in the README: Shipinel
-# showing docs/example-week.md on Wednesday 2026-11-11 at 15:30 (the clock
-# is moved by docs/demo/clock.c), while a scripted user ticks a task, an
-# edit arrives from another editor, the page scrolls, `u` undoes the tick
-# and `h` hides and shows the header. Run it again when the window's look
-# changes.
+# Records the README's animated screenshots: Shipinel showing
+# docs/example-week.md on Wednesday 2026-11-11 at 15:30 (the clock is moved
+# by docs/demo/clock.c) while a scripted user goes through one scene:
+#   overview (docs/demo.gif)      a task ticked, an edit from another editor
+#                                 marked, the page scrolled, `u` undoing the
+#                                 tick, `h` hiding and showing the header
+#   find (docs/demo-find.gif)     Ctrl+F, typing, Enter / Shift+Enter, Escape
+#   keys (docs/demo-keys.gif)     Tab and Space ticking a task, the outline
+#                                 (g) jumping to a section, the help (?)
+#   select (docs/demo-select.gif) dragging over text, Ctrl+A
+# Run them again when the window's look changes.
 #
-# Usage: docs/demo/record.sh PATH/TO/shipinel OUT.gif
+# Usage: docs/demo/record.sh PATH/TO/shipinel OUT.gif [SCENE]   (overview)
 # Needs Xvfb, xdotool, ffmpeg with x11grab (Debian's ffmpeg, nixpkgs'
 # ffmpeg-full), a C compiler and Mesa's software OpenGL driver. The pointer
 # is not recorded: Xvfb only has its bare "X" cursor. The fonts are whatever fontconfig finds (the README's images use
@@ -16,6 +21,7 @@ set -euo pipefail
 
 shipinel=$(realpath "$1")
 out=$(realpath -m "$2")
+scene=${3:-overview}
 here=$(dirname "$(realpath "$0")")
 work=$(mktemp -d)
 plan=$work/example-week.md
@@ -35,6 +41,110 @@ press() {
   xdotool keydown "$1"
   sleep 0.1
   xdotool keyup "$1"
+}
+
+# Presses a key with Control or Shift held (`ctrl+f`, `shift+Return`).
+chord() {
+  xdotool keydown "${1%%+*}"
+  press "${1#*+}"
+  xdotool keyup "${1%%+*}"
+}
+
+# Types text a character at a time, as a person would.
+type_slowly() {
+  xdotool type --delay 180 "$1"
+}
+
+# Drags from x1 y1 to x2 y2 in steps, the button held.
+drag() {
+  xdotool mousemove "$1" "$2" mousedown 1
+  for step in 1 2 3 4 5 6 7 8; do
+    xdotool mousemove $(($1 + ($3 - $1) * step / 8)) $(($2 + ($4 - $2) * step / 8))
+    sleep 0.08
+  done
+  xdotool mouseup 1
+}
+
+# A task ticked, an edit from another editor, the page scrolled, the tick
+# undone, the header hidden and shown.
+overview() {
+  # Tick "Rehearse the export demo": the counts and the bar move.
+  click_at 24 304
+  sleep 1.6
+
+  # Another editor changes a line: it gets the change mark.
+  sed -i 's/^- \[ \] Book a room for the retro$/- [ ] Book a room for the retro and the demo/' "$plan"
+  sleep 2.2
+
+  # Down to the overdue date and the task waiting on finance, and back.
+  for _ in 1 2 3 4 5; do
+    press j
+    sleep 0.25
+  done
+  sleep 2
+  press Home
+  sleep 1.2
+
+  # u: the tick is undone.
+  press u
+  sleep 2.2
+
+  # h hides the header, and shows it again.
+  press h
+  sleep 1.4
+  press h
+  sleep 1.5
+}
+
+# The find bar: every match highlighted, Enter to the next one (the page
+# scrolls to it), Shift+Enter back, Escape closes it.
+find_scene() {
+  chord ctrl+f
+  sleep 0.6
+  type_slowly "export"
+  sleep 1.4
+  press Return
+  sleep 1.4
+  press Return
+  sleep 1.4
+  chord shift+Return
+  sleep 1.4
+  press Escape
+  sleep 1.2
+}
+
+# Ticking from the keyboard, the outline and the help.
+keys_scene() {
+  press Tab
+  sleep 0.8
+  press Tab
+  sleep 0.8
+  press space
+  sleep 1.4
+  press Escape
+  sleep 0.8
+  press g
+  sleep 1.2
+  for _ in 1 2 3; do
+    press Down
+    sleep 0.5
+  done
+  press Return
+  sleep 1.6
+  xdotool type "?"
+  sleep 2.4
+  press Escape
+  sleep 1.0
+}
+
+# Selecting: a drag over the paragraph, then Ctrl+A, then a click away.
+select_scene() {
+  drag 60 156 330 210
+  sleep 1.8
+  chord ctrl+a
+  sleep 1.8
+  click_at 300 600
+  sleep 1.0
 }
 
 # Ends a process we started (`signal` and pid) and waits for it, unless it
@@ -98,32 +208,13 @@ if [ ! -d "/proc/$recorder" ]; then
   exit 1
 fi
 
-# Tick "Rehearse the export demo": the counts and the bar move.
-click_at 24 304
-sleep 1.6
-
-# Another editor changes a line: it gets the change mark.
-sed -i 's/^- \[ \] Book a room for the retro$/- [ ] Book a room for the retro and the demo/' "$plan"
-sleep 2.2
-
-# Down to the overdue date and the task waiting on finance, and back.
-for _ in 1 2 3 4 5; do
-  press j
-  sleep 0.25
-done
-sleep 2
-press Home
-sleep 1.2
-
-# u: the tick is undone.
-press u
-sleep 2.2
-
-# h hides the header, and shows it again.
-press h
-sleep 1.4
-press h
-sleep 1.5
+case $scene in
+  overview) overview ;;
+  find) find_scene ;;
+  keys) keys_scene ;;
+  select) select_scene ;;
+  *) echo "unknown scene: $scene (overview, find, keys, select)"; exit 1 ;;
+esac
 
 end_process INT "$recorder"
 recorder=
