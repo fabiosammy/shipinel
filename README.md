@@ -105,6 +105,7 @@
 | `u` | Undo the last tick (once), as long as that line has not changed since |
 | Tab / Shift+Tab | Move a focus ring to the next / previous checkbox (the first Tab starts at the first one in view; round the ends; the page scrolls to it) |
 | Space | Tick or untick the checkbox with the focus ring, as a click would; Escape lets go of the focus |
+| Ctrl+O, or drop a `.md` file on the window | Open another plan (where this one was is kept; the other opens where it was left) |
 | `?` or F1 | Open the help: every key and click with what it does (`?`, F1, Escape or a click closes it). The status line at the bottom says so |
 | `g` | Open the outline: every heading with its tasks' count, the section in view selected; `j` / `k` or the arrows move, Enter or a click jumps there, `g`, Escape or a click outside closes it |
 | Drag over the text, Ctrl+A | Select text (a click elsewhere clears it) |
@@ -301,6 +302,10 @@ rules by title (for example "Auto Move Windows" for the workspace part).
   tray, Shipinel says so on stderr and closing quits as usual.
 - **Notifications** go through `notify-send` (libnotify), which the Nix package
   brings.
+- **Opening another plan.** Drop a `.md` file on the window, or press
+  Ctrl+O for the desktop's file dialog: `zenity` (GNOME and most others) or
+  `kdialog` (KDE), whichever is installed (the window says so when neither
+  is). The config's `file` still opens at the next start.
 - **Stopping it from outside.** `kill`, Ctrl+C in the terminal it runs in,
   or the terminal closing (TERM, INT, HUP) end Shipinel like the close
   button, within half a second, saving where the window was.

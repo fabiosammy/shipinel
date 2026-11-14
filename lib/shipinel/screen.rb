@@ -18,18 +18,14 @@ module Shipinel
   class Screen
     # At the place's size, and its position where that is known (X11).
     # Checkboxes are styled from the theme right away: raygui keeps the
-    # style for every box drawn after.
-    #: (WindowPlace place, String title) -> void
+    # style for every box drawn after. Whether it got a window (and an
+    # OpenGL context).
+    #: (WindowPlace place, String title) -> bool
     def open(place, title)
       rect = place.rect
       UI.ui_open_window(rect.width.round, rect.height.round, title)
       UI.ui_move_window(rect.left.round, rect.top.round) if place.placed?
       UI.ui_style_checkbox(Theme::Checkbox::BORDER, Theme::Checkbox::HOVER, Theme::Checkbox::CHECK)
-    end
-
-    # Whether `open` got a window (and an OpenGL context).
-    #: () -> bool
-    def ready?
       UI.ui_window_ready
     end
 
@@ -93,6 +89,12 @@ module Shipinel
                 KeyReader.read)
     end
 
+    # The path of a file dropped on the window this frame, "" for none.
+    #: () -> String
+    def dropped_file
+      UI.ui_dropped_file
+    end
+
     # A square checkbox filling `rect`. Clicks are read with pointer_on;
     # the file, not the box, holds the state.
     #: (Rect rect, bool checked) -> void
@@ -117,29 +119,6 @@ module Shipinel
       UI.ui_set_hand_cursor(hand)
     end
   end
-
-  # This frame's watched keys, with Control and Shift as their own bits,
-  # and what was typed.
-  module KeyReader
-    #: () -> KeyPress
-    def self.read
-      keys = Keyboard.watched
-      KeyPress.new(UI.ui_keys_pressed(keys, keys.size) | modifiers, typed)
-    end
-
-    #: () -> Integer
-    def self.modifiers
-      (UI.ui_control_down ? KeyPress::Selecting::CONTROL : 0) | (UI.ui_shift_down ? FindKeys::SHIFT : 0)
-    end
-
-    # The characters typed since the last frame, in order.
-    #: () -> String
-    def self.typed
-      text = +""
-      while (codepoint = UI.ui_char_pressed).positive?
-        text << codepoint
-      end
-      text
-    end
-  end
 end
+
+require_relative "key_reader"

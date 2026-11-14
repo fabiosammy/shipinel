@@ -43,10 +43,11 @@ module Shipinel
       @reminder.nudged
     end
 
-    #: (String title) -> void
-    def start(title)
+    # The stop signals, and the tray icon titled after the plan `name`.
+    #: (String name) -> void
+    def start(name)
       @signals.watch
-      @tray_icon.start(Tray.new, title)
+      @tray_icon.start(Tray.new, "Shipinel · #{name}")
     end
 
     # Every chore: the daily nudge when it is time, and the tray's progress

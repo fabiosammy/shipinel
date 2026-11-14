@@ -51,6 +51,11 @@ contribution process. This file is how you (Claude) work on the project.
   (Focus, kept by line index; PageInView finds them in page order, round
   the ends, scrolling to them); Space hands the focused checkbox to the
   Painter as that frame's click (Frame#pressed); Escape lets go.
+- Another plan: a `.md`/`.markdown`/`.txt` dropped on the window
+  (`ui_dropped_file`), or Ctrl+O, which runs zenity or kdialog (PlanPicker;
+  without either, the action notice says so). App#switch_to saves where
+  the plan was, then opens the other at its own saved state (Session#for_plan
+  keeps the desktop). The config's `file` is unchanged.
 - Help: `?` (typed) or F1 opens a panel over the page with every key and
   click (HelpPanel; a mode of Outline, so it takes the keys and blocks
   clicks the same way); ?, F1, Escape or a click close it. The strip at
@@ -194,7 +199,8 @@ apart from the thin native layer.
 - **Fonts and accents.** TTF/OTF loaded with Latin-1 + Latin Extended-A plus
   the document's characters; symbols fall back to a monochrome emoji font.
 - **Theme.** One dark theme, every color and spacing in `theme.rb`.
-- **Desktop integration degrades**: no `notify-send` → stderr line; no tray
+- **Desktop integration degrades**: no zenity/kdialog → a notice in the
+  window (drop a file instead); no `notify-send` → stderr line; no tray
   host → stderr line and closing quits (the window can never get lost).
 
 ---

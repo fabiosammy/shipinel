@@ -81,7 +81,7 @@ module Shipinel
     #: (Input input, Frame frame) -> Selection
     def after(input, frame)
       content = frame.content
-      return Selection.all(content) if input.keys.select_all?
+      return Selection.all(content) if input.keys.commands.select_all?
       return Selection.none if stale?(content)
 
       input.pressed? ? Selection.pressed(input, frame) : moved(input, frame)

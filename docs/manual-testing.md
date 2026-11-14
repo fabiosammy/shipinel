@@ -161,6 +161,11 @@ cp test/fixtures/semana.md /tmp/semana.md
     help". `?` (or F1) covers the page with the keys and what they do; `?`,
     F1, Escape or a click closes it, and while it is open `h` does not
     hide the header. With the find bar open, `?` is typed into it instead.
+36. **Another plan.** Drag a `.md` file from the file manager onto the
+    window: it opens where it was last left, and reopening the first one
+    later finds it where you were. Ctrl+O opens the desktop's file dialog
+    (zenity, or kdialog on KDE); Cancel changes nothing. Without either
+    installed, a red notice says so. A dropped image is ignored.
 
 ## Per desktop
 

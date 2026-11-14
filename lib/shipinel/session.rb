@@ -39,6 +39,15 @@ module Shipinel
       Session.new(file, saved, Desktop.for(config, saved.days.nudged))
     end
 
+    # The session for another plan (opened while running): its saved
+    # state, or `view` and `place` for a plan never shown; the same
+    # notifications and tray icon.
+    #: (String plan_path, View view, WindowPlace place) -> Session
+    def for_plan(plan_path, view, place)
+      file = StateFile.for(plan_path)
+      Session.new(file, StateReader.new(file.read).state(SavedState.fresh(view, place)), @desktop)
+    end
+
     #: (Integer now) -> bool
     def due?(now)
       @poller.due?(now)

@@ -46,10 +46,12 @@ module Shipinel
     # Opens or closes the help (as does a typed "?").
     HELP = 290
 
-    # With Control: copy the selection (C), select everything (A).
+    # With Control: copy the selection (C), select everything (A), open
+    # another plan (O).
     module Selecting
       C = 67
       A = 65
+      O = 79
     end
 
     # Ctrl+F opens the find bar; Enter goes to the next match (with Shift,
@@ -75,7 +77,7 @@ module Shipinel
       [Lines::J, Lines::DOWN, Lines::K, Lines::UP, Jumps::PAGE_DOWN, Jumps::PAGE_UP, Jumps::HOME, Jumps::END_KEY,
        Zoom::EQUAL, Zoom::KEYPAD_PLUS, Zoom::MINUS, Zoom::KEYPAD_MINUS, Zoom::ZERO, HEADER, UNDO,
        Selecting::C, Selecting::A, Finding::F, Finding::ESCAPE, Finding::ENTER, Finding::KEYPAD_ENTER,
-       Finding::BACKSPACE, Focusing::TAB, Focusing::SPACE, OUTLINE, HELP]
+       Finding::BACKSPACE, Focusing::TAB, Focusing::SPACE, OUTLINE, HELP, Selecting::O]
     end
   end
 
@@ -194,16 +196,10 @@ module Shipinel
       on?(UNDO)
     end
 
-    # Ctrl+C: copy the selection.
-    #: () -> bool
-    def copy?
-      on?(Selecting::CONTROL) && on?(Selecting::C)
-    end
-
-    # Ctrl+A: select the whole page.
-    #: () -> bool
-    def select_all?
-      on?(Selecting::CONTROL) && on?(Selecting::A)
+    # What these keys do with Control held (Ctrl+C, Ctrl+A, Ctrl+O).
+    #: () -> CommandKeys
+    def commands
+      CommandKeys.new(@bits)
     end
 
     private
@@ -365,6 +361,44 @@ module Shipinel
     #: () -> Integer
     def step
       (@bits.anybits?(KeyPress::Moves::LINE_DOWN) ? 1 : 0) - (@bits.anybits?(KeyPress::Moves::LINE_UP) ? 1 : 0)
+    end
+  end
+
+  # The Control chords in one frame (Keyboard::Selecting).
+  class CommandKeys
+    OPEN = 0x400_0000
+
+    # @rbs @bits: Integer
+
+    #: (Integer bits) -> void
+    def initialize(bits)
+      @bits = bits
+    end
+
+    # Ctrl+C: copy the selection.
+    #: () -> bool
+    def copy?
+      chord?(KeyPress::Selecting::C)
+    end
+
+    # Ctrl+A: select the whole page.
+    #: () -> bool
+    def select_all?
+      chord?(KeyPress::Selecting::A)
+    end
+
+    # Ctrl+O: open another plan.
+    #: () -> bool
+    def open?
+      chord?(OPEN)
+    end
+
+    private
+
+    # Control held and the key of `bit` pressed.
+    #: (Integer bit) -> bool
+    def chord?(bit)
+      @bits.anybits?(KeyPress::Selecting::CONTROL) && @bits.anybits?(bit)
     end
   end
 end

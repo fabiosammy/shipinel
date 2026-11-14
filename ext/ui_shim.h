@@ -63,6 +63,9 @@ void ui_set_hand_cursor(int hand);
 int ui_control_down(void);
 /* 1 while either Shift key is held (Shift+Enter: the previous match). */
 int ui_shift_down(void);
+/* The path of the first file dropped on the window this frame, or "" for
+ * none; valid until the next call. */
+const char *ui_dropped_file(void);
 /* The next character typed this frame (a Unicode codepoint), or 0 when
  * there is none left: called until 0 for what goes into the find bar. */
 int ui_char_pressed(void);

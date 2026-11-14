@@ -56,6 +56,13 @@ module Shipinel
     end
 
     def self.ui_char_pressed = record(:char_pressed, answer: (@typed ||= []).shift || 0)
+
+    # What ui_dropped_file answers next ("" for no drop).
+    def self.dropped=(path)
+      @dropped = path
+    end
+
+    def self.ui_dropped_file = record(:dropped_file, answer: @dropped.to_s)
     def self.ui_set_clipboard(*) = record(:clipboard, *)
   end
 end
