@@ -39,8 +39,15 @@
 - **Changes noticed.** Lines edited outside Shipinel (by you in your editor,
   or an assistant) get a mark beside them for ten seconds, and a short
   notch shows where lines were deleted.
+- **Find** (Ctrl+F): every match highlighted, Enter to the next one; it
+  never hides a line.
+- **Jump to a section** (`g`): every heading with its count; pick one.
+- **Tick from the keyboard**: Tab moves a ring between tasks, Space ticks.
+- **Select and copy**: drag over the text (or Ctrl+A), then Ctrl+C.
+- **Another plan**: drop a `.md` file on the window, or press Ctrl+O.
 - **Keyboard**: `j`/`k`, the arrows, Page Up/Down and Home/End scroll; `+`,
-  `-` and `0` zoom; `h` hides the header; `u` undoes the last tick.
+  `-` and `0` zoom; `h` hides the header; `u` undoes the last tick; `?`
+  (the status line at the bottom says so) shows every key.
 - **Notifications**: a daily nudge with the number of tasks still open and
   one of them, and a warning when a tick could not be saved.
 - **Tray icon**: the progress as a ring and in its tooltip, which also says
@@ -50,6 +57,14 @@
 - **Light on the machine.** An idle window sleeps until input arrives and
   costs next to no CPU.
 - Native on **Wayland** (KDE Plasma, Hyprland, GNOME) and on X11.
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/demo-find.gif" width="260" alt="Ctrl+F opens the find bar at the bottom; typing export highlights all six matches, the current one brighter, and Enter and Shift+Enter step through them (1 of 6, 2 of 6, 3 of 6, 2 of 6) before Escape closes it." /><br /><b>Find</b></td>
+    <td align="center"><img src="docs/demo-keys.gif" width="260" alt="Tab moves a blue ring onto a task and Space ticks it (5 of 14); g opens the outline of sections, Down picks Goal 2 and Enter jumps there; ? shows every key and Escape closes it." /><br /><b>Keyboard, outline, help</b></td>
+    <td align="center"><img src="docs/demo-select.gif" width="260" alt="Dragging over the first paragraph selects it with a blue background; Ctrl+A selects the whole page; a click away clears it." /><br /><b>Select and copy</b></td>
+  </tr>
+</table>
 
 ## Getting started
 
@@ -428,10 +443,11 @@ More detail: [docs/raylib-notes.md](docs/raylib-notes.md) (every raylib,
 raygui and GLFW call, with signatures from the headers) and
 [docs/tray-notes.md](docs/tray-notes.md) (the tray's D-Bus interfaces).
 
-The animation above (and the still image shown instead when your system
-asks for reduced motion) is of [docs/example-week.md](docs/example-week.md),
+The animations above (and the still image shown instead when your system
+asks for reduced motion) are of [docs/example-week.md](docs/example-week.md),
 a made-up plan, on Wednesday 2026-11-11 at 15:30. `docs/demo/record.sh
-PATH/TO/shipinel docs/demo.gif` records it again in a virtual display.
+PATH/TO/shipinel docs/demo.gif [overview|find|keys|select]` records them
+again in a virtual display.
 
 ## License
 
